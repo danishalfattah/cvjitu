@@ -63,10 +63,6 @@ export function HeroSection({
               >
                 Coba Scoring
               </Button>
-              <Button variant="outline">Kontol</Button>
-              <Button className="bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white">
-                Punjabi
-              </Button>
             </div>
 
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-white/50 shadow-sm">

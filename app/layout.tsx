@@ -32,10 +32,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${poppins.variable} ${inter.variable} antialiased`}
-    >
+    <html lang="en" className={`${poppins.variable} ${inter.variable}  `}>
       <body>
         <Suspense>
           <Providers>{children}</Providers>
