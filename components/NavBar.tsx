@@ -1,0 +1,321 @@
+import { useState } from "react";
+import { Button } from "./ui/button";
+import { X, LayoutDashboard } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
+
+interface User {
+  id: string;
+  email: string;
+  fullName: string;
+  avatar?: string;
+  provider?: "email" | "google";
+}
+
+interface NavBarProps {
+  user?: User | null;
+  onLogin?: () => void;
+  onRegister?: () => void;
+  onLogout?: () => void;
+  onDashboard?: () => void;
+}
+
+export function NavBar({
+  user,
+  onLogin,
+  onRegister,
+  onLogout,
+  onDashboard,
+}: NavBarProps) {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] =
+    useState(false);
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const closeMobileMenu = () => {
+    setIsMobileMenuOpen(false);
+  };
+  return (
+    <>
+      <nav className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-md border-b border-[var(--border-color)] px-6 py-4 z-50">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          {/* Logo Section */}
+          <div className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-[var(--red-normal)] rounded-lg flex items-center justify-center">
+              <span className="text-white font-semibold text-sm">
+                CV
+              </span>
+            </div>
+            <span className="font-poppins font-semibold text-xl text-[var(--neutral-ink)]">
+              CVJitu
+            </span>
+          </div>
+
+          {/* Center Navigation - Desktop Only */}
+          <div className="hidden lg:flex items-center space-x-8">
+            <a
+              href="#features"
+              className="text-[var(--neutral-ink)] hover:text-[var(--red-normal)] transition-colors font-medium"
+            >
+              Fitur
+            </a>
+            <a
+              href="#how-it-works"
+              className="text-[var(--neutral-ink)] hover:text-[var(--red-normal)] transition-colors font-medium"
+            >
+              Cara Kerja
+            </a>
+            <a
+              href="#why-us"
+              className="text-[var(--neutral-ink)] hover:text-[var(--red-normal)] transition-colors font-medium"
+            >
+              Keunggulan
+            </a>
+            <a
+              href="#pricing"
+              className="text-[var(--neutral-ink)] hover:text-[var(--red-normal)] transition-colors font-medium"
+            >
+              Harga
+            </a>
+            <a
+              href="#faq"
+              className="text-[var(--neutral-ink)] hover:text-[var(--red-normal)] transition-colors font-medium"
+            >
+              FAQ
+            </a>
+          </div>
+
+          {/* Right Section - Desktop Only */}
+          <div className="hidden lg:flex items-center space-x-4">
+            {user ? (
+              <Button
+                variant="ghost"
+                onClick={onDashboard}
+                className="text-[var(--neutral-ink)] hover:text-[var(--red-normal)]"
+              >
+                <LayoutDashboard className="w-4 h-4 mr-2" />
+                Dashboard
+              </Button>
+            ) : (
+              <>
+                <Button
+                  variant="ghost"
+                  onClick={onLogin}
+                  className="text-[var(--neutral-ink)] hover:text-[var(--red-normal)]"
+                >
+                  Sign In
+                </Button>
+                <Button
+                  onClick={onRegister}
+                  className="bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white"
+                >
+                  Sign Up
+                </Button>
+              </>
+            )}
+          </div>
+
+          {/* Mobile Menu Button */}
+          <div className="lg:hidden">
+            <motion.button
+              onClick={toggleMobileMenu}
+              className="relative w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors"
+              whileTap={{ scale: 0.95 }}
+            >
+              <div className="w-6 h-6 relative">
+                {/* Hamburger Lines */}
+                <motion.span
+                  className="absolute left-0 block w-6 h-0.5 bg-[var(--neutral-ink)] rounded-full"
+                  style={{ top: "6px" }}
+                  animate={{
+                    rotate: isMobileMenuOpen ? 45 : 0,
+                    y: isMobileMenuOpen ? 6 : 0,
+                  }}
+                  transition={{
+                    duration: 0.3,
+                    ease: "easeInOut",
+                  }}
+                />
+                <motion.span
+                  className="absolute left-0 top-1/2 block w-6 h-0.5 bg-[var(--neutral-ink)] rounded-full transform -translate-y-1/2"
+                  animate={{
+                    opacity: isMobileMenuOpen ? 0 : 1,
+                    x: isMobileMenuOpen ? 10 : 0,
+                  }}
+                  transition={{
+                    duration: 0.3,
+                    ease: "easeInOut",
+                  }}
+                />
+                <motion.span
+                  className="absolute left-0 block w-6 h-0.5 bg-[var(--neutral-ink)] rounded-full"
+                  style={{ bottom: "6px" }}
+                  animate={{
+                    rotate: isMobileMenuOpen ? -45 : 0,
+                    y: isMobileMenuOpen ? -6 : 0,
+                  }}
+                  transition={{
+                    duration: 0.3,
+                    ease: "easeInOut",
+                  }}
+                />
+              </div>
+            </motion.button>
+          </div>
+        </div>
+      </nav>
+
+      {/* Mobile Menu Dropdown */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              onClick={closeMobileMenu}
+            />
+
+            {/* Mobile Menu Dropdown Panel */}
+            <motion.div
+              className="fixed top-20 left-0 right-0 bg-white/95 backdrop-blur-md z-50 lg:hidden shadow-2xl border-b border-[var(--border-color)]"
+              initial={{ y: "-100%", opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: "-100%", opacity: 0 }}
+              transition={{
+                duration: 0.4,
+                ease: [0.23, 1, 0.32, 1],
+              }}
+            >
+              <div className="max-w-7xl mx-auto px-6 py-6">
+                {/* Navigation Links */}
+                <div className="space-y-1 mb-6">
+                  <motion.a
+                    href="#features"
+                    onClick={closeMobileMenu}
+                    className="block py-3 px-4 text-[var(--neutral-ink)] hover:text-[var(--red-normal)] hover:bg-[var(--red-light)] rounded-lg transition-all font-medium"
+                    whileHover={{ x: 8 }}
+                    transition={{ duration: 0.2 }}
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    style={{ transitionDelay: "0.1s" }}
+                  >
+                    Fitur
+                  </motion.a>
+                  <motion.a
+                    href="#how-it-works"
+                    onClick={closeMobileMenu}
+                    className="block py-3 px-4 text-[var(--neutral-ink)] hover:text-[var(--red-normal)] hover:bg-[var(--red-light)] rounded-lg transition-all font-medium"
+                    whileHover={{ x: 8 }}
+                    transition={{ duration: 0.2 }}
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    style={{ transitionDelay: "0.15s" }}
+                  >
+                    Cara Kerja
+                  </motion.a>
+                  <motion.a
+                    href="#why-us"
+                    onClick={closeMobileMenu}
+                    className="block py-3 px-4 text-[var(--neutral-ink)] hover:text-[var(--red-normal)] hover:bg-[var(--red-light)] rounded-lg transition-all font-medium"
+                    whileHover={{ x: 8 }}
+                    transition={{ duration: 0.2 }}
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    style={{ transitionDelay: "0.2s" }}
+                  >
+                    Keunggulan
+                  </motion.a>
+                  <motion.a
+                    href="#pricing"
+                    onClick={closeMobileMenu}
+                    className="block py-3 px-4 text-[var(--neutral-ink)] hover:text-[var(--red-normal)] hover:bg-[var(--red-light)] rounded-lg transition-all font-medium"
+                    whileHover={{ x: 8 }}
+                    transition={{ duration: 0.2 }}
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    style={{ transitionDelay: "0.25s" }}
+                  >
+                    Harga
+                  </motion.a>
+                  <motion.a
+                    href="#faq"
+                    onClick={closeMobileMenu}
+                    className="block py-3 px-4 text-[var(--neutral-ink)] hover:text-[var(--red-normal)] hover:bg-[var(--red-light)] rounded-lg transition-all font-medium"
+                    whileHover={{ x: 8 }}
+                    transition={{ duration: 0.2 }}
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    style={{ transitionDelay: "0.3s" }}
+                  >
+                    FAQ
+                  </motion.a>
+                </div>
+
+                {/* Divider */}
+                <div className="h-px bg-gradient-to-r from-transparent via-[var(--border-color)] to-transparent mb-6"></div>
+
+                {/* Auth/Dashboard Section */}
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ delay: 0.35 }}
+                >
+                  {user ? (
+                    <motion.button
+                      onClick={() => {
+                        onDashboard();
+                        closeMobileMenu();
+                      }}
+                      className="w-full py-3 px-4 text-[var(--neutral-ink)] hover:text-[var(--red-normal)] bg-white/80 hover:bg-[var(--red-light)] border border-[var(--border-color)] rounded-lg transition-all font-medium flex items-center justify-center gap-2"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <LayoutDashboard className="w-5 h-5" />
+                      <span>Dashboard</span>
+                    </motion.button>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-3">
+                      <motion.button
+                        onClick={() => {
+                          onLogin();
+                          closeMobileMenu();
+                        }}
+                        className="py-3 px-4 text-[var(--neutral-ink)] hover:text-[var(--red-normal)] bg-white/80 hover:bg-[var(--red-light)] border border-[var(--border-color)] rounded-lg transition-all font-medium"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        Sign In
+                      </motion.button>
+                      <motion.button
+                        onClick={() => {
+                          onRegister();
+                          closeMobileMenu();
+                        }}
+                        className="py-3 px-4 bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white rounded-lg transition-all font-medium"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        Sign Up
+                      </motion.button>
+                    </div>
+                  )}
+                </motion.div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </>
+  );
+}
