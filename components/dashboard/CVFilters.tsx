@@ -142,9 +142,9 @@ export function CVFilters({
           </SelectContent>
         </Select>
 
-        <div className="flex items-center space-x-2 min-w-40">
-          <span className="text-sm text-gray-600">Skor:</span>
-          <div className="flex-1">
+        <div className="flex items-center space-x-2 min-w-64">
+          <span className="text-sm text-gray-600 ">Skor:</span>
+          <div className="flex-1 ">
             <Slider
               value={filters.scoreRange}
               onValueChange={(value) => updateFilter("scoreRange", value)}
