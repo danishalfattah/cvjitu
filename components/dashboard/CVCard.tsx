@@ -1,3 +1,5 @@
+// components/dashboard/CVCard.tsx
+
 import { Card, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
@@ -9,6 +11,8 @@ import {
   Trash2,
   Eye,
   Share2,
+  Globe,
+  Lock,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -16,18 +20,24 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
 } from "../ui/dropdown-menu";
 
 export interface CVData {
   id: string;
-  name: string;
-  category: string;
+  name: string; // Ini akan menjadi Job Title
   year: number;
   created: string;
   updated: string;
   status: "Draft" | "Completed";
   score: number;
   lang: "id" | "en";
+  visibility: "public" | "private";
+  owner?: string;
 }
 
 interface CVCardProps {
@@ -37,6 +47,7 @@ interface CVCardProps {
   onUpdate: (cv: CVData) => void;
   onDelete: (cv: CVData) => void;
   onShare: (cv: CVData) => void;
+  onVisibilityChange: (cvId: string, visibility: "public" | "private") => void;
 }
 
 export function CVCard({
@@ -46,23 +57,12 @@ export function CVCard({
   onUpdate,
   onDelete,
   onShare,
+  onVisibilityChange,
 }: CVCardProps) {
   const getStatusColor = (status: string) => {
     return status === "Completed"
       ? "bg-[var(--success)] text-white"
       : "bg-[var(--warn)] text-white";
-  };
-
-  const getCategoryColor = (category: string) => {
-    const colors: { [key: string]: string } = {
-      Frontend: "bg-blue-100 text-blue-800",
-      Backend: "bg-green-100 text-green-800",
-      Data: "bg-purple-100 text-purple-800",
-      "UI/UX": "bg-pink-100 text-pink-800",
-      "Product Manager": "bg-orange-100 text-orange-800",
-      "Fresh Graduate": "bg-gray-100 text-gray-800",
-    };
-    return colors[category] || "bg-gray-100 text-gray-800";
   };
 
   return (
@@ -77,9 +77,6 @@ export function CVCard({
               {cv.name}
             </h3>
             <div className="flex flex-wrap items-center gap-2 mb-4">
-              <Badge className={`${getCategoryColor(cv.category)} text-xs`}>
-                {cv.category}
-              </Badge>
               <Badge className={`${getStatusColor(cv.status)} text-xs`}>
                 {cv.status === "Completed" ? "Selesai" : cv.status}
               </Badge>
@@ -109,6 +106,33 @@ export function CVCard({
                   <Share2 className="w-4 h-4 mr-2" />
                   Bagikan CV
                 </DropdownMenuItem>
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger>
+                    {cv.visibility === "public" ? (
+                      <Globe className="w-4 h-4 mr-2" />
+                    ) : (
+                      <Lock className="w-4 h-4 mr-2" />
+                    )}
+                    Atur Privasi
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent>
+                    <DropdownMenuRadioGroup
+                      value={cv.visibility}
+                      onValueChange={(value) =>
+                        onVisibilityChange(cv.id, value as "public" | "private")
+                      }
+                    >
+                      <DropdownMenuRadioItem value="public">
+                        <Globe className="w-4 h-4 mr-2" />
+                        Publik
+                      </DropdownMenuRadioItem>
+                      <DropdownMenuRadioItem value="private">
+                        <Lock className="w-4 h-4 mr-2" />
+                        Privat
+                      </DropdownMenuRadioItem>
+                    </DropdownMenuRadioGroup>
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={() => onDelete(cv)}

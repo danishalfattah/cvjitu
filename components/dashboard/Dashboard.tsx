@@ -15,6 +15,13 @@ import {
 import { StatTile } from "../StatTile";
 import { CVFilters } from "./CVFilters";
 import { CVCard, CVData } from "./CVCard";
+
+type Visibility = "public" | "private";
+
+interface CVDataWithVisibility extends CVData {
+  visibility: Visibility;
+  owner: string;
+}
 import { CVTable } from "./CVTable";
 import { EmptyState } from "../EmptyState";
 import { DeleteConfirmModal } from "../DeleteConfirmModal";
@@ -41,204 +48,222 @@ import {
 import { toast } from "sonner";
 import Image from "next/image";
 
-const dummyCVs: CVData[] = [
+export const dummyCVs: CVDataWithVisibility[] = [
   {
     id: "1",
     name: "CV Frontend Developer",
-    category: "Frontend",
     year: 2025,
     created: "15 Jan 2025, 14:30",
     updated: "17 Jan 2025, 09:15",
     status: "Completed",
     score: 81,
     lang: "id",
+    visibility: "public",
+    owner: "joko irawan",
   },
   {
     id: "2",
     name: "Resume Backend Engineer",
-    category: "Backend",
     year: 2024,
     created: "10 Jan 2025, 16:45",
     updated: "10 Jan 2025, 16:45",
     status: "Completed",
     score: 72,
     lang: "en",
+    visibility: "private",
+    owner: "budi santoso",
   },
   {
     id: "3",
     name: "Portfolio Data Scientist",
-    category: "Data",
     year: 2023,
     created: "12 Jan 2025, 11:20",
     updated: "14 Jan 2025, 13:50",
     status: "Completed",
     score: 90,
     lang: "en",
+    visibility: "public",
+    owner: "siti aminah",
   },
   {
     id: "4",
     name: "CV UI/UX Designer",
-    category: "UI/UX",
     year: 2025,
     created: "08 Jan 2025, 10:15",
     updated: "12 Jan 2025, 15:30",
     status: "Draft",
     score: 65,
     lang: "id",
+    visibility: "private",
+    owner: "agus wijaya",
   },
   {
     id: "5",
     name: "Resume Product Manager",
-    category: "Product Manager",
     year: 2022,
     created: "20 Des 2024, 09:00",
     updated: "20 Des 2024, 09:00",
     status: "Draft",
     score: 58,
     lang: "id",
+    visibility: "private",
+    owner: "dian permata",
   },
   {
     id: "6",
     name: "CV Fresh Graduate",
-    category: "Fresh Graduate",
     year: 2025,
     created: "16 Jan 2025, 08:45",
     updated: "16 Jan 2025, 18:20",
     status: "Completed",
     score: 84,
     lang: "en",
+    visibility: "public",
+    owner: "rini susanti",
   },
   {
     id: "7",
     name: "CV React Developer",
-    category: "Frontend",
     year: 2024,
     created: "28 Des 2024, 15:20",
     updated: "03 Jan 2025, 11:30",
     status: "Completed",
     score: 85,
     lang: "en",
+    visibility: "public",
+    owner: "bambang setiawan",
   },
   {
     id: "8",
     name: "Portfolio Machine Learning Engineer",
-    category: "Data",
     year: 2025,
     created: "20 Des 2024, 10:15",
     updated: "20 Des 2024, 10:15",
     status: "Draft",
     score: 78,
     lang: "id",
+    visibility: "private",
+    owner: "lina mariani",
   },
   {
     id: "9",
     name: "Resume DevOps Engineer",
-    category: "Backend",
     year: 2024,
     created: "18 Des 2024, 14:45",
     updated: "22 Des 2024, 16:20",
     status: "Completed",
     score: 92,
     lang: "en",
+    visibility: "public",
+    owner: "yusuf hidayat",
   },
   {
     id: "10",
     name: "CV Senior Frontend",
-    category: "Frontend",
     year: 2023,
     created: "15 Des 2024, 09:30",
     updated: "15 Des 2024, 09:30",
     status: "Draft",
     score: 88,
     lang: "id",
+    visibility: "private",
+    owner: "sari utami",
   },
   {
     id: "11",
     name: "Portfolio UX Researcher",
-    category: "UI/UX",
     year: 2025,
     created: "12 Des 2024, 13:15",
     updated: "18 Des 2024, 10:45",
     status: "Completed",
     score: 76,
     lang: "en",
+    visibility: "public",
+    owner: "dedi supriyadi",
   },
   {
     id: "12",
     name: "Resume Full Stack Developer",
-    category: "Frontend",
     year: 2024,
     created: "10 Des 2024, 16:30",
     updated: "10 Des 2024, 16:30",
     status: "Draft",
     score: 82,
     lang: "id",
+    visibility: "private",
+    owner: "fitri handayani",
   },
   {
     id: "13",
     name: "CV Data Analyst",
-    category: "Data",
     year: 2025,
     created: "08 Des 2024, 11:20",
     updated: "14 Des 2024, 15:30",
     status: "Completed",
     score: 74,
     lang: "id",
+    visibility: "public",
+    owner: "andi saputra",
   },
   {
     id: "14",
     name: "Portfolio Mobile Developer",
-    category: "Frontend",
     year: 2024,
     created: "05 Des 2024, 14:45",
     updated: "05 Des 2024, 14:45",
     status: "Draft",
     score: 79,
     lang: "en",
+    visibility: "private",
+    owner: "nurul aini",
   },
   {
     id: "15",
     name: "Resume Software Architect",
-    category: "Backend",
     year: 2023,
     created: "03 Des 2024, 09:15",
     updated: "07 Des 2024, 12:20",
     status: "Completed",
     score: 95,
     lang: "en",
+    visibility: "public",
+    owner: "roni gunawan",
   },
   {
     id: "16",
     name: "CV Technical Product Manager",
-    category: "Product Manager",
     year: 2025,
     created: "01 Des 2024, 17:30",
     updated: "01 Des 2024, 17:30",
     status: "Draft",
     score: 83,
     lang: "id",
+    visibility: "private",
+    owner: "eka putra",
   },
   {
     id: "17",
     name: "Portfolio AI Engineer",
-    category: "Data",
     year: 2024,
     created: "28 Nov 2024, 10:45",
     updated: "30 Nov 2024, 14:15",
     status: "Completed",
     score: 91,
     lang: "en",
+    visibility: "public",
+    owner: "fajar ramadhan",
   },
   {
     id: "18",
     name: "Resume QA Engineer",
-    category: "Backend",
     year: 2025,
     created: "25 Nov 2024, 16:20",
     updated: "25 Nov 2024, 16:20",
     status: "Draft",
     score: 67,
     lang: "id",
+    visibility: "private",
+    owner: "tini lestari",
   },
 ];
 
@@ -250,9 +275,9 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
+  const [cvs, setCvs] = useState(dummyCVs);
   const [filters, setFilters] = useState({
     status: "Semua Status",
-    category: "Semua Kategori",
     year: "Semua Tahun",
     scoreRange: [1, 100],
   });
@@ -271,7 +296,7 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
     setCurrentPage(1);
   }, [searchQuery, filters]);
 
-  const filteredCVs = dummyCVs.filter((cv) => {
+  const filteredCVs = cvs.filter((cv) => {
     const matchesSearch = cv.name
       .toLowerCase()
       .includes(searchQuery.toLowerCase());
@@ -279,20 +304,12 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
       filters.status === "Semua Status" ||
       (filters.status === "Selesai" && cv.status === "Completed") ||
       (filters.status === "Draft" && cv.status === "Draft");
-    const matchesCategory =
-      filters.category === "Semua Kategori" || cv.category === filters.category;
     const matchesYear =
       filters.year === "Semua Tahun" || cv.year.toString() === filters.year;
     const matchesScore =
       cv.score >= filters.scoreRange[0] && cv.score <= filters.scoreRange[1];
 
-    return (
-      matchesSearch &&
-      matchesStatus &&
-      matchesCategory &&
-      matchesYear &&
-      matchesScore
-    );
+    return matchesSearch && matchesStatus && matchesYear && matchesScore;
   });
 
   const totalPages = Math.ceil(filteredCVs.length / itemsPerPage);
@@ -300,12 +317,12 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
   const paginatedCVs = filteredCVs.slice(startIndex, startIndex + itemsPerPage);
 
   const stats = {
-    total: dummyCVs.length,
+    total: cvs.length,
     avgScore: Math.round(
-      dummyCVs.reduce((sum, cv) => sum + cv.score, 0) / dummyCVs.length
+      cvs.reduce((sum, cv) => sum + cv.score, 0) / (cvs.length || 1)
     ),
-    completed: dummyCVs.filter((cv) => cv.status === "Completed").length,
-    drafted: dummyCVs.filter((cv) => cv.status === "Draft").length,
+    completed: cvs.filter((cv) => cv.status === "Completed").length,
+    drafted: cvs.filter((cv) => cv.status === "Draft").length,
   };
 
   const handleLanguageSelect = (lang: "id" | "en") => {
@@ -320,7 +337,7 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
   const handleCVAction = (action: string, cv: CVData) => {
     switch (action) {
       case "preview":
-        console.log("Preview CV:", cv.name);
+        router.push(`/cv/${cv.id}`);
         break;
       case "download":
         console.log("Download PDF:", cv.name);
@@ -342,21 +359,36 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
     navigator.clipboard
       .writeText(shareUrl)
       .then(() => {
-        toast.success(`Link CV "${cv.name}" berhasil disalin ke clipboard!`, {
+        toast.success(`Link CV "${cv.name}" berhasil disalin!`, {
           description:
-            "Link dapat dibagikan ke siapa saja untuk melihat CV Anda dalam mode read-only",
+            cv.visibility === "public"
+              ? "Link dapat dibagikan ke siapa saja."
+              : "CV ini privat. Ubah ke publik agar dapat dilihat orang lain.",
         });
       })
       .catch(() => {
-        toast.error("Gagal menyalin link", {
-          description: "Silakan coba lagi atau gunakan cara manual",
-        });
+        toast.error("Gagal menyalin link.");
       });
+  };
+
+  const handleVisibilityChange = (
+    cvId: string,
+    visibility: "public" | "private"
+  ) => {
+    setCvs((prevCvs) =>
+      prevCvs.map((cv) => (cv.id === cvId ? { ...cv, visibility } : cv))
+    );
+    toast.success("Visibilitas CV berhasil diubah!", {
+      description: `CV kini diatur sebagai ${
+        visibility === "public" ? "Publik" : "Privat"
+      }.`,
+    });
   };
 
   const handleDeleteConfirm = () => {
     if (deleteModal.cv) {
-      console.log("Delete CV:", deleteModal.cv.name);
+      setCvs((prev) => prev.filter((cv) => cv.id !== deleteModal.cv!.id));
+      toast.success(`CV "${deleteModal.cv.name}" telah dihapus.`);
       setDeleteModal({ isOpen: false, cv: null });
     }
   };
@@ -364,7 +396,6 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
   const resetFilters = () => {
     setFilters({
       status: "Semua Status",
-      category: "Semua Kategori",
       year: "Semua Tahun",
       scoreRange: [1, 100],
     });
@@ -496,6 +527,7 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
                   onUpdate={(cv) => handleCVAction("update", cv)}
                   onDelete={(cv) => handleCVAction("delete", cv)}
                   onShare={(cv) => handleCVAction("share", cv)}
+                  onVisibilityChange={handleVisibilityChange}
                 />
               ))}
             </div>
@@ -509,6 +541,7 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
                   onUpdate={(cv) => handleCVAction("update", cv)}
                   onDelete={(cv) => handleCVAction("delete", cv)}
                   onShare={(cv) => handleCVAction("share", cv)}
+                  onVisibilityChange={handleVisibilityChange}
                 />
               </div>
             </div>

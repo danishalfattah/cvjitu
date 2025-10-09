@@ -72,7 +72,7 @@ export default function Page() {
         onLogout={handleLogout}
         onDashboard={() => router.push("/dashboard")}
       />
-      <div className="pt-20">
+      <div className="pt-17 ">
         <HeroSection
           onFileUpload={handleCVUpload}
           isProcessing={isProcessingCV}

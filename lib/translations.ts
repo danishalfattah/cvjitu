@@ -99,6 +99,11 @@ const translations: { [key: string]: TranslationEntry } = {
   previewSkills: { id: "Keahlian", en: "Skills" },
   previewNow: { id: "Sekarang", en: "Now" },
   previewGpa: { id: "IPK", en: "GPA" },
+  
+
+  //CVPreviewPage
+  previewLangID: { id: "Bahasa Indonesia", en: "Indonesian" },
+  previewLangEN: { id: "English", en: "English" },
 };
 
 export const t = (key: string, lang: Language): string => {

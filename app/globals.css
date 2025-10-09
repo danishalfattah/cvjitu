@@ -1,5 +1,3 @@
-/* Replace invalid @utility directives and ensure Tailwind v4.1 compiles. */
-/* Keep tokens and design exactly the same; only change is utilities definition. */
 @import "tailwindcss";
 @import "tw-animate-css";
 

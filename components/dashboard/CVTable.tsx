@@ -1,3 +1,5 @@
+// components/dashboard/CVTable.tsx
+
 import {
   Table,
   TableBody,
@@ -15,7 +17,9 @@ import {
   Trash2,
   Eye,
   Share2,
-  MoreHorizontal, // Import ikon titik tiga
+  MoreHorizontal,
+  Globe,
+  Lock,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -23,7 +27,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
-} from "../ui/dropdown-menu"; // Import komponen DropdownMenu
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+} from "../ui/dropdown-menu";
 import { CVData } from "./CVCard";
 
 interface CVTableProps {
@@ -33,6 +42,7 @@ interface CVTableProps {
   onUpdate: (cv: CVData) => void;
   onDelete: (cv: CVData) => void;
   onShare: (cv: CVData) => void;
+  onVisibilityChange: (cvId: string, visibility: "public" | "private") => void;
 }
 
 export function CVTable({
@@ -42,6 +52,7 @@ export function CVTable({
   onUpdate,
   onDelete,
   onShare,
+  onVisibilityChange,
 }: CVTableProps) {
   const getStatusColor = (status: string) => {
     return status === "Completed"
@@ -49,25 +60,12 @@ export function CVTable({
       : "bg-[var(--warn)] text-white";
   };
 
-  const getCategoryColor = (category: string) => {
-    const colors: { [key: string]: string } = {
-      Frontend: "bg-blue-100 text-blue-800",
-      Backend: "bg-green-100 text-green-800",
-      Data: "bg-purple-100 text-purple-800",
-      "UI/UX": "bg-pink-100 text-pink-800",
-      "Product Manager": "bg-orange-100 text-orange-800",
-      "Fresh Graduate": "bg-gray-100 text-gray-800",
-    };
-    return colors[category] || "bg-gray-100 text-gray-800";
-  };
-
   return (
     <div className="bg-white rounded-lg border border-[var(--border-color)] overflow-hidden">
       <Table>
         <TableHeader>
           <TableRow className="bg-[var(--surface)]">
-            <TableHead>Nama CV</TableHead>
-            <TableHead>Kategori</TableHead>
+            <TableHead>Posisi yang Dilamar</TableHead>
             <TableHead>Tahun</TableHead>
             <TableHead>Bahasa</TableHead>
             <TableHead>Dibuat</TableHead>
@@ -81,11 +79,6 @@ export function CVTable({
           {cvs.map((cv) => (
             <TableRow key={cv.id} className="hover:bg-[var(--surface)]">
               <TableCell className="font-medium">{cv.name}</TableCell>
-              <TableCell>
-                <Badge className={getCategoryColor(cv.category)}>
-                  {cv.category}
-                </Badge>
-              </TableCell>
               <TableCell>{cv.year}</TableCell>
               <TableCell>
                 <Badge variant="outline">
@@ -103,7 +96,6 @@ export function CVTable({
                 <RadialScore score={cv.score} size="sm" showLabel={false} />
               </TableCell>
               <TableCell className="text-right">
-                {/* === PERUBAHAN DI SINI === */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="sm">
@@ -127,6 +119,36 @@ export function CVTable({
                       <Share2 className="w-4 h-4 mr-2" />
                       Bagikan
                     </DropdownMenuItem>
+                    <DropdownMenuSub>
+                      <DropdownMenuSubTrigger>
+                        {cv.visibility === "public" ? (
+                          <Globe className="w-4 h-4 mr-2" />
+                        ) : (
+                          <Lock className="w-4 h-4 mr-2" />
+                        )}
+                        Atur Privasi
+                      </DropdownMenuSubTrigger>
+                      <DropdownMenuSubContent>
+                        <DropdownMenuRadioGroup
+                          value={cv.visibility}
+                          onValueChange={(value) =>
+                            onVisibilityChange(
+                              cv.id,
+                              value as "public" | "private"
+                            )
+                          }
+                        >
+                          <DropdownMenuRadioItem value="public">
+                            <Globe className="w-4 h-4 mr-2" />
+                            Publik
+                          </DropdownMenuRadioItem>
+                          <DropdownMenuRadioItem value="private">
+                            <Lock className="w-4 h-4 mr-2" />
+                            Privat
+                          </DropdownMenuRadioItem>
+                        </DropdownMenuRadioGroup>
+                      </DropdownMenuSubContent>
+                    </DropdownMenuSub>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onClick={() => onDelete(cv)}
@@ -137,7 +159,6 @@ export function CVTable({
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-                {/* === AKHIR PERUBAHAN === */}
               </TableCell>
             </TableRow>
           ))}
