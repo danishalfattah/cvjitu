@@ -4,25 +4,29 @@ import { Textarea } from "../../ui/textarea";
 import { Button } from "../../ui/button";
 import { Sparkles } from "lucide-react";
 import { CVBuilderData } from "../types";
+import { t, type Language } from "@/lib/translations";
 
 interface SummaryStepProps {
   data: CVBuilderData;
   onUpdate: (updates: Partial<CVBuilderData>) => void;
+  lang: Language;
 }
 
-export function SummaryStep({ data, onUpdate }: SummaryStepProps) {
+export function SummaryStep({ data, onUpdate, lang }: SummaryStepProps) {
   const [isGenerating, setIsGenerating] = useState(false);
 
   const generateSummary = async () => {
     setIsGenerating(true);
 
-    // Simulate AI generation based on existing data
     setTimeout(() => {
       const jobTitle = data.jobTitle || "Professional";
       const yearsOfExperience = data.workExperiences.length;
       const topSkills = data.skills.slice(0, 3).join(", ");
 
-      const generatedSummary = `Experienced ${jobTitle} with ${yearsOfExperience}+ years of proven track record in delivering high-quality solutions. Skilled in ${topSkills} with a passion for innovation and continuous learning. Demonstrated ability to work effectively in cross-functional teams and drive projects to successful completion. Strong problem-solving skills and commitment to excellence in all endeavors.`;
+      const generatedSummary =
+        lang === "id"
+          ? `Berpengalaman sebagai ${jobTitle} dengan rekam jejak ${yearsOfExperience}+ tahun dalam memberikan solusi berkualitas tinggi. Terampil dalam ${topSkills} dengan semangat untuk inovasi dan pembelajaran berkelanjutan.`
+          : `Experienced ${jobTitle} with ${yearsOfExperience}+ years of proven track record in delivering high-quality solutions. Skilled in ${topSkills} with a passion for innovation and continuous learning.`;
 
       onUpdate({ summary: generatedSummary });
       setIsGenerating(false);
@@ -38,15 +42,11 @@ export function SummaryStep({ data, onUpdate }: SummaryStepProps) {
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-sm text-gray-600 mb-4">
-          Tulis ringkasan profesional yang menarik dan menyoroti kekuatan utama
-          serta tujuan karir Anda.
-        </p>
+        <p className="text-sm text-gray-600 mb-4">{t("summaryDesc", lang)}</p>
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <p className="text-sm text-blue-800">
-            <strong>Tips:</strong> Ringkasan yang baik terdiri dari 50-100 kata
-            dan mencakup posisi Anda, pengalaman kerja, keahlian utama, dan
-            keunikan Anda.
+            <strong>{t("summaryTip", lang).split(":")[0]}:</strong>
+            {t("summaryTip", lang).split(":")[1]}
           </p>
         </div>
       </div>
@@ -54,7 +54,7 @@ export function SummaryStep({ data, onUpdate }: SummaryStepProps) {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <Label htmlFor="summary" className="text-sm font-medium">
-            Ringkasan Profesional
+            {t("professionalSummaryLabel", lang)}
           </Label>
           <Button
             type="button"
@@ -65,13 +65,15 @@ export function SummaryStep({ data, onUpdate }: SummaryStepProps) {
             className="border-[var(--red-normal)] text-[var(--red-normal)] hover:bg-[var(--red-light)]"
           >
             <Sparkles className="w-4 h-4 mr-2" />
-            {isGenerating ? "Membuat..." : "Buat Ringkasan"}
+            {isGenerating
+              ? t("generatingSummaryButton", lang)
+              : t("generateSummaryButton", lang)}
           </Button>
         </div>
 
         <Textarea
           id="summary"
-          placeholder="Tulis ringkasan profesional singkat tentang diri Anda, pengalaman, dan tujuan karir..."
+          placeholder={t("summaryPlaceholder", lang)}
           value={data.summary}
           onChange={(e) => onUpdate({ summary: e.target.value })}
           className="border-2 border-gray-300 focus:border-[var(--red-normal)] transition-colors min-h-[150px]"
@@ -79,7 +81,10 @@ export function SummaryStep({ data, onUpdate }: SummaryStepProps) {
         />
 
         <div className="flex items-center justify-between text-xs text-gray-500">
-          <span>Disarankan: {recommendedRange} kata</span>
+          <span>
+            {t("wordCountRecommended", lang)}: {recommendedRange}{" "}
+            {t("wordCount", lang)}
+          </span>
           <span
             className={`${
               wordCount >= 50 && wordCount <= 100
@@ -89,30 +94,10 @@ export function SummaryStep({ data, onUpdate }: SummaryStepProps) {
                 : "text-gray-500"
             }`}
           >
-            {wordCount} kata
+            {wordCount} {t("wordCount", lang)}
           </span>
         </div>
       </div>
-
-      {data.summary && (
-        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-          <Label className="text-sm font-medium text-gray-700 mb-2 block">
-            Pratinjau
-          </Label>
-          <p className="text-sm text-gray-800 leading-relaxed">
-            {data.summary}
-          </p>
-        </div>
-      )}
-
-      {!data.summary && (
-        <div className="text-center py-8 text-gray-500 border border-dashed border-gray-300 rounded-lg">
-          <p>Belum ada ringkasan yang ditulis.</p>
-          <p className="text-sm">
-            Gunakan "Buat Ringkasan" untuk bantuan AI atau tulis sendiri.
-          </p>
-        </div>
-      )}
     </div>
   );
 }

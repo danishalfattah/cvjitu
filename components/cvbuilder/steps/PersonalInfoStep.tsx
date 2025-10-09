@@ -1,20 +1,25 @@
 import { Input } from "../../ui/input";
 import { Label } from "../../ui/label";
 import { CVBuilderData } from "../types";
+import { t, type Language } from "@/lib/translations";
 
 interface PersonalInfoStepProps {
   data: CVBuilderData;
   onUpdate: (updates: Partial<CVBuilderData>) => void;
+  lang: Language;
 }
 
-export function PersonalInfoStep({ data, onUpdate }: PersonalInfoStepProps) {
+export function PersonalInfoStep({
+  data,
+  onUpdate,
+  lang,
+}: PersonalInfoStepProps) {
   return (
     <div className="space-y-6">
-      {/* Name Fields */}
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="firstName" className="text-sm font-medium">
-            First Name <span className="text-red-500">*</span>
+            {t("firstNameLabel", lang)} <span className="text-red-500">*</span>
           </Label>
           <Input
             id="firstName"
@@ -27,7 +32,7 @@ export function PersonalInfoStep({ data, onUpdate }: PersonalInfoStepProps) {
         </div>
         <div className="space-y-2">
           <Label htmlFor="lastName" className="text-sm font-medium">
-            Last Name <span className="text-red-500">*</span>
+            {t("lastNameLabel", lang)} <span className="text-red-500">*</span>
           </Label>
           <Input
             id="lastName"
@@ -40,11 +45,10 @@ export function PersonalInfoStep({ data, onUpdate }: PersonalInfoStepProps) {
         </div>
       </div>
 
-      {/* Contact Information */}
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="email" className="text-sm font-medium">
-            Email <span className="text-red-500">*</span>
+            {t("emailLabel", lang)} <span className="text-red-500">*</span>
           </Label>
           <Input
             id="email"
@@ -57,7 +61,7 @@ export function PersonalInfoStep({ data, onUpdate }: PersonalInfoStepProps) {
         </div>
         <div className="space-y-2">
           <Label htmlFor="phone" className="text-sm font-medium">
-            Phone Number
+            {t("phoneLabel", lang)}
           </Label>
           <Input
             id="phone"
@@ -70,10 +74,9 @@ export function PersonalInfoStep({ data, onUpdate }: PersonalInfoStepProps) {
         </div>
       </div>
 
-      {/* Location */}
       <div className="space-y-2">
         <Label htmlFor="location" className="text-sm font-medium">
-          Location
+          {t("locationLabel", lang)}
         </Label>
         <Input
           id="location"
@@ -85,11 +88,10 @@ export function PersonalInfoStep({ data, onUpdate }: PersonalInfoStepProps) {
         />
       </div>
 
-      {/* LinkedIn and Website */}
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="linkedin" className="text-sm font-medium">
-            LinkedIn Profile
+            {t("linkedinLabel", lang)}
           </Label>
           <Input
             id="linkedin"
@@ -102,7 +104,7 @@ export function PersonalInfoStep({ data, onUpdate }: PersonalInfoStepProps) {
         </div>
         <div className="space-y-2">
           <Label htmlFor="website" className="text-sm font-medium">
-            Website/Portfolio
+            {t("websiteLabel", lang)}
           </Label>
           <Input
             id="website"

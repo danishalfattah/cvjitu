@@ -1,4 +1,7 @@
+"use client";
+
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import {
@@ -16,6 +19,14 @@ import { CVTable } from "./CVTable";
 import { EmptyState } from "./EmptyState";
 import { DeleteConfirmModal } from "./DeleteConfirmModal";
 import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+} from "./ui/alert-dialog";
+import {
   Search,
   Plus,
   Grid,
@@ -24,11 +35,9 @@ import {
   TrendingUp,
   CheckCircle,
   Edit3,
-  Router,
 } from "lucide-react";
 import { toast } from "sonner";
 
-// Dummy data
 const dummyCVs: CVData[] = [
   {
     id: "1",
@@ -213,10 +222,11 @@ const dummyCVs: CVData[] = [
 ];
 
 interface DashboardProps {
-  onCreateCV?: () => void;
+  onCreateCV?: (lang: "id" | "en") => void;
 }
 
 export function Dashboard({ onCreateCV }: DashboardProps) {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
   const [filters, setFilters] = useState({
@@ -233,14 +243,13 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
     cv: null,
   });
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 8; // Increased for better grid layout
+  const itemsPerPage = 8;
+  const [isLangModalOpen, setIsLangModalOpen] = useState(false);
 
-  // Reset to page 1 when filters or search change
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery, filters]);
 
-  // Filter CVs based on search and filters
   const filteredCVs = dummyCVs.filter((cv) => {
     const matchesSearch = cv.name
       .toLowerCase()
@@ -265,12 +274,10 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
     );
   });
 
-  // Pagination
   const totalPages = Math.ceil(filteredCVs.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedCVs = filteredCVs.slice(startIndex, startIndex + itemsPerPage);
 
-  // Statistics
   const stats = {
     total: dummyCVs.length,
     avgScore: Math.round(
@@ -280,11 +287,12 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
     drafted: dummyCVs.filter((cv) => cv.status === "Draft").length,
   };
 
-  const handleCreateCV = () => {
+  const handleLanguageSelect = (lang: "id" | "en") => {
+    setIsLangModalOpen(false);
     if (onCreateCV) {
-      onCreateCV();
+      onCreateCV(lang);
     } else {
-      console.log("Navigate to CV builder");
+      router.push(`/cv-builder?lang=${lang}`);
     }
   };
 
@@ -292,15 +300,12 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
     switch (action) {
       case "preview":
         console.log("Preview CV:", cv.name);
-        // TODO: Open CV preview modal or navigate to preview page
         break;
       case "download":
         console.log("Download PDF:", cv.name);
-        // TODO: Generate and download PDF
         break;
       case "update":
         console.log("Edit CV:", cv.name);
-        // TODO: Navigate to CV editor
         break;
       case "share":
         handleShareCV(cv);
@@ -347,7 +352,6 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
 
   return (
     <div className="flex-1 p-4 sm:p-6 bg-[var(--surface)] min-h-screen">
-      {/* Page Header */}
       <div className="mb-6 sm:mb-8">
         <div className="flex items-center space-x-2 text-sm text-gray-500 mb-2">
           <span>Pages</span>
@@ -359,7 +363,6 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
         </h1>
       </div>
 
-      {/* Statistics */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
         <StatTile
           title="CV Dibuat"
@@ -387,14 +390,12 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
         />
       </div>
 
-      {/* Filters */}
       <CVFilters
         filters={filters}
         onFiltersChange={setFilters}
         onReset={resetFilters}
       />
 
-      {/* Search Bar & Create CV Button Row */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mb-6">
         <div className="flex items-center space-x-4 flex-1 w-full sm:w-auto">
           <div className="relative flex-1 max-w-full sm:max-w-md">
@@ -408,7 +409,7 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
           </div>
         </div>
         <Button
-          onClick={handleCreateCV}
+          onClick={() => setIsLangModalOpen(true)}
           className="bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white w-full sm:w-auto"
         >
           <Plus className="w-4 h-4 mr-2" />
@@ -416,7 +417,6 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
         </Button>
       </div>
 
-      {/* View Toggle & Results */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0 mb-6">
         <div className="flex items-center">
           <span className="text-xs sm:text-sm text-gray-600">
@@ -453,14 +453,13 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
         </div>
       </div>
 
-      {/* CV List */}
       {paginatedCVs.length === 0 ? (
         <EmptyState
           title="CV Tidak Ditemukan"
           description="Tidak ada CV yang sesuai dengan filter Anda. Coba sesuaikan kriteria pencarian atau buat CV baru untuk memulai."
           action={{
             label: "Buat CV Pertama Anda",
-            onClick: handleCreateCV,
+            onClick: () => setIsLangModalOpen(true),
           }}
         />
       ) : (
@@ -494,7 +493,6 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
             </div>
           )}
 
-          {/* Pagination */}
           {totalPages > 1 && (
             <div className="mt-8">
               <Pagination className="justify-center">
@@ -511,96 +509,21 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
                       } transition-colors`}
                     />
                   </PaginationItem>
-
-                  {/* Smart pagination for mobile */}
-                  {totalPages <= 7 ? (
-                    // Show all pages if 7 or fewer
-                    Array.from({ length: totalPages }, (_, i) => (
-                      <PaginationItem key={i + 1}>
-                        <PaginationLink
-                          onClick={() => setCurrentPage(i + 1)}
-                          isActive={currentPage === i + 1}
-                          className={`cursor-pointer transition-colors ${
-                            currentPage === i + 1
-                              ? "bg-[var(--red-normal)] text-white hover:bg-[var(--red-normal-hover)]"
-                              : "hover:bg-[var(--red-light)] hover:text-[var(--red-normal)]"
-                          }`}
-                        >
-                          {i + 1}
-                        </PaginationLink>
-                      </PaginationItem>
-                    ))
-                  ) : (
-                    // Smart truncation for many pages
-                    <>
-                      {/* First page */}
-                      <PaginationItem>
-                        <PaginationLink
-                          onClick={() => setCurrentPage(1)}
-                          isActive={currentPage === 1}
-                          className={`cursor-pointer transition-colors ${
-                            currentPage === 1
-                              ? "bg-[var(--red-normal)] text-white hover:bg-[var(--red-normal-hover)]"
-                              : "hover:bg-[var(--red-light)] hover:text-[var(--red-normal)]"
-                          }`}
-                        >
-                          1
-                        </PaginationLink>
-                      </PaginationItem>
-
-                      {/* Left ellipsis */}
-                      {currentPage > 3 && (
-                        <PaginationItem>
-                          <span className="px-3 py-2 text-gray-500">...</span>
-                        </PaginationItem>
-                      )}
-
-                      {/* Current page area */}
-                      {Array.from({ length: 3 }, (_, i) => {
-                        const pageNum = currentPage - 1 + i;
-                        if (pageNum < 2 || pageNum > totalPages - 1)
-                          return null;
-                        return (
-                          <PaginationItem key={pageNum}>
-                            <PaginationLink
-                              onClick={() => setCurrentPage(pageNum)}
-                              isActive={currentPage === pageNum}
-                              className={`cursor-pointer transition-colors ${
-                                currentPage === pageNum
-                                  ? "bg-[var(--red-normal)] text-white hover:bg-[var(--red-normal-hover)]"
-                                  : "hover:bg-[var(--red-light)] hover:text-[var(--red-normal)]"
-                              }`}
-                            >
-                              {pageNum}
-                            </PaginationLink>
-                          </PaginationItem>
-                        );
-                      })}
-
-                      {/* Right ellipsis */}
-                      {currentPage < totalPages - 2 && (
-                        <PaginationItem>
-                          <span className="px-3 py-2 text-gray-500">...</span>
-                        </PaginationItem>
-                      )}
-
-                      {/* Last page */}
-                      <PaginationItem>
-                        <PaginationLink
-                          onClick={() => setCurrentPage(totalPages)}
-                          isActive={currentPage === totalPages}
-                          className={`cursor-pointer transition-colors ${
-                            currentPage === totalPages
-                              ? "bg-[var(--red-normal)] text-white hover:bg-[var(--red-normal-hover)]"
-                              : "hover:bg-[var(--red-light)] hover:text-[var(--red-normal)]"
-                          }`}
-                        >
-                          {totalPages}
-                        </PaginationLink>
-                      </PaginationItem>
-                    </>
-                  )}
-
+                  {Array.from({ length: totalPages }, (_, i) => (
+                    <PaginationItem key={i + 1}>
+                      <PaginationLink
+                        onClick={() => setCurrentPage(i + 1)}
+                        isActive={currentPage === i + 1}
+                        className={`cursor-pointer transition-colors ${
+                          currentPage === i + 1
+                            ? "bg-[var(--red-normal)] text-white hover:bg-[var(--red-normal-hover)]"
+                            : "hover:bg-[var(--red-light)] hover:text-[var(--red-normal)]"
+                        }`}
+                      >
+                        {i + 1}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ))}
                   <PaginationItem>
                     <PaginationNext
                       onClick={() =>
@@ -615,8 +538,6 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
                   </PaginationItem>
                 </PaginationContent>
               </Pagination>
-
-              {/* Pagination Info */}
               <div className="text-center mt-4">
                 <p className="text-sm text-gray-600">
                   Halaman {currentPage} dari {totalPages} • {startIndex + 1}-
@@ -629,13 +550,40 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
         </>
       )}
 
-      {/* Delete Confirmation Modal */}
       <DeleteConfirmModal
         isOpen={deleteModal.isOpen}
         onClose={() => setDeleteModal({ isOpen: false, cv: null })}
         onConfirm={handleDeleteConfirm}
         cv={deleteModal.cv}
       />
+
+      <AlertDialog open={isLangModalOpen} onOpenChange={setIsLangModalOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Pilih Bahasa CV</AlertDialogTitle>
+            <AlertDialogDescription>
+              Silakan pilih bahasa yang ingin Anda gunakan untuk membuat CV
+              baru. Seluruh form dan template akan disesuaikan dengan pilihan
+              Anda.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="sm:justify-center gap-4">
+            <Button
+              variant="outline"
+              onClick={() => handleLanguageSelect("id")}
+              className="w-full sm:w-auto border-[var(--red-normal)] text-[var(--red-normal)] hover:bg-[var(--red-light)]"
+            >
+              Bahasa Indonesia
+            </Button>
+            <Button
+              onClick={() => handleLanguageSelect("en")}
+              className="w-full sm:w-auto bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white"
+            >
+              English
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

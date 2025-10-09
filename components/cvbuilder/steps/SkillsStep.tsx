@@ -5,13 +5,15 @@ import { Button } from "../../ui/button";
 import { Badge } from "../../ui/badge";
 import { Plus, X } from "lucide-react";
 import { CVBuilderData } from "../types";
+import { t, type Language } from "@/lib/translations";
 
 interface SkillsStepProps {
   data: CVBuilderData;
   onUpdate: (updates: Partial<CVBuilderData>) => void;
+  lang: Language;
 }
 
-export function SkillsStep({ data, onUpdate }: SkillsStepProps) {
+export function SkillsStep({ data, onUpdate, lang }: SkillsStepProps) {
   const [skillInput, setSkillInput] = useState("");
 
   const addSkill = () => {
@@ -66,18 +68,17 @@ export function SkillsStep({ data, onUpdate }: SkillsStepProps) {
 
   return (
     <div className="space-y-6">
-      <p className="text-sm text-gray-600">
-        Daftarkan keahlian teknis dan soft skill yang relevan dengan posisi yang
-        Anda targetkan.
-      </p>
+      <p className="text-sm text-gray-600">{t("skillsDesc", lang)}</p>
 
       <div className="space-y-4">
-        <Label className="text-sm font-medium">Tambah Keahlian</Label>
+        <Label className="text-sm font-medium">
+          {t("addSkillLabel", lang)}
+        </Label>
 
         <div className="flex items-center space-x-2">
           <div className="flex-1">
             <Input
-              placeholder="Ketik keahlian dan tekan Enter atau klik Tambah"
+              placeholder={t("addSkillPlaceholder", lang)}
               value={skillInput}
               onChange={(e) => setSkillInput(e.target.value)}
               onKeyPress={handleKeyPress}
@@ -90,14 +91,16 @@ export function SkillsStep({ data, onUpdate }: SkillsStepProps) {
             className="bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white"
           >
             <Plus className="w-4 h-4 mr-2" />
-            Tambah
+            {t("addButton", lang)}
           </Button>
         </div>
       </div>
 
       {data.skills.length > 0 && (
         <div className="space-y-4">
-          <Label className="text-sm font-medium">Keahlian Anda</Label>
+          <Label className="text-sm font-medium">
+            {t("yourSkillsLabel", lang)}
+          </Label>
           <div className="flex flex-wrap gap-2">
             {data.skills.map((skill, index) => (
               <Badge
@@ -120,9 +123,11 @@ export function SkillsStep({ data, onUpdate }: SkillsStepProps) {
 
       {availableSuggestions.length > 0 && (
         <div className="space-y-4">
-          <Label className="text-sm font-medium">Saran Keahlian</Label>
+          <Label className="text-sm font-medium">
+            {t("suggestedSkillsLabel", lang)}
+          </Label>
           <p className="text-xs text-gray-500">
-            Klik untuk menambahkan keahlian populer ini
+            {t("clickToAddSuggestion", lang)}
           </p>
           <div className="flex flex-wrap gap-2">
             {availableSuggestions.slice(0, 12).map((skill, index) => (
@@ -144,10 +149,7 @@ export function SkillsStep({ data, onUpdate }: SkillsStepProps) {
 
       {data.skills.length === 0 && (
         <div className="text-center py-8 text-gray-500 border border-dashed border-gray-300 rounded-lg">
-          <p>Belum ada keahlian yang ditambahkan.</p>
-          <p className="text-sm">
-            Tambahkan keahlian yang relevan dengan posisi target Anda.
-          </p>
+          <p>{t("noSkillsYet", lang)}</p>
         </div>
       )}
     </div>

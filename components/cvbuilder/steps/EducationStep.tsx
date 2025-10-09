@@ -6,12 +6,14 @@ import { Checkbox } from "../../ui/checkbox";
 import { Card, CardContent, CardHeader } from "../../ui/card";
 import { Plus, Trash2, Calendar } from "lucide-react";
 import { CVBuilderData, Education } from "../types";
+import { t, type Language } from "@/lib/translations";
 
 interface EducationStepProps {
   data: CVBuilderData;
   onAddEducation: () => void;
   onUpdateEducation: (id: string, updates: Partial<Education>) => void;
   onRemoveEducation: (id: string) => void;
+  lang: Language;
 }
 
 export function EducationStep({
@@ -19,26 +21,25 @@ export function EducationStep({
   onAddEducation,
   onUpdateEducation,
   onRemoveEducation,
+  lang,
 }: EducationStepProps) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-600">
-          Add your educational background and qualifications.
-        </p>
+        <p className="text-sm text-gray-600">{t("educationDesc", lang)}</p>
         <Button
           onClick={onAddEducation}
           className="bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white"
         >
           <Plus className="w-4 h-4 mr-2" />
-          Add Education
+          {t("addEducationButton", lang)}
         </Button>
       </div>
 
       {data.educations.length === 0 && (
         <div className="text-center py-8 text-gray-500">
-          <p>No education added yet.</p>
-          <p className="text-sm">Click "Add Education" to get started.</p>
+          <p>{t("noEducationYet", lang)}</p>
+          <p className="text-sm">{t("clickToAddEducation", lang)}</p>
         </div>
       )}
 
@@ -55,7 +56,7 @@ export function EducationStep({
                 </span>
               </div>
               <h3 className="font-semibold text-[var(--neutral-ink)]">
-                Education {index + 1}
+                {t("educationTitle", lang)} {index + 1}
               </h3>
             </div>
             <Button
@@ -74,18 +75,16 @@ export function EducationStep({
                 htmlFor={`degree-${education.id}`}
                 className="text-sm font-medium"
               >
-                Degree <span className="text-red-500">*</span>
+                {t("degreeLabel", lang)} <span className="text-red-500">*</span>
               </Label>
               <Input
                 id={`degree-${education.id}`}
-                placeholder="e.g. Bachelor of Science in Computer Science"
                 value={education.degree}
                 onChange={(e) =>
                   onUpdateEducation(education.id, { degree: e.target.value })
                 }
                 className="border-2 border-gray-300 focus:border-[var(--red-normal)] transition-colors"
               />
-              <p className="text-xs text-gray-500">Degree name is required</p>
             </div>
 
             <div className="space-y-2">
@@ -93,11 +92,11 @@ export function EducationStep({
                 htmlFor={`institution-${education.id}`}
                 className="text-sm font-medium"
               >
-                Institution <span className="text-red-500">*</span>
+                {t("institutionLabel", lang)}{" "}
+                <span className="text-red-500">*</span>
               </Label>
               <Input
                 id={`institution-${education.id}`}
-                placeholder="e.g. University of California, Berkeley"
                 value={education.institution}
                 onChange={(e) =>
                   onUpdateEducation(education.id, {
@@ -106,9 +105,6 @@ export function EducationStep({
                 }
                 className="border-2 border-gray-300 focus:border-[var(--red-normal)] transition-colors"
               />
-              <p className="text-xs text-gray-500">
-                Institution name is required
-              </p>
             </div>
 
             <div className="space-y-2">
@@ -116,11 +112,10 @@ export function EducationStep({
                 htmlFor={`location-${education.id}`}
                 className="text-sm font-medium"
               >
-                Location
+                {t("locationLabel", lang)}
               </Label>
               <Input
                 id={`location-${education.id}`}
-                placeholder="e.g. Berkeley, CA"
                 value={education.location}
                 onChange={(e) =>
                   onUpdateEducation(education.id, { location: e.target.value })
@@ -135,14 +130,13 @@ export function EducationStep({
                   htmlFor={`startDate-${education.id}`}
                   className="text-sm font-medium"
                 >
-                  Tanggal Mulai
+                  {t("startDateLabel", lang)}
                 </Label>
                 <div className="relative">
                   <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <Input
                     id={`startDate-${education.id}`}
                     type="month"
-                    placeholder="Pilih tanggal"
                     value={education.startDate}
                     onChange={(e) =>
                       onUpdateEducation(education.id, {
@@ -159,14 +153,13 @@ export function EducationStep({
                   htmlFor={`endDate-${education.id}`}
                   className="text-sm font-medium"
                 >
-                  Tanggal Selesai
+                  {t("endDateLabel", lang)}
                 </Label>
                 <div className="relative">
                   <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <Input
                     id={`endDate-${education.id}`}
                     type="month"
-                    placeholder="Pilih tanggal"
                     value={education.endDate}
                     onChange={(e) =>
                       onUpdateEducation(education.id, {
@@ -192,7 +185,7 @@ export function EducationStep({
                 }
               />
               <Label htmlFor={`current-${education.id}`} className="text-sm">
-                Saya masih berkuliah di sini
+                {t("currentStudyLabel", lang)}
               </Label>
             </div>
 
@@ -201,11 +194,10 @@ export function EducationStep({
                 htmlFor={`gpa-${education.id}`}
                 className="text-sm font-medium"
               >
-                IPK (Opsional)
+                {t("gpaLabel", lang)}
               </Label>
               <Input
                 id={`gpa-${education.id}`}
-                placeholder="contoh: 3.8/4.0"
                 value={education.gpa || ""}
                 onChange={(e) =>
                   onUpdateEducation(education.id, { gpa: e.target.value })
@@ -219,11 +211,10 @@ export function EducationStep({
                 htmlFor={`description-${education.id}`}
                 className="text-sm font-medium"
               >
-                Deskripsi (Opsional)
+                {t("educationDescriptionLabel", lang)}
               </Label>
               <Textarea
                 id={`description-${education.id}`}
-                placeholder="Mata kuliah relevan, penghargaan, kegiatan, dll."
                 value={education.description || ""}
                 onChange={(e) =>
                   onUpdateEducation(education.id, {
