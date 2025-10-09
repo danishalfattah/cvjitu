@@ -11,17 +11,21 @@ interface User {
   email: string;
   fullName: string;
   avatar?: string;
-  provider?: 'email' | 'google';
+  provider?: "email" | "google";
 }
 
 interface DashboardLayoutProps {
   onLogout?: () => void;
   user?: User | null;
-  onCreateCV?: () => void;
+  onCreateCV?: (lang: "id" | "en") => void;
 }
 
-export function DashboardLayout({ onLogout, user, onCreateCV }: DashboardLayoutProps) {
-  const [activeTab, setActiveTab] = useState('dashboard');
+export function DashboardLayout({
+  onLogout,
+  user,
+  onCreateCV,
+}: DashboardLayoutProps) {
+  const [activeTab, setActiveTab] = useState("dashboard");
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -35,15 +39,15 @@ export function DashboardLayout({ onLogout, user, onCreateCV }: DashboardLayoutP
     };
 
     checkScreenSize();
-    window.addEventListener('resize', checkScreenSize);
-    return () => window.removeEventListener('resize', checkScreenSize);
+    window.addEventListener("resize", checkScreenSize);
+    return () => window.removeEventListener("resize", checkScreenSize);
   }, []);
 
   // Close sidebar when clicking outside on mobile
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (isMobile && isMobileSidebarOpen) {
-        const sidebar = document.getElementById('mobile-sidebar');
+        const sidebar = document.getElementById("mobile-sidebar");
         const target = event.target as Node;
         if (sidebar && !sidebar.contains(target)) {
           setIsMobileSidebarOpen(false);
@@ -51,15 +55,15 @@ export function DashboardLayout({ onLogout, user, onCreateCV }: DashboardLayoutP
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isMobile, isMobileSidebarOpen]);
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'dashboard':
+      case "dashboard":
         return <Dashboard onCreateCV={onCreateCV} />;
-      case 'scoring':
+      case "scoring":
         return <CVScoringPage />;
       default:
         return <Dashboard onCreateCV={onCreateCV} />;
@@ -77,8 +81,8 @@ export function DashboardLayout({ onLogout, user, onCreateCV }: DashboardLayoutP
     <div className="flex min-h-screen bg-[var(--surface)]">
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
-        <DashboardSidebar 
-          activeTab={activeTab} 
+        <DashboardSidebar
+          activeTab={activeTab}
           onTabChange={handleTabChange}
           onLogout={onLogout}
           user={user}
@@ -99,7 +103,7 @@ export function DashboardLayout({ onLogout, user, onCreateCV }: DashboardLayoutP
               transition={{ duration: 0.3 }}
               onClick={() => setIsMobileSidebarOpen(false)}
             />
-            
+
             {/* Mobile Sidebar */}
             <motion.div
               id="mobile-sidebar"
@@ -109,8 +113,8 @@ export function DashboardLayout({ onLogout, user, onCreateCV }: DashboardLayoutP
               exit={{ x: "-100%" }}
               transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
             >
-              <DashboardSidebar 
-                activeTab={activeTab} 
+              <DashboardSidebar
+                activeTab={activeTab}
                 onTabChange={handleTabChange}
                 onLogout={onLogout}
                 user={user}
@@ -140,10 +144,12 @@ export function DashboardLayout({ onLogout, user, onCreateCV }: DashboardLayoutP
                 <div className="w-6 h-6 bg-[var(--red-normal)] rounded-md flex items-center justify-center">
                   <span className="text-white font-semibold text-xs">CV</span>
                 </div>
-                <span className="font-poppins font-semibold text-lg text-[var(--neutral-ink)]">CVJitu</span>
+                <span className="font-poppins font-semibold text-lg text-[var(--neutral-ink)]">
+                  CVJitu
+                </span>
               </div>
             </div>
-            
+
             {/* Mobile User Info */}
             {user && (
               <div className="flex items-center space-x-2">
@@ -154,18 +160,20 @@ export function DashboardLayout({ onLogout, user, onCreateCV }: DashboardLayoutP
                 </div>
                 <div className="w-8 h-8 bg-[var(--red-normal)] rounded-full flex items-center justify-center">
                   <span className="text-white font-semibold text-xs">
-                    {user.fullName.split(' ').map(n => n[0]).join('').toUpperCase()}
+                    {user.fullName
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")
+                      .toUpperCase()}
                   </span>
                 </div>
               </div>
             )}
           </div>
         </div>
-        
+
         {/* Page Content */}
-        <div className="w-full">
-          {renderContent()}
-        </div>
+        <div className="w-full">{renderContent()}</div>
       </div>
     </div>
   );

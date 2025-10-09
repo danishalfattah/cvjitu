@@ -1,56 +1,46 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "./ui/button"
-import { Card, CardContent } from "./ui/card"
-import { Progress } from "./ui/progress"
-import { ArrowLeft, ArrowRight, Download } from "lucide-react"
-import { GeneralInfoStep } from "./cvbuilder/steps/GeneralInfoStep"
-import { PersonalInfoStep } from "./cvbuilder/steps/PersonalInfoStep"
-import { WorkExperienceStep } from "./cvbuilder/steps/WorkExperienceStep"
-import { EducationStep } from "./cvbuilder/steps/EducationStep"
-import { SkillsStep } from "./cvbuilder/steps/SkillsStep"
-import { SummaryStep } from "./cvbuilder/steps/SummaryStep"
-import { GradeStep } from "./cvbuilder/steps/GradeStep"
-import { CVPreview } from "./cvbuilder/preview/CVPreview"
-import type { CVBuilderData, WorkExperience, Education } from "./cvbuilder/types"
+import { useState } from "react";
+import { Button } from "./ui/button";
+import { Card, CardContent } from "./ui/card";
+import { Progress } from "./ui/progress";
+import { ArrowLeft, ArrowRight, Download } from "lucide-react";
+import { GeneralInfoStep } from "./cvbuilder/steps/GeneralInfoStep";
+import { PersonalInfoStep } from "./cvbuilder/steps/PersonalInfoStep";
+import { WorkExperienceStep } from "./cvbuilder/steps/WorkExperienceStep";
+import { EducationStep } from "./cvbuilder/steps/EducationStep";
+import { SkillsStep } from "./cvbuilder/steps/SkillsStep";
+import { SummaryStep } from "./cvbuilder/steps/SummaryStep";
+import { GradeStep } from "./cvbuilder/steps/GradeStep";
+import { CVPreview } from "./cvbuilder/preview/CVPreview";
+import type {
+  CVBuilderData,
+  WorkExperience,
+  Education,
+} from "./cvbuilder/types";
+import { t, type Language } from "@/lib/translations";
 
 interface CVBuilderPageProps {
-  onBack: () => void
-  onSave: (data: CVBuilderData) => void
+  onBack: () => void;
+  onSave: (data: CVBuilderData) => void;
+  lang: Language;
 }
 
 const steps = [
-  {
-    id: "general",
-    title: "General Info",
-    description: "Tell us about yourself. This information will be used to create your CV.",
-  },
-  {
-    id: "personal",
-    title: "Personal Info",
-    description: "Provide your personal information. This will be included in your CV.",
-  },
-  {
-    id: "experience",
-    title: "Work Experience",
-    description:
-      "Provide details about your work experience. This will help potential employers understand your professional background.",
-  },
-  { id: "education", title: "Education", description: "Add your educational background and qualifications." },
-  { id: "skills", title: "Skills", description: "List your technical and soft skills." },
-  { id: "summary", title: "Summary", description: "Write a professional summary about yourself." },
-  { id: "grade", title: "Grade", description: "Get AI-powered analysis and improvement suggestions for your CV." },
-]
+  { id: "general", title: "generalTitle" },
+  { id: "personal", title: "personalTitle" },
+  { id: "experience", title: "experienceTitle" },
+  { id: "education", title: "educationTitle" },
+  { id: "skills", title: "skillsTitle" },
+  { id: "summary", title: "summaryTitle" },
+  { id: "grade", title: "gradeTitle" },
+];
 
-export function CVBuilderPage({ onBack, onSave }: CVBuilderPageProps) {
-  const [currentStep, setCurrentStep] = useState(0)
+export function CVBuilderPage({ onBack, onSave, lang }: CVBuilderPageProps) {
+  const [currentStep, setCurrentStep] = useState(0);
   const [cvData, setCvData] = useState<CVBuilderData>({
-    // General Info
     jobTitle: "",
     description: "",
-
-    // Personal Info
     firstName: "",
     lastName: "",
     email: "",
@@ -58,23 +48,15 @@ export function CVBuilderPage({ onBack, onSave }: CVBuilderPageProps) {
     location: "",
     linkedin: "",
     website: "",
-
-    // Work Experience
     workExperiences: [],
-
-    // Education
     educations: [],
-
-    // Skills
     skills: [],
-
-    // Summary
     summary: "",
-  })
+  });
 
   const updateCvData = (updates: Partial<CVBuilderData>) => {
-    setCvData((prev) => ({ ...prev, ...updates }))
-  }
+    setCvData((prev) => ({ ...prev, ...updates }));
+  };
 
   const addWorkExperience = () => {
     const newExperience: WorkExperience = {
@@ -87,26 +69,31 @@ export function CVBuilderPage({ onBack, onSave }: CVBuilderPageProps) {
       current: false,
       description: "",
       achievements: [],
-    }
+    };
     setCvData((prev) => ({
       ...prev,
       workExperiences: [...prev.workExperiences, newExperience],
-    }))
-  }
+    }));
+  };
 
-  const updateWorkExperience = (id: string, updates: Partial<WorkExperience>) => {
+  const updateWorkExperience = (
+    id: string,
+    updates: Partial<WorkExperience>
+  ) => {
     setCvData((prev) => ({
       ...prev,
-      workExperiences: prev.workExperiences.map((exp) => (exp.id === id ? { ...exp, ...updates } : exp)),
-    }))
-  }
+      workExperiences: prev.workExperiences.map((exp) =>
+        exp.id === id ? { ...exp, ...updates } : exp
+      ),
+    }));
+  };
 
   const removeWorkExperience = (id: string) => {
     setCvData((prev) => ({
       ...prev,
       workExperiences: prev.workExperiences.filter((exp) => exp.id !== id),
-    }))
-  }
+    }));
+  };
 
   const addEducation = () => {
     const newEducation: Education = {
@@ -119,121 +106,125 @@ export function CVBuilderPage({ onBack, onSave }: CVBuilderPageProps) {
       current: false,
       gpa: "",
       description: "",
-    }
+    };
     setCvData((prev) => ({
       ...prev,
       educations: [...prev.educations, newEducation],
-    }))
-  }
+    }));
+  };
 
   const updateEducation = (id: string, updates: Partial<Education>) => {
     setCvData((prev) => ({
       ...prev,
-      educations: prev.educations.map((edu) => (edu.id === id ? { ...edu, ...updates } : edu)),
-    }))
-  }
+      educations: prev.educations.map((edu) =>
+        edu.id === id ? { ...edu, ...updates } : edu
+      ),
+    }));
+  };
 
   const removeEducation = (id: string) => {
     setCvData((prev) => ({
       ...prev,
       educations: prev.educations.filter((edu) => edu.id !== id),
-    }))
-  }
+    }));
+  };
 
   const nextStep = () => {
     if (currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1)
+      setCurrentStep(currentStep + 1);
     }
-  }
+  };
 
   const prevStep = () => {
     if (currentStep > 0) {
-      setCurrentStep(currentStep - 1)
+      setCurrentStep(currentStep - 1);
     }
-  }
+  };
 
   const handleSave = () => {
-    onSave(cvData)
-  }
+    onSave(cvData);
+  };
 
   const handleExportPDF = () => {
-    // Add a small delay to allow the UI to update
     setTimeout(() => {
-      const fullName = `${cvData.firstName} ${cvData.lastName}`.trim()
-
-      // Store the current page title
-      const originalTitle = document.title
-
-      // Set a custom title for the PDF
-      document.title = `${fullName}-${cvData.jobTitle}_CV`.replace(/\s+/g, "-")
-
-      // Print the document
-      window.print()
-
-      // Restore the original title
-      document.title = originalTitle
-    }, 300)
-  }
+      const fullName = `${cvData.firstName} ${cvData.lastName}`.trim();
+      const originalTitle = document.title;
+      document.title = `${fullName}-${cvData.jobTitle}_CV`.replace(/\s+/g, "-");
+      window.print();
+      document.title = originalTitle;
+    }, 300);
+  };
 
   const renderCurrentStep = () => {
     switch (steps[currentStep].id) {
       case "general":
-        return <GeneralInfoStep data={cvData} onUpdate={updateCvData} />
+        return (
+          <GeneralInfoStep data={cvData} onUpdate={updateCvData} lang={lang} />
+        );
       case "personal":
-        return <PersonalInfoStep data={cvData} onUpdate={updateCvData} />
+        return (
+          <PersonalInfoStep data={cvData} onUpdate={updateCvData} lang={lang} />
+        );
       case "experience":
         return (
           <WorkExperienceStep
             data={cvData}
+            lang={lang}
             onAddExperience={addWorkExperience}
             onUpdateExperience={updateWorkExperience}
             onRemoveExperience={removeWorkExperience}
           />
-        )
+        );
       case "education":
         return (
           <EducationStep
             data={cvData}
+            lang={lang}
             onAddEducation={addEducation}
             onUpdateEducation={updateEducation}
             onRemoveEducation={removeEducation}
           />
-        )
+        );
       case "skills":
-        return <SkillsStep data={cvData} onUpdate={updateCvData} />
+        return <SkillsStep data={cvData} onUpdate={updateCvData} lang={lang} />;
       case "summary":
-        return <SummaryStep data={cvData} onUpdate={updateCvData} />
+        return (
+          <SummaryStep data={cvData} onUpdate={updateCvData} lang={lang} />
+        );
       case "grade":
-        return <GradeStep data={cvData} />
+        return <GradeStep data={cvData} />;
       default:
-        return null
+        return null;
     }
-  }
+  };
 
-  const progressPercentage = ((currentStep + 1) / steps.length) * 100
+  const progressPercentage = ((currentStep + 1) / steps.length) * 100;
 
   return (
     <div className="min-h-screen bg-[var(--surface)]">
-      {/* Header */}
       <div className="bg-white border-b border-[var(--border-color)] px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="sm" onClick={onBack} className="text-gray-500 hover:text-[var(--red-normal)]">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onBack}
+              className="text-gray-500 hover:text-[var(--red-normal)]"
+            >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Dashboard
+              {t("backToDashboard", lang)}
             </Button>
             <div className="h-6 w-px bg-[var(--border-color)]" />
             <div>
-              <h1 className="text-xl font-poppins font-semibold text-[var(--neutral-ink)]">Design your resume</h1>
-              <p className="text-sm text-gray-600">
-                Follow the steps below to create your resume. Your progress will be saved automatically.
-              </p>
+              <h1 className="text-xl font-poppins font-semibold text-[var(--neutral-ink)]">
+                {t("designYourResume", lang)}
+              </h1>
+              <p className="text-sm text-gray-600">{t("followSteps", lang)}</p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Step Indicator */}
       <div className="bg-white border-b border-[var(--border-color)] px-6 py-4">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-4">
@@ -245,26 +236,30 @@ export function CVBuilderPage({ onBack, onSave }: CVBuilderPageProps) {
                     index < currentStep
                       ? "bg-[var(--success)] text-white hover:bg-green-600"
                       : index === currentStep
-                        ? "bg-[var(--red-normal)] text-white hover:bg-[var(--red-normal-hover)]"
-                        : "bg-gray-200 text-gray-500 hover:bg-gray-300"
+                      ? "bg-[var(--red-normal)] text-white hover:bg-[var(--red-normal-hover)]"
+                      : "bg-gray-200 text-gray-500 hover:bg-gray-300"
                   }`}
-                  title={`Go to ${step.title}`}
+                  title={`Go to ${t(step.title, lang)}`}
                 >
                   {index < currentStep ? "✓" : index + 1}
                 </button>
                 <button
                   onClick={() => setCurrentStep(index)}
                   className={`ml-2 text-sm font-medium transition-colors duration-200 hover:opacity-80 cursor-pointer ${
-                    index === currentStep ? "text-[var(--red-normal)]" : "text-gray-500 hover:text-gray-700"
+                    index === currentStep
+                      ? "text-[var(--red-normal)]"
+                      : "text-gray-500 hover:text-gray-700"
                   }`}
-                  title={`Go to ${step.title}`}
+                  title={`Go to ${t(step.title, lang)}`}
                 >
-                  {step.title}
+                  {t(step.title, lang)}
                 </button>
                 {index < steps.length - 1 && (
                   <div
                     className={`mx-4 h-px flex-1 transition-colors duration-300 ${
-                      index < currentStep ? "bg-[var(--success)]" : "bg-gray-200"
+                      index < currentStep
+                        ? "bg-[var(--success)]"
+                        : "bg-gray-200"
                     }`}
                   />
                 )}
@@ -275,28 +270,27 @@ export function CVBuilderPage({ onBack, onSave }: CVBuilderPageProps) {
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="max-w-7xl mx-auto p-6">
         <div className="grid lg:grid-cols-2 gap-8 min-h-[600px]">
-          {/* Form Section */}
           <div className="space-y-6">
             <Card className="border border-[var(--border-color)]">
               <CardContent className="p-6">
                 <div className="mb-6">
                   <h2 className="text-lg font-poppins font-semibold text-[var(--neutral-ink)] mb-2">
-                    {steps[currentStep].title}
+                    {t(`${steps[currentStep].id}Title`, lang)}
                   </h2>
-                  <p className="text-sm text-gray-600">{steps[currentStep].description}</p>
+                  <p className="text-sm text-gray-600">
+                    {t(`${steps[currentStep].id}Desc`, lang)}
+                  </p>
                 </div>
 
                 {renderCurrentStep()}
               </CardContent>
             </Card>
 
-            {/* Navigation */}
             <div className="flex items-center justify-between">
               <div className="text-sm text-gray-500">
-                Step {currentStep + 1} of {steps.length}
+                {t("stepOf", lang)} {currentStep + 1} of {steps.length}
               </div>
               <div className="flex items-center space-x-3">
                 <Button
@@ -306,7 +300,7 @@ export function CVBuilderPage({ onBack, onSave }: CVBuilderPageProps) {
                   className="border-[var(--border-color)] bg-transparent"
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" />
-                  Previous
+                  {t("previousButton", lang)}
                 </Button>
                 {currentStep === steps.length - 1 ? (
                   <div className="flex items-center space-x-3">
@@ -316,13 +310,13 @@ export function CVBuilderPage({ onBack, onSave }: CVBuilderPageProps) {
                       className="border-[var(--red-normal)] text-[var(--red-normal)] hover:bg-[var(--red-light)] bg-transparent"
                     >
                       <Download className="w-4 h-4 mr-2" />
-                      Export PDF
+                      {t("exportPdfButton", lang)}
                     </Button>
                     <Button
                       onClick={handleSave}
                       className="bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white"
                     >
-                      Save CV
+                      {t("saveCvButton", lang)}
                     </Button>
                   </div>
                 ) : (
@@ -330,7 +324,7 @@ export function CVBuilderPage({ onBack, onSave }: CVBuilderPageProps) {
                     onClick={nextStep}
                     className="bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white"
                   >
-                    Next
+                    {t("nextButton", lang)}
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 )}
@@ -338,12 +332,11 @@ export function CVBuilderPage({ onBack, onSave }: CVBuilderPageProps) {
             </div>
           </div>
 
-          {/* Preview Section */}
           <div className="lg:sticky lg:top-6 h-fit">
-            <CVPreview data={cvData} />
+            <CVPreview data={cvData} lang={lang} />
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }

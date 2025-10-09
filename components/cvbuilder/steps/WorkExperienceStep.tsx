@@ -8,12 +8,14 @@ import { Card, CardContent, CardHeader } from "../../ui/card";
 import { Badge } from "../../ui/badge";
 import { Plus, Trash2, Sparkles, Calendar } from "lucide-react";
 import { CVBuilderData, WorkExperience } from "../types";
+import { t, type Language } from "@/lib/translations";
 
 interface WorkExperienceStepProps {
   data: CVBuilderData;
   onAddExperience: () => void;
   onUpdateExperience: (id: string, updates: Partial<WorkExperience>) => void;
   onRemoveExperience: (id: string) => void;
+  lang: Language;
 }
 
 export function WorkExperienceStep({
@@ -21,20 +23,18 @@ export function WorkExperienceStep({
   onAddExperience,
   onUpdateExperience,
   onRemoveExperience,
+  lang,
 }: WorkExperienceStepProps) {
   const [generatingAI, setGeneratingAI] = useState<string | null>(null);
 
   const generateKeyAchievements = async (experienceId: string) => {
     setGeneratingAI(experienceId);
 
-    // Simulate AI generation
     setTimeout(() => {
       const sampleAchievements = [
         "Led cross-functional team of 8 developers to deliver project 2 weeks ahead of schedule",
         "Improved application performance by 35% through code optimization and database tuning",
         "Implemented automated testing framework resulting in 50% reduction in bugs",
-        "Mentored 3 junior developers and conducted technical training sessions",
-        "Contributed to open-source projects with over 1000+ GitHub stars",
       ];
 
       const experience = data.workExperiences.find(
@@ -89,24 +89,20 @@ export function WorkExperienceStep({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-600">
-          Provide details about your work experience. This will help potential
-          employers understand your professional background.
-        </p>
+      <div className="flex items-center justify-end">
         <Button
           onClick={onAddExperience}
           className="bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white"
         >
           <Plus className="w-4 h-4 mr-2" />
-          Add Experience
+          {t("addExperienceButton", lang)}
         </Button>
       </div>
 
       {data.workExperiences.length === 0 && (
         <div className="text-center py-8 text-gray-500">
-          <p>No work experience added yet.</p>
-          <p className="text-sm">Click "Add Experience" to get started.</p>
+          <p>{t("noExperienceYet", lang)}</p>
+          <p className="text-sm">{t("clickToAddExperience", lang)}</p>
         </div>
       )}
 
@@ -123,7 +119,7 @@ export function WorkExperienceStep({
                 </span>
               </div>
               <h3 className="font-semibold text-[var(--neutral-ink)]">
-                Experience {index + 1}
+                {t("experienceTitle", lang)} {index + 1}
               </h3>
             </div>
             <Button
@@ -143,7 +139,8 @@ export function WorkExperienceStep({
                   htmlFor={`jobTitle-${experience.id}`}
                   className="text-sm font-medium"
                 >
-                  Job Title <span className="text-red-500">*</span>
+                  {t("jobTitleWorkLabel", lang)}{" "}
+                  <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   id={`jobTitle-${experience.id}`}
@@ -156,7 +153,6 @@ export function WorkExperienceStep({
                   }
                   className="border-2 border-gray-300 focus:border-[var(--red-normal)] transition-colors"
                 />
-                <p className="text-xs text-gray-500">Job Title is required</p>
               </div>
 
               <div className="space-y-2">
@@ -164,7 +160,8 @@ export function WorkExperienceStep({
                   htmlFor={`company-${experience.id}`}
                   className="text-sm font-medium"
                 >
-                  Company <span className="text-red-500">*</span>
+                  {t("companyLabel", lang)}{" "}
+                  <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   id={`company-${experience.id}`}
@@ -177,9 +174,6 @@ export function WorkExperienceStep({
                   }
                   className="border-2 border-gray-300 focus:border-[var(--red-normal)] transition-colors"
                 />
-                <p className="text-xs text-gray-500">
-                  Company name is required
-                </p>
               </div>
             </div>
 
@@ -188,7 +182,7 @@ export function WorkExperienceStep({
                 htmlFor={`location-${experience.id}`}
                 className="text-sm font-medium"
               >
-                Location
+                {t("locationLabel", lang)}
               </Label>
               <Input
                 id={`location-${experience.id}`}
@@ -209,14 +203,13 @@ export function WorkExperienceStep({
                   htmlFor={`startDate-${experience.id}`}
                   className="text-sm font-medium"
                 >
-                  Start Date
+                  {t("startDateLabel", lang)}
                 </Label>
                 <div className="relative">
                   <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <Input
                     id={`startDate-${experience.id}`}
                     type="month"
-                    placeholder="Pick a date"
                     value={experience.startDate}
                     onChange={(e) =>
                       onUpdateExperience(experience.id, {
@@ -233,14 +226,13 @@ export function WorkExperienceStep({
                   htmlFor={`endDate-${experience.id}`}
                   className="text-sm font-medium"
                 >
-                  End Date
+                  {t("endDateLabel", lang)}
                 </Label>
                 <div className="relative">
                   <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <Input
                     id={`endDate-${experience.id}`}
                     type="month"
-                    placeholder="Pick a date"
                     value={experience.endDate}
                     onChange={(e) =>
                       onUpdateExperience(experience.id, {
@@ -266,7 +258,7 @@ export function WorkExperienceStep({
                 }
               />
               <Label htmlFor={`current-${experience.id}`} className="text-sm">
-                I currently work here
+                {t("currentWorkLabel", lang)}
               </Label>
             </div>
 
@@ -275,7 +267,7 @@ export function WorkExperienceStep({
                 htmlFor={`description-${experience.id}`}
                 className="text-sm font-medium"
               >
-                Description
+                {t("workDescriptionLabel", lang)}
               </Label>
               <Textarea
                 id={`description-${experience.id}`}
@@ -294,7 +286,7 @@ export function WorkExperienceStep({
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <Label className="text-sm font-medium">
-                  Key Achievements (Detailed Points)
+                  {t("keyAchievementsLabel", lang)}
                 </Label>
                 <div className="flex items-center space-x-2">
                   <Button
@@ -307,8 +299,8 @@ export function WorkExperienceStep({
                   >
                     <Sparkles className="w-4 h-4 mr-2" />
                     {generatingAI === experience.id
-                      ? "Generating..."
-                      : "Generate Points"}
+                      ? t("generatingButton", lang)
+                      : t("generatePointsButton", lang)}
                   </Button>
                   <Button
                     type="button"
@@ -318,22 +310,10 @@ export function WorkExperienceStep({
                     className="border-[var(--border-color)]"
                   >
                     <Plus className="w-4 h-4 mr-2" />
-                    Add Point
+                    {t("addPointButton", lang)}
                   </Button>
                 </div>
               </div>
-
-              {experience.achievements.length === 0 && (
-                <div className="text-center py-4 border border-dashed border-gray-300 rounded-lg">
-                  <p className="text-sm text-gray-500">
-                    No achievements added yet
-                  </p>
-                  <p className="text-xs text-gray-400">
-                    Use "Generate Points" for AI suggestions or "Add Point" to
-                    add manually
-                  </p>
-                </div>
-              )}
 
               {experience.achievements.map((achievement, achIndex) => (
                 <div key={achIndex} className="flex items-start space-x-2">
@@ -342,7 +322,6 @@ export function WorkExperienceStep({
                   </Badge>
                   <div className="flex-1">
                     <Textarea
-                      placeholder="Describe your achievement or responsibility"
                       value={achievement}
                       onChange={(e) =>
                         updateAchievement(

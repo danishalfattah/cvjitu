@@ -1,13 +1,14 @@
 import { LayoutDashboard, BarChart3, LogOut, User, X } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
+import Image from "next/image";
 
 interface User {
   id: string;
   email: string;
   fullName: string;
   avatar?: string;
-  provider?: 'email' | 'google';
+  provider?: "email" | "google";
 }
 
 interface DashboardSidebarProps {
@@ -19,21 +20,28 @@ interface DashboardSidebarProps {
   onClose?: () => void;
 }
 
-export function DashboardSidebar({ activeTab, onTabChange, onLogout, user, isMobile = false, onClose }: DashboardSidebarProps) {
+export function DashboardSidebar({
+  activeTab,
+  onTabChange,
+  onLogout,
+  user,
+  isMobile = false,
+  onClose,
+}: DashboardSidebarProps) {
   const menuItems = [
     {
-      id: 'dashboard',
-      label: 'Dashboard',
-      icon: LayoutDashboard
+      id: "dashboard",
+      label: "Dashboard",
+      icon: LayoutDashboard,
     },
     {
-      id: 'scoring',
-      label: 'Scoring CV Anda',
-      icon: BarChart3
-    }
+      id: "scoring",
+      label: "Scoring CV Anda",
+      icon: BarChart3,
+    },
   ];
 
-  const sidebarClasses = isMobile 
+  const sidebarClasses = isMobile
     ? "w-80 max-w-[85vw] bg-white border-r border-[var(--border-color)] h-screen flex flex-col shadow-2xl"
     : "fixed left-0 top-0 w-64 bg-white border-r border-[var(--border-color)] h-screen flex flex-col z-40";
 
@@ -43,12 +51,15 @@ export function DashboardSidebar({ activeTab, onTabChange, onLogout, user, isMob
       <div className="p-4 sm:p-6 border-b border-[var(--border-color)]">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-[var(--red-normal)] rounded-lg flex items-center justify-center">
-              <span className="text-white font-semibold text-sm">CV</span>
-            </div>
-            <span className="font-poppins font-semibold text-lg sm:text-xl text-[var(--neutral-ink)]">CVJitu</span>
+            <Image
+              src="/logo.svg"
+              width={100}
+              height={100}
+              quality={100}
+              alt="logo"
+            />
           </div>
-          
+
           {/* Close button for mobile */}
           {isMobile && onClose && (
             <Button
@@ -62,7 +73,7 @@ export function DashboardSidebar({ activeTab, onTabChange, onLogout, user, isMob
           )}
         </div>
       </div>
-      
+
       {/* Navigation */}
       <nav className="p-4 flex-1 overflow-y-auto">
         <ul className="space-y-2">
@@ -72,8 +83,8 @@ export function DashboardSidebar({ activeTab, onTabChange, onLogout, user, isMob
                 onClick={() => onTabChange(item.id)}
                 className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 ${
                   activeTab === item.id
-                    ? 'bg-[var(--red-light)] text-[var(--red-normal)] font-medium transform scale-[1.02]'
-                    : 'text-gray-600 hover:bg-gray-50 hover:text-[var(--neutral-ink)] hover:transform hover:scale-[1.01]'
+                    ? "bg-[var(--red-light)] text-[var(--red-normal)] font-medium transform scale-[1.02]"
+                    : "text-gray-600 hover:bg-gray-50 hover:text-[var(--neutral-ink)] hover:transform hover:scale-[1.01]"
                 }`}
               >
                 <item.icon className="w-5 h-5 flex-shrink-0" />
@@ -105,22 +116,38 @@ export function DashboardSidebar({ activeTab, onTabChange, onLogout, user, isMob
           <div className="space-y-3">
             {/* User Profile Card */}
             <div className="flex items-center space-x-3 p-3 bg-white rounded-lg border border-[var(--border-color)] shadow-sm">
-              <Avatar className={`${isMobile ? 'h-10 w-10' : 'h-8 w-8'} ring-2 ring-[var(--red-normal)]/10`}>
+              <Avatar
+                className={`${
+                  isMobile ? "h-10 w-10" : "h-8 w-8"
+                } ring-2 ring-[var(--red-normal)]/10`}
+              >
                 <AvatarImage src={user.avatar} alt={user.fullName} />
                 <AvatarFallback className="bg-[var(--red-normal)] text-white text-xs font-semibold">
-                  {user.fullName.split(' ').map(n => n[0]).join('').toUpperCase()}
+                  {user.fullName
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")
+                    .toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
-                <p className={`${isMobile ? 'text-sm' : 'text-sm'} font-semibold text-[var(--neutral-ink)] truncate`}>
+                <p
+                  className={`${
+                    isMobile ? "text-sm" : "text-sm"
+                  } font-semibold text-[var(--neutral-ink)] truncate`}
+                >
                   {user.fullName}
                 </p>
-                <p className={`${isMobile ? 'text-xs' : 'text-xs'} text-gray-500 truncate`}>
+                <p
+                  className={`${
+                    isMobile ? "text-xs" : "text-xs"
+                  } text-gray-500 truncate`}
+                >
                   {user.email}
                 </p>
               </div>
             </div>
-            
+
             {/* Logout Button */}
             <Button
               onClick={onLogout}
@@ -141,9 +168,7 @@ export function DashboardSidebar({ activeTab, onTabChange, onLogout, user, isMob
           <p className="text-xs text-gray-500 mb-1">
             © {new Date().getFullYear()} CVJitu
           </p>
-          <p className="text-xs text-gray-400">
-            All rights reserved
-          </p>
+          <p className="text-xs text-gray-400">All rights reserved</p>
         </div>
       </div>
     </div>
