@@ -27,13 +27,13 @@ interface CVBuilderPageProps {
 }
 
 const steps = [
-  { id: "general", title: "General Info" },
-  { id: "personal", title: "Personal Info" },
-  { id: "experience", title: "Work Experience" },
-  { id: "education", title: "Education" },
-  { id: "skills", title: "Skills" },
-  { id: "summary", title: "Summary" },
-  { id: "grade", title: "Grade" },
+  { id: "general", title: "generalTitle" },
+  { id: "personal", title: "personalTitle" },
+  { id: "experience", title: "experienceTitle" },
+  { id: "education", title: "educationTitle" },
+  { id: "skills", title: "skillsTitle" },
+  { id: "summary", title: "summaryTitle" },
+  { id: "grade", title: "gradeTitle" },
 ];
 
 export function CVBuilderPage({ onBack, onSave, lang }: CVBuilderPageProps) {
@@ -239,7 +239,7 @@ export function CVBuilderPage({ onBack, onSave, lang }: CVBuilderPageProps) {
                       ? "bg-[var(--red-normal)] text-white hover:bg-[var(--red-normal-hover)]"
                       : "bg-gray-200 text-gray-500 hover:bg-gray-300"
                   }`}
-                  title={`Go to ${step.title}`}
+                  title={`Go to ${t(step.title, lang)}`}
                 >
                   {index < currentStep ? "✓" : index + 1}
                 </button>
@@ -250,9 +250,9 @@ export function CVBuilderPage({ onBack, onSave, lang }: CVBuilderPageProps) {
                       ? "text-[var(--red-normal)]"
                       : "text-gray-500 hover:text-gray-700"
                   }`}
-                  title={`Go to ${step.title}`}
+                  title={`Go to ${t(step.title, lang)}`}
                 >
-                  {t(`${step.id}Title`, lang)}
+                  {t(step.title, lang)}
                 </button>
                 {index < steps.length - 1 && (
                   <div
@@ -333,7 +333,7 @@ export function CVBuilderPage({ onBack, onSave, lang }: CVBuilderPageProps) {
           </div>
 
           <div className="lg:sticky lg:top-6 h-fit">
-            <CVPreview data={cvData} />
+            <CVPreview data={cvData} lang={lang} />
           </div>
         </div>
       </div>

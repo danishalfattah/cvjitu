@@ -16,17 +16,17 @@ const translations: { [key: string]: TranslationEntry } = {
   saveCvButton: { id: 'Simpan CV', en: 'Save CV' },
   
   // GeneralInfoStep.tsx
-  generalInfoTitle: { id: 'Info Umum', en: 'General Info' },
-  generalInfoDesc: { id: 'Beri tahu kami tentang diri Anda. Informasi ini akan digunakan untuk membuat CV Anda.', en: 'Tell us about yourself. This information will be used to create your CV.' },
-  jobTitleLabel: { id: 'Nama CV', en: 'CV Name' },
-  jobTitlePlaceholder: { id: 'Contoh: CV Software Engineer', en: 'e.g. Software Engineer CV' },
-  jobTitleDescription: { id: 'Nama untuk CV ini, contoh: CV untuk melamar di Google', en: 'A name for this CV, e.g. CV for Google application' },
-  jobDescriptionLabel: { id: 'Deskripsi Pekerjaan (Target)', en: 'Job Description (Target)' },
-  jobDescriptionPlaceholder: { id: 'Deskripsi singkat tentang posisi yang Anda lamar', en: 'Brief description of the job you are applying for' },
+  generalTitle: { id: 'Info Umum', en: 'General Info' },
+  generalDesc: { id: 'Mulailah dengan memberikan judul pada CV Anda dan deskripsi singkat tentang target pekerjaan yang Anda lamar.', en: 'Start by giving your CV a title and a brief description of the job you are applying for.' },
+  jobTitleLabel: { id: 'Posisi yang Dilamar', en: 'Job Title' },
+  jobTitlePlaceholder: { id: 'Contoh: Software Engineer', en: 'e.g., Software Engineer' },
+  jobTitleDescription: { id: 'Posisi pekerjaan yang Anda tuju, contoh: "Frontend Developer" atau "Product Manager".', en: 'The job position you are targeting, e.g., "Frontend Developer" or "Product Manager".' },
+  jobDescriptionLabel: { id: 'Deskripsi CV', en: 'CV Description' },
+  jobDescriptionPlaceholder: { id: 'Deskripsi singkat tentang CV ini', en: 'A brief description for this CV' },
 
   // PersonalInfoStep.tsx
-  personalInfoTitle: { id: 'Info Pribadi', en: 'Personal Info' },
-  personalInfoDesc: { id: 'Sediakan informasi pribadi Anda. Ini akan dicantumkan di CV Anda.', en: 'Provide your personal information. This will be included in your CV.' },
+  personalTitle: { id: 'Info Pribadi', en: 'Personal Info' },
+  personalDesc: { id: 'Sediakan detail kontak Anda agar perekrut dapat dengan mudah menghubungi Anda.', en: 'Provide your contact details so recruiters can easily reach you.' },
   firstNameLabel: { id: 'Nama Depan', en: 'First Name' },
   lastNameLabel: { id: 'Nama Belakang', en: 'Last Name' },
   emailLabel: { id: 'Email', en: 'Email' },
@@ -36,8 +36,8 @@ const translations: { [key: string]: TranslationEntry } = {
   websiteLabel: { id: 'Situs Web/Portofolio', en: 'Website/Portfolio' },
 
   // WorkExperienceStep.tsx
-  workExperienceTitle: { id: 'Pengalaman Kerja', en: 'Work Experience' },
-  workExperienceDesc: { id: 'Berikan detail tentang pengalaman kerja Anda. Ini akan membantu calon pemberi kerja memahami latar belakang profesional Anda.', en: 'Provide details about your work experience. This will help potential employers understand your professional background.' },
+  experienceTitle: { id: 'Pengalaman Kerja', en: 'Work Experience' },
+  experienceDesc: { id: 'Sebutkan riwayat pekerjaan Anda dari yang terbaru hingga terlama.', en: 'List your work history from most recent to oldest.' },
   addExperienceButton: { id: 'Tambah Pengalaman', en: 'Add Experience' },
   noExperienceYet: { id: 'Belum ada pengalaman kerja yang ditambahkan.', en: 'No work experience added yet.' },
   clickToAddExperience: { id: 'Klik "Tambah Pengalaman" untuk memulai.', en: 'Click "Add Experience" to get started.' },
@@ -85,6 +85,20 @@ const translations: { [key: string]: TranslationEntry } = {
   summaryPlaceholder: { id: 'Tulis ringkasan profesional singkat tentang diri Anda, pengalaman, dan tujuan karir...', en: 'Write a brief professional summary about yourself, your experience, and your career goals...' },
   wordCountRecommended: { id: 'Disarankan', en: 'Recommended' },
   wordCount: { id: 'kata', en: 'words' },
+
+  // GradeStep.tsx
+  gradeTitle: { id: 'Peringkat & Analisis', en: 'Grade & Analysis' },
+  gradeDesc: { id: 'Dapatkan analisis dan saran perbaikan dari AI untuk meningkatkan skor CV Anda.', en: 'Get AI-powered analysis and improvement suggestions to boost your CV score.' },
+
+  // CVPreview
+  previewName: { id: "Nama Anda", en: "Your Name" },
+  previewJobTitle: { id: "Posisi", en: "Job Title" },
+  previewSummary: { id: "Ringkasan", en: "Summary" },
+  previewExperience: { id: "Pengalaman", en: "Experience" },
+  previewEducation: { id: "Pendidikan", en: "Education" },
+  previewSkills: { id: "Keahlian", en: "Skills" },
+  previewNow: { id: "Sekarang", en: "Now" },
+  previewGpa: { id: "IPK", en: "GPA" },
 };
 
 export const t = (key: string, lang: Language): string => {

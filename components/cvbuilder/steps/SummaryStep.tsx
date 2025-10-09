@@ -42,7 +42,6 @@ export function SummaryStep({ data, onUpdate, lang }: SummaryStepProps) {
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-sm text-gray-600 mb-4">{t("summaryDesc", lang)}</p>
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <p className="text-sm text-blue-800">
             <strong>{t("summaryTip", lang).split(":")[0]}:</strong>

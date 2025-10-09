@@ -89,8 +89,7 @@ export function WorkExperienceStep({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-600">{t("workExperienceDesc", lang)}</p>
+      <div className="flex items-center justify-end">
         <Button
           onClick={onAddExperience}
           className="bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white"
@@ -120,7 +119,7 @@ export function WorkExperienceStep({
                 </span>
               </div>
               <h3 className="font-semibold text-[var(--neutral-ink)]">
-                {t("workExperienceTitle", lang)} {index + 1}
+                {t("experienceTitle", lang)} {index + 1}
               </h3>
             </div>
             <Button

@@ -25,8 +25,7 @@ export function EducationStep({
 }: EducationStepProps) {
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-600">{t("educationDesc", lang)}</p>
+      <div className="flex items-center justify-end">
         <Button
           onClick={onAddEducation}
           className="bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white"

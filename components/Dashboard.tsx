@@ -25,6 +25,7 @@ import {
   AlertDialogTitle,
   AlertDialogDescription,
   AlertDialogFooter,
+  AlertDialogCancel,
 } from "./ui/alert-dialog";
 import {
   Search,
@@ -35,6 +36,7 @@ import {
   TrendingUp,
   CheckCircle,
   Edit3,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -48,6 +50,7 @@ const dummyCVs: CVData[] = [
     updated: "17 Jan 2025, 09:15",
     status: "Completed",
     score: 81,
+    lang: "id",
   },
   {
     id: "2",
@@ -58,6 +61,7 @@ const dummyCVs: CVData[] = [
     updated: "10 Jan 2025, 16:45",
     status: "Completed",
     score: 72,
+    lang: "en",
   },
   {
     id: "3",
@@ -68,6 +72,7 @@ const dummyCVs: CVData[] = [
     updated: "14 Jan 2025, 13:50",
     status: "Completed",
     score: 90,
+    lang: "en",
   },
   {
     id: "4",
@@ -78,6 +83,7 @@ const dummyCVs: CVData[] = [
     updated: "12 Jan 2025, 15:30",
     status: "Draft",
     score: 65,
+    lang: "id",
   },
   {
     id: "5",
@@ -88,6 +94,7 @@ const dummyCVs: CVData[] = [
     updated: "20 Des 2024, 09:00",
     status: "Draft",
     score: 58,
+    lang: "id",
   },
   {
     id: "6",
@@ -98,6 +105,7 @@ const dummyCVs: CVData[] = [
     updated: "16 Jan 2025, 18:20",
     status: "Completed",
     score: 84,
+    lang: "en",
   },
   {
     id: "7",
@@ -108,6 +116,7 @@ const dummyCVs: CVData[] = [
     updated: "03 Jan 2025, 11:30",
     status: "Completed",
     score: 85,
+    lang: "en",
   },
   {
     id: "8",
@@ -118,6 +127,7 @@ const dummyCVs: CVData[] = [
     updated: "20 Des 2024, 10:15",
     status: "Draft",
     score: 78,
+    lang: "id",
   },
   {
     id: "9",
@@ -128,6 +138,7 @@ const dummyCVs: CVData[] = [
     updated: "22 Des 2024, 16:20",
     status: "Completed",
     score: 92,
+    lang: "en",
   },
   {
     id: "10",
@@ -138,6 +149,7 @@ const dummyCVs: CVData[] = [
     updated: "15 Des 2024, 09:30",
     status: "Draft",
     score: 88,
+    lang: "id",
   },
   {
     id: "11",
@@ -148,6 +160,7 @@ const dummyCVs: CVData[] = [
     updated: "18 Des 2024, 10:45",
     status: "Completed",
     score: 76,
+    lang: "en",
   },
   {
     id: "12",
@@ -158,6 +171,7 @@ const dummyCVs: CVData[] = [
     updated: "10 Des 2024, 16:30",
     status: "Draft",
     score: 82,
+    lang: "id",
   },
   {
     id: "13",
@@ -168,6 +182,7 @@ const dummyCVs: CVData[] = [
     updated: "14 Des 2024, 15:30",
     status: "Completed",
     score: 74,
+    lang: "id",
   },
   {
     id: "14",
@@ -178,6 +193,7 @@ const dummyCVs: CVData[] = [
     updated: "05 Des 2024, 14:45",
     status: "Draft",
     score: 79,
+    lang: "en",
   },
   {
     id: "15",
@@ -188,6 +204,7 @@ const dummyCVs: CVData[] = [
     updated: "07 Des 2024, 12:20",
     status: "Completed",
     score: 95,
+    lang: "en",
   },
   {
     id: "16",
@@ -198,6 +215,7 @@ const dummyCVs: CVData[] = [
     updated: "01 Des 2024, 17:30",
     status: "Draft",
     score: 83,
+    lang: "id",
   },
   {
     id: "17",
@@ -208,6 +226,7 @@ const dummyCVs: CVData[] = [
     updated: "30 Nov 2024, 14:15",
     status: "Completed",
     score: 91,
+    lang: "en",
   },
   {
     id: "18",
@@ -218,6 +237,7 @@ const dummyCVs: CVData[] = [
     updated: "25 Nov 2024, 16:20",
     status: "Draft",
     score: 67,
+    lang: "id",
   },
 ];
 
@@ -566,6 +586,9 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
               baru. Seluruh form dan template akan disesuaikan dengan pilihan
               Anda.
             </AlertDialogDescription>
+            <AlertDialogCancel className="absolute top-4 right-4 p-2 rounded-full border-none hover:bg-gray-100">
+              <X className="w-4 h-4" />
+            </AlertDialogCancel>
           </AlertDialogHeader>
           <AlertDialogFooter className="sm:justify-center gap-4">
             <Button

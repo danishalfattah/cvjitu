@@ -68,8 +68,6 @@ export function SkillsStep({ data, onUpdate, lang }: SkillsStepProps) {
 
   return (
     <div className="space-y-6">
-      <p className="text-sm text-gray-600">{t("skillsDesc", lang)}</p>
-
       <div className="space-y-4">
         <Label className="text-sm font-medium">
           {t("addSkillLabel", lang)}

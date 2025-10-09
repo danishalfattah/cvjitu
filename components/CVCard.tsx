@@ -9,7 +9,6 @@ import {
   Trash2,
   Eye,
   Share2,
-  FileText,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -28,6 +27,7 @@ export interface CVData {
   updated: string;
   status: "Draft" | "Completed";
   score: number;
+  lang: "id" | "en";
 }
 
 interface CVCardProps {
@@ -68,7 +68,6 @@ export function CVCard({
   return (
     <Card className="border border-[var(--border-color)] hover:shadow-md transition-shadow">
       <CardContent>
-        {/* Header */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1 min-w-0">
             <h3
@@ -83,6 +82,9 @@ export function CVCard({
               </Badge>
               <Badge className={`${getStatusColor(cv.status)} text-xs`}>
                 {cv.status === "Completed" ? "Selesai" : cv.status}
+              </Badge>
+              <Badge variant="outline" className="text-xs">
+                {cv.lang === "id" ? "ID" : "EN"}
               </Badge>
             </div>
           </div>
@@ -120,13 +122,11 @@ export function CVCard({
           </div>
         </div>
 
-        {/* Timestamps */}
         <div className="space-y-1 sm:space-y-2 text-xs sm:text-sm text-gray-500 mb-4 sm:mb-6">
           <p>Dibuat: {cv.created}</p>
           <p>Diperbarui: {cv.updated}</p>
         </div>
 
-        {/* Preview Button - At the bottom */}
         <Button
           onClick={() => onPreview(cv)}
           className="w-full bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white text-sm sm:text-base py-2 sm:py-2.5"

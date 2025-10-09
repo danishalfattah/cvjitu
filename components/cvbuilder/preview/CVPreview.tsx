@@ -1,12 +1,12 @@
-import { Card, CardContent, CardHeader } from "../../ui/card";
-import { Button } from "../../ui/button";
-import { Badge } from "../../ui/badge";
+import { Card, CardContent } from "../../ui/card";
 import { Separator } from "../../ui/separator";
-import { FileText, Mail, Phone, MapPin, Linkedin, Globe } from "lucide-react";
+import { FileText } from "lucide-react";
 import { CVBuilderData } from "../types";
+import { t, type Language } from "@/lib/translations";
 
 interface CVPreviewProps {
   data: CVBuilderData;
+  lang: Language;
 }
 
 const formatDate = (dateString: string) => {
@@ -22,30 +22,28 @@ const formatDate = (dateString: string) => {
   }
 };
 
-export function CVPreview({ data }: CVPreviewProps) {
+export function CVPreview({ data, lang }: CVPreviewProps) {
   const fullName = `${data.firstName || ""} ${data.lastName || ""}`.trim();
 
   return (
     <Card className="border border-[var(--border-color)] h-fit overflow-hidden">
       <CardContent className="p-0">
-        {/* A4 Paper Container */}
         <div
           className="bg-white w-full overflow-y-auto font-serif"
           id="cv-print-container"
           style={{
-            aspectRatio: "210/297", // A4 ratio
-            maxHeight: "min(80vh, 700px)", // Don't exceed screen height
-            padding: "3rem 2.5rem", // Proper A4 margins scaled
+            aspectRatio: "210/297",
+            maxHeight: "min(80vh, 700px)",
+            padding: "3rem 2.5rem",
           }}
         >
           <div className="space-y-3">
-            {/* Header Section */}
             <div className="space-y-1">
               <h2 className="text-2xl text-center font-bold">
-                {fullName || "Your Name"}
+                {fullName || t("previewName", lang)}
               </h2>
               <h3 className="text-base text-muted-foreground text-center font-medium">
-                {data.jobTitle || "Job Title"}
+                {data.jobTitle || t("previewJobTitle", lang)}
               </h3>
               <div className="flex flex-row gap-1 justify-center items-center flex-wrap">
                 {data.email && (
@@ -101,7 +99,9 @@ export function CVPreview({ data }: CVPreviewProps) {
 
             {data.summary && data.summary !== "" && (
               <div className="space-y-1">
-                <h4 className="text-sm font-semibold">Summary</h4>
+                <h4 className="text-sm font-semibold">
+                  {t("previewSummary", lang)}
+                </h4>
                 <Separator className="mb-1" />
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   {data.summary}
@@ -111,7 +111,9 @@ export function CVPreview({ data }: CVPreviewProps) {
 
             {data.workExperiences.length > 0 && (
               <div className="space-y-2">
-                <h4 className="text-sm font-semibold">Experience</h4>
+                <h4 className="text-sm font-semibold">
+                  {t("previewExperience", lang)}
+                </h4>
                 <Separator className="mb-1" />
                 {data.workExperiences.map((jobExperience, idx) => {
                   return (
@@ -129,7 +131,7 @@ export function CVPreview({ data }: CVPreviewProps) {
                           <h6 className="text-xs text-muted-foreground">
                             {formatDate(jobExperience.startDate)} -{" "}
                             {jobExperience.current
-                              ? "Now"
+                              ? t("previewNow", lang)
                               : formatDate(jobExperience.endDate)}
                             {jobExperience.location && (
                               <span className="block">
@@ -170,7 +172,9 @@ export function CVPreview({ data }: CVPreviewProps) {
 
             {data.educations.length > 0 && (
               <div className="space-y-2">
-                <h4 className="text-sm font-semibold">Education</h4>
+                <h4 className="text-sm font-semibold">
+                  {t("previewEducation", lang)}
+                </h4>
                 <Separator className="mb-1" />
                 {data.educations.map((education, idx) => {
                   return (
@@ -188,7 +192,7 @@ export function CVPreview({ data }: CVPreviewProps) {
                           <h6 className="text-xs text-muted-foreground">
                             {formatDate(education.startDate)} -{" "}
                             {education.current
-                              ? "Now"
+                              ? t("previewNow", lang)
                               : formatDate(education.endDate)}
                             {education.location && (
                               <span className="block">
@@ -200,7 +204,12 @@ export function CVPreview({ data }: CVPreviewProps) {
                       </div>
                       <p className="text-xs text-muted-foreground">
                         {education.degree}
-                        {education.gpa && <span> (GPA: {education.gpa})</span>}
+                        {education.gpa && (
+                          <span>
+                            {" "}
+                            ({t("previewGpa", lang)}: {education.gpa})
+                          </span>
+                        )}
                       </p>
                     </div>
                   );
@@ -210,7 +219,9 @@ export function CVPreview({ data }: CVPreviewProps) {
 
             {data.skills && data.skills.length > 0 && (
               <div className="space-y-1">
-                <h4 className="text-sm font-semibold">Skills</h4>
+                <h4 className="text-sm font-semibold">
+                  {t("previewSkills", lang)}
+                </h4>
                 <Separator className="mb-1" />
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   {data.skills.join(", ")}
@@ -218,7 +229,6 @@ export function CVPreview({ data }: CVPreviewProps) {
               </div>
             )}
 
-            {/* Empty State */}
             {!fullName &&
               !data.jobTitle &&
               data.workExperiences.length === 0 &&
@@ -232,9 +242,6 @@ export function CVPreview({ data }: CVPreviewProps) {
                     <p className="text-xs">
                       Fill out the form to see your CV preview
                     </p>
-                    <p className="text-xs text-gray-400">
-                      Changes will appear here in real-time
-                    </p>
                   </div>
                 </div>
               )}
@@ -242,7 +249,6 @@ export function CVPreview({ data }: CVPreviewProps) {
         </div>
       </CardContent>
 
-      {/* Print-specific styles */}
       <style jsx global>{`
         @media print {
           body * {
@@ -265,7 +271,6 @@ export function CVPreview({ data }: CVPreviewProps) {
             overflow: visible !important;
             box-sizing: border-box !important;
           }
-          /* Fix separator/border visibility in print */
           #cv-print-container hr,
           #cv-print-container [role="separator"],
           #cv-print-container [data-orientation="horizontal"] {
@@ -279,7 +284,6 @@ export function CVPreview({ data }: CVPreviewProps) {
             print-color-adjust: exact !important;
             opacity: 1 !important;
           }
-          /* Ensure underlines are visible for Separator component */
           #cv-print-container .border-b,
           #cv-print-container [class*="border-b"] {
             border-bottom: 1px solid #000 !important;
@@ -287,7 +291,6 @@ export function CVPreview({ data }: CVPreviewProps) {
             color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
-          /* Force separator visibility */
           #cv-print-container div[role="separator"] {
             background-color: #000 !important;
             height: 1px !important;
