@@ -1,6 +1,6 @@
 import { LayoutDashboard, BarChart3, LogOut, User, X } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { Button } from "./ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { Button } from "../ui/button";
 import Image from "next/image";
 
 interface User {

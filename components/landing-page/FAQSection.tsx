@@ -3,7 +3,7 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "./ui/accordion";
+} from "../ui/accordion";
 
 const faqs = [
   {
@@ -12,8 +12,7 @@ const faqs = [
       "AI kami menganalisis CV berdasarkan 50+ kriteria termasuk format ATS, kelengkapan informasi, relevansi keyword, dan struktur konten. Setiap aspek diberi bobot dan menghasilkan skor 1-100 dengan breakdown detail.",
   },
   {
-    question:
-      "Apakah template CVJitu benar-benar ATS-friendly?",
+    question: "Apakah template CVJitu benar-benar ATS-friendly?",
     answer:
       "Ya, semua template kami telah diuji dengan sistem ATS dari 100+ perusahaan besar. Kami secara berkala memperbarui template berdasarkan perubahan algoritma ATS terbaru.",
   },
@@ -24,14 +23,12 @@ const faqs = [
       "Tentu! CVJitu mendukung pembuatan multiple CV dengan kategori berbeda. Anda bisa menyesuaikan setiap CV untuk posisi spesifik dengan keyword matching yang optimal.",
   },
   {
-    question:
-      "Bagaimana kebijakan privasi dan keamanan data di CVJitu?",
+    question: "Bagaimana kebijakan privasi dan keamanan data di CVJitu?",
     answer:
       "Data Anda diamankan dengan enkripsi end-to-end. Kami tidak membagikan informasi pribadi kepada pihak ketiga dan mematuhi standar GDPR. Anda memiliki kontrol penuh atas data CV Anda.",
   },
   {
-    question:
-      "Apakah ada garansi uang kembali jika tidak puas?",
+    question: "Apakah ada garansi uang kembali jika tidak puas?",
     answer:
       "Ya, kami menyediakan garansi 30 hari uang kembali untuk semua paket berbayar. Jika Anda tidak puas dengan layanan kami, silakan hubungi tim support untuk refund penuh.",
   },
@@ -50,11 +47,7 @@ export function FAQSection() {
           </p>
         </div>
 
-        <Accordion
-          type="single"
-          collapsible
-          className="space-y-4"
-        >
+        <Accordion type="single" collapsible className="space-y-4">
           {faqs.map((faq, index) => (
             <AccordionItem
               key={index}

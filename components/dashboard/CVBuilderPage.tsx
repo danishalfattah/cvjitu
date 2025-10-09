@@ -1,23 +1,23 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "./ui/button";
-import { Card, CardContent } from "./ui/card";
-import { Progress } from "./ui/progress";
+import { Button } from "../ui/button";
+import { Card, CardContent } from "../ui/card";
+import { Progress } from "../ui/progress";
 import { ArrowLeft, ArrowRight, Download } from "lucide-react";
-import { GeneralInfoStep } from "./cvbuilder/steps/GeneralInfoStep";
-import { PersonalInfoStep } from "./cvbuilder/steps/PersonalInfoStep";
-import { WorkExperienceStep } from "./cvbuilder/steps/WorkExperienceStep";
-import { EducationStep } from "./cvbuilder/steps/EducationStep";
-import { SkillsStep } from "./cvbuilder/steps/SkillsStep";
-import { SummaryStep } from "./cvbuilder/steps/SummaryStep";
-import { GradeStep } from "./cvbuilder/steps/GradeStep";
-import { CVPreview } from "./cvbuilder/preview/CVPreview";
+import { GeneralInfoStep } from "../cvbuilder/steps/GeneralInfoStep";
+import { PersonalInfoStep } from "../cvbuilder/steps/PersonalInfoStep";
+import { WorkExperienceStep } from "../cvbuilder/steps/WorkExperienceStep";
+import { EducationStep } from "../cvbuilder/steps/EducationStep";
+import { SkillsStep } from "../cvbuilder/steps/SkillsStep";
+import { SummaryStep } from "../cvbuilder/steps/SummaryStep";
+import { GradeStep } from "../cvbuilder/steps/GradeStep";
+import { CVPreview } from "../cvbuilder/preview/CVPreview";
 import type {
   CVBuilderData,
   WorkExperience,
   Education,
-} from "./cvbuilder/types";
+} from "../cvbuilder/types";
 import { t, type Language } from "@/lib/translations";
 
 interface CVBuilderPageProps {

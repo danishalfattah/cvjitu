@@ -1,8 +1,8 @@
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { Badge } from "./ui/badge";
-import { Button } from "./ui/button";
-import { Progress } from "./ui/progress";
-import { RadialScore } from "./RadialScore";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
+import { Progress } from "../ui/progress";
+import { RadialScore } from "../RadialScore";
 import {
   CheckCircle,
   AlertTriangle,
@@ -12,7 +12,7 @@ import {
   Edit,
   ArrowLeft,
 } from "lucide-react";
-import { CVScoringData } from "../src/utils/cvScoringService";
+import { CVScoringData } from "../../src/utils/cvScoringService";
 
 interface CVScoringResultProps {
   data: CVScoringData;

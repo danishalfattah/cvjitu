@@ -3,7 +3,7 @@
 import { useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/src/context/AuthContext";
-import { CVBuilderPage } from "@/components/CVBuilderPage";
+import { CVBuilderPage } from "@/components/dashboard/CVBuilderPage";
 import { toast } from "sonner";
 import type { Language } from "@/lib/translations";
 

@@ -4,12 +4,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { NavBar } from "@/components/NavBar";
-import { HeroSection } from "@/components/HeroSection";
-import { FeaturesSection } from "@/components/FeaturesSection";
-import { HowItWorksSection } from "@/components/HowItWorksSection";
-import { WhyUsSection } from "@/components/WhyUsSection";
-import { PricingSection } from "@/components/PricingSection";
-import { FAQSection } from "@/components/FAQSection";
+import { HeroSection } from "@/components/landing-page/HeroSection";
+import { FeaturesSection } from "@/components/landing-page/FeaturesSection";
+import { HowItWorksSection } from "@/components/landing-page/HowItWorksSection";
+import { WhyUsSection } from "@/components/landing-page/WhyUsSection";
+import { PricingSection } from "@/components/landing-page/PricingSection";
+import { FAQSection } from "@/components/landing-page/FAQSection";
 import { Footer } from "@/components/Footer";
 import { useAuth } from "@/src/context/AuthContext";
 import {

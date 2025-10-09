@@ -1,5 +1,14 @@
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "./ui/alert-dialog";
-import { CVData } from "./CVCard";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "./ui/alert-dialog";
+import { CVData } from "./dashboard/CVCard";
 
 interface DeleteConfirmModalProps {
   isOpen: boolean;
@@ -8,7 +17,12 @@ interface DeleteConfirmModalProps {
   cv: CVData | null;
 }
 
-export function DeleteConfirmModal({ isOpen, onClose, onConfirm, cv }: DeleteConfirmModalProps) {
+export function DeleteConfirmModal({
+  isOpen,
+  onClose,
+  onConfirm,
+  cv,
+}: DeleteConfirmModalProps) {
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
       <AlertDialogContent>
@@ -17,14 +31,15 @@ export function DeleteConfirmModal({ isOpen, onClose, onConfirm, cv }: DeleteCon
             Delete CV
           </AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete "{cv?.name}"? This action cannot be undone.
+            Are you sure you want to delete "{cv?.name}"? This action cannot be
+            undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel className="border-[var(--border-color)]">
             Cancel
           </AlertDialogCancel>
-          <AlertDialogAction 
+          <AlertDialogAction
             onClick={onConfirm}
             className="bg-[var(--error)] hover:bg-red-600 text-white"
           >

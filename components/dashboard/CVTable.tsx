@@ -5,10 +5,10 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "./ui/table";
-import { Button } from "./ui/button";
-import { Badge } from "./ui/badge";
-import { RadialScore } from "./RadialScore";
+} from "../ui/table";
+import { Button } from "../ui/button";
+import { Badge } from "../ui/badge";
+import { RadialScore } from "../RadialScore";
 import {
   Download,
   Edit,
@@ -23,7 +23,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
-} from "./ui/dropdown-menu"; // Import komponen DropdownMenu
+} from "../ui/dropdown-menu"; // Import komponen DropdownMenu
 import { CVData } from "./CVCard";
 
 interface CVTableProps {

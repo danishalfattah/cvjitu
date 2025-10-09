@@ -1,7 +1,7 @@
-import { Card, CardContent } from "./ui/card";
-import { Button } from "./ui/button";
-import { Badge } from "./ui/badge";
-import { RadialScore } from "./RadialScore";
+import { Card, CardContent } from "../ui/card";
+import { Button } from "../ui/button";
+import { Badge } from "../ui/badge";
+import { RadialScore } from "../RadialScore";
 import {
   MoreHorizontal,
   Download,
@@ -16,7 +16,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
-} from "./ui/dropdown-menu";
+} from "../ui/dropdown-menu";
 
 export interface CVData {
   id: string;

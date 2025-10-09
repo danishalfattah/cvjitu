@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
 import {
   Pagination,
   PaginationContent,
@@ -11,13 +11,13 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "./ui/pagination";
-import { StatTile } from "./StatTile";
+} from "../ui/pagination";
+import { StatTile } from "../StatTile";
 import { CVFilters } from "./CVFilters";
 import { CVCard, CVData } from "./CVCard";
 import { CVTable } from "./CVTable";
-import { EmptyState } from "./EmptyState";
-import { DeleteConfirmModal } from "./DeleteConfirmModal";
+import { EmptyState } from "../EmptyState";
+import { DeleteConfirmModal } from "../DeleteConfirmModal";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -26,7 +26,7 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogCancel,
-} from "./ui/alert-dialog";
+} from "../ui/alert-dialog";
 import {
   Search,
   Plus,

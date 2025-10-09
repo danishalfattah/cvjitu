@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { FileUploadZone } from "./FileUploadZone";
+import { FileUploadZone } from "../FileUploadZone";
 import { CVScoringResult } from "./CVScoringResult";
-import { analyzeCVFile, CVScoringData } from "../src/utils/cvScoringService";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { analyzeCVFile, CVScoringData } from "../../src/utils/cvScoringService";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { BarChart3, Bot, FileText, TrendingUp } from "lucide-react";
 
 export function CVScoringPage() {

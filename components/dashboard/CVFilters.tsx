@@ -1,7 +1,13 @@
-import { Button } from "./ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import { Slider } from "./ui/slider";
-import { Badge } from "./ui/badge";
+import { Button } from "../ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
+import { Slider } from "../ui/slider";
+import { Badge } from "../ui/badge";
 import { X } from "lucide-react";
 
 interface CVFiltersProps {
@@ -18,28 +24,32 @@ interface CVFiltersProps {
 const cvCategories = [
   "Semua Kategori",
   "Frontend",
-  "Backend", 
+  "Backend",
   "Data",
   "UI/UX",
   "Product Manager",
-  "Fresh Graduate"
+  "Fresh Graduate",
 ];
 
 const years = ["Semua Tahun", "2022", "2023", "2024", "2025", "2026"];
 
-export function CVFilters({ filters, onFiltersChange, onReset }: CVFiltersProps) {
+export function CVFilters({
+  filters,
+  onFiltersChange,
+  onReset,
+}: CVFiltersProps) {
   const updateFilter = (key: string, value: any) => {
     onFiltersChange({
       ...filters,
-      [key]: value
+      [key]: value,
     });
   };
 
   const activeFiltersCount = [
     filters.status !== "Semua Status",
-    filters.category !== "Semua Kategori", 
+    filters.category !== "Semua Kategori",
     filters.year !== "Semua Tahun",
-    filters.scoreRange[0] !== 1 || filters.scoreRange[1] !== 100
+    filters.scoreRange[0] !== 1 || filters.scoreRange[1] !== 100,
   ].filter(Boolean).length;
 
   return (
@@ -47,7 +57,10 @@ export function CVFilters({ filters, onFiltersChange, onReset }: CVFiltersProps)
       {/* Mobile: Stacked Layout */}
       <div className="block sm:hidden space-y-3">
         <div className="grid grid-cols-2 gap-3">
-          <Select value={filters.status} onValueChange={(value) => updateFilter('status', value)}>
+          <Select
+            value={filters.status}
+            onValueChange={(value) => updateFilter("status", value)}
+          >
             <SelectTrigger className="text-sm">
               <SelectValue>
                 {filters.status === "Semua Status" ? "Status" : filters.status}
@@ -60,7 +73,10 @@ export function CVFilters({ filters, onFiltersChange, onReset }: CVFiltersProps)
             </SelectContent>
           </Select>
 
-          <Select value={filters.year} onValueChange={(value) => updateFilter('year', value)}>
+          <Select
+            value={filters.year}
+            onValueChange={(value) => updateFilter("year", value)}
+          >
             <SelectTrigger className="text-sm">
               <SelectValue>
                 {filters.year === "Semua Tahun" ? "Tahun" : filters.year}
@@ -68,30 +84,41 @@ export function CVFilters({ filters, onFiltersChange, onReset }: CVFiltersProps)
             </SelectTrigger>
             <SelectContent>
               {years.map((year) => (
-                <SelectItem key={year} value={year}>{year}</SelectItem>
+                <SelectItem key={year} value={year}>
+                  {year}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
 
-        <Select value={filters.category} onValueChange={(value) => updateFilter('category', value)}>
+        <Select
+          value={filters.category}
+          onValueChange={(value) => updateFilter("category", value)}
+        >
           <SelectTrigger className="text-sm">
             <SelectValue>
-              {filters.category === "Semua Kategori" ? "Kategori" : filters.category}
+              {filters.category === "Semua Kategori"
+                ? "Kategori"
+                : filters.category}
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
             {cvCategories.map((cat) => (
-              <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+              <SelectItem key={cat} value={cat}>
+                {cat}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
 
         <div className="space-y-2">
-          <span className="text-sm text-gray-600">Skor: {filters.scoreRange[0]} - {filters.scoreRange[1]}</span>
+          <span className="text-sm text-gray-600">
+            Skor: {filters.scoreRange[0]} - {filters.scoreRange[1]}
+          </span>
           <Slider
             value={filters.scoreRange}
-            onValueChange={(value) => updateFilter('scoreRange', value)}
+            onValueChange={(value) => updateFilter("scoreRange", value)}
             max={100}
             min={1}
             step={1}
@@ -100,8 +127,8 @@ export function CVFilters({ filters, onFiltersChange, onReset }: CVFiltersProps)
         </div>
 
         {activeFiltersCount > 0 && (
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={onReset}
             size="sm"
             className="w-full text-gray-600 hover:text-[var(--red-normal)]"
@@ -113,7 +140,10 @@ export function CVFilters({ filters, onFiltersChange, onReset }: CVFiltersProps)
 
       {/* Desktop: Horizontal Layout */}
       <div className="hidden sm:flex sm:flex-wrap gap-3 items-center">
-        <Select value={filters.status} onValueChange={(value) => updateFilter('status', value)}>
+        <Select
+          value={filters.status}
+          onValueChange={(value) => updateFilter("status", value)}
+        >
           <SelectTrigger className="w-32">
             <SelectValue>
               {filters.status === "Semua Status" ? "Status" : filters.status}
@@ -126,20 +156,30 @@ export function CVFilters({ filters, onFiltersChange, onReset }: CVFiltersProps)
           </SelectContent>
         </Select>
 
-        <Select value={filters.category} onValueChange={(value) => updateFilter('category', value)}>
+        <Select
+          value={filters.category}
+          onValueChange={(value) => updateFilter("category", value)}
+        >
           <SelectTrigger className="w-36">
             <SelectValue>
-              {filters.category === "Semua Kategori" ? "Kategori" : filters.category}
+              {filters.category === "Semua Kategori"
+                ? "Kategori"
+                : filters.category}
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
             {cvCategories.map((cat) => (
-              <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+              <SelectItem key={cat} value={cat}>
+                {cat}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
 
-        <Select value={filters.year} onValueChange={(value) => updateFilter('year', value)}>
+        <Select
+          value={filters.year}
+          onValueChange={(value) => updateFilter("year", value)}
+        >
           <SelectTrigger className="w-28">
             <SelectValue>
               {filters.year === "Semua Tahun" ? "Tahun" : filters.year}
@@ -147,7 +187,9 @@ export function CVFilters({ filters, onFiltersChange, onReset }: CVFiltersProps)
           </SelectTrigger>
           <SelectContent>
             {years.map((year) => (
-              <SelectItem key={year} value={year}>{year}</SelectItem>
+              <SelectItem key={year} value={year}>
+                {year}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -157,7 +199,7 @@ export function CVFilters({ filters, onFiltersChange, onReset }: CVFiltersProps)
           <div className="flex-1">
             <Slider
               value={filters.scoreRange}
-              onValueChange={(value) => updateFilter('scoreRange', value)}
+              onValueChange={(value) => updateFilter("scoreRange", value)}
               max={100}
               min={1}
               step={1}
@@ -171,8 +213,8 @@ export function CVFilters({ filters, onFiltersChange, onReset }: CVFiltersProps)
         </div>
 
         {activeFiltersCount > 0 && (
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={onReset}
             size="sm"
             className="text-gray-600 hover:text-[var(--red-normal)]"

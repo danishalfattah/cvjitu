@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { Button } from "./ui/button";
-import { FileUploadZone } from "./FileUploadZone";
-import { CVScoringData } from "../src/utils/cvScoringService";
+import { Button } from "../ui/button";
+import { FileUploadZone } from "../FileUploadZone";
+import { CVScoringData } from "../../src/utils/cvScoringService";
 import { Upload, FileText } from "lucide-react";
-import { RadialScore } from "./RadialScore";
-import { ImageWithFallback } from "./figma/ImageWithFallback";
+import { RadialScore } from "../RadialScore";
+import { ImageWithFallback } from "../figma/ImageWithFallback";
 
 interface HeroSectionProps {
   onFileUpload: (file: File) => void;
