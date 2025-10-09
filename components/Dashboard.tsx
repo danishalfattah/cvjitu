@@ -377,8 +377,14 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
           title="Total Selesai"
           value={stats.completed}
           icon={CheckCircle}
+          change={{ value: "+2 selesai bulan ini", type: "increase" }}
         />
-        <StatTile title="Total Draft" value={stats.drafted} icon={Edit3} />
+        <StatTile
+          title="Total Draft"
+          value={stats.drafted}
+          icon={Edit3}
+          change={{ value: "Perlu diselesaikan", type: "warning" }}
+        />
       </div>
 
       {/* Filters */}

@@ -47,7 +47,7 @@ export default function Page() {
   const handleResetScoring = () => setScoringData(null);
   const handleSaveToRepository = () => router.push("/dashboard");
   const handleDownloadOptimized = () => {
-    console.log("[v0] Downloading optimized CV...");
+    console.log("Downloading optimized CV...");
   };
 
   const handleTryScoring = () => {
