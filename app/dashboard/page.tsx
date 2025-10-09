@@ -24,7 +24,7 @@ export default function DashboardPage() {
         toast.success("Berhasil keluar.");
         router.replace("/");
       }}
-      onCreateCV={() => router.push("/cvbuilder")}
+      onCreateCV={() => router.push("/cv-builder")}
     />
   );
 }

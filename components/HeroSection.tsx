@@ -30,7 +30,7 @@ export function HeroSection({
   isAuthenticated = false,
 }: HeroSectionProps) {
   return (
-    <section className="bg-gradient-to-br from-[var(--surface)] to-[var(--red-light)] py-16 px-6">
+    <section className="bg-gradient-to-br from-[var(--surface)] to-[var(--red-light)] py-12 px-6">
       <div className="max-w-7xl mx-auto">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-8">
@@ -82,7 +82,7 @@ export function HeroSection({
             </div>
           </div>
 
-          <div className="flex justify-center">
+          <div className="flex justify-center ">
             <div className="relative">
               {/* Main illustration card */}
               <div className="bg-gradient-to-br from-[var(--red-light)] to-white rounded-2xl shadow-2xl p-8 max-w-md">
