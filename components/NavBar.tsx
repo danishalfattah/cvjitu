@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "./ui/button";
 import { X, LayoutDashboard } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import Image from "next/image";
 
 interface User {
   id: string;
@@ -26,8 +27,7 @@ export function NavBar({
   onLogout,
   onDashboard,
 }: NavBarProps) {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] =
-    useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -40,19 +40,17 @@ export function NavBar({
     <>
       <nav className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-md border-b border-[var(--border-color)] px-6 py-4 z-50">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          {/* Logo Section */}
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-[var(--red-normal)] rounded-lg flex items-center justify-center">
-              <span className="text-white font-semibold text-sm">
-                CV
-              </span>
-            </div>
-            <span className="font-poppins font-semibold text-xl text-[var(--neutral-ink)]">
-              CVJitu
-            </span>
+          <div className="">
+            <Image
+              src="/logo.svg"
+              width={100}
+              height={100}
+              quality={100}
+              alt="logo"
+              className=" "
+            />
           </div>
 
-          {/* Center Navigation - Desktop Only */}
           <div className="hidden lg:flex items-center space-x-8">
             <a
               href="#features"
@@ -274,7 +272,7 @@ export function NavBar({
                   {user ? (
                     <motion.button
                       onClick={() => {
-                        onDashboard();
+                        onDashboard?.();
                         closeMobileMenu();
                       }}
                       className="w-full py-3 px-4 text-[var(--neutral-ink)] hover:text-[var(--red-normal)] bg-white/80 hover:bg-[var(--red-light)] border border-[var(--border-color)] rounded-lg transition-all font-medium flex items-center justify-center gap-2"
@@ -288,7 +286,7 @@ export function NavBar({
                     <div className="grid grid-cols-2 gap-3">
                       <motion.button
                         onClick={() => {
-                          onLogin();
+                          onLogin?.();
                           closeMobileMenu();
                         }}
                         className="py-3 px-4 text-[var(--neutral-ink)] hover:text-[var(--red-normal)] bg-white/80 hover:bg-[var(--red-light)] border border-[var(--border-color)] rounded-lg transition-all font-medium"
@@ -299,7 +297,7 @@ export function NavBar({
                       </motion.button>
                       <motion.button
                         onClick={() => {
-                          onRegister();
+                          onRegister?.();
                           closeMobileMenu();
                         }}
                         className="py-3 px-4 bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white rounded-lg transition-all font-medium"
