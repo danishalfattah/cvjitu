@@ -52,7 +52,7 @@ export function FAQSection() {
             <AccordionItem
               key={index}
               value={`item-${index}`}
-              className="border border-[var(--border-color)] rounded-lg px-6 data-[state=open]:bg-[var(--surface)]"
+              className="border border-[var(--border-color)] rounded-lg px-6 data-[state=open]:bg-[var(--surface)] !border-b "
             >
               <AccordionTrigger className="text-left hover:no-underline py-6 text-[var(--neutral-ink)] font-medium">
                 {faq.question}

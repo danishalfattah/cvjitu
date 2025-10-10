@@ -121,14 +121,13 @@ export function NavBar({
               className="relative w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors"
               whileTap={{ scale: 0.95 }}
             >
-              <div className="w-6 h-6 relative">
+              <div className="w-6 h-6 relative flex items-center justify-center">
                 {/* Hamburger Lines */}
                 <motion.span
-                  className="absolute left-0 block w-6 h-0.5 bg-[var(--neutral-ink)] rounded-full"
-                  style={{ top: "6px" }}
+                  className="absolute block w-6 h-0.5 bg-[var(--neutral-ink)] rounded-full"
                   animate={{
                     rotate: isMobileMenuOpen ? 45 : 0,
-                    y: isMobileMenuOpen ? 6 : 0,
+                    y: isMobileMenuOpen ? 0 : -6,
                   }}
                   transition={{
                     duration: 0.3,
@@ -136,10 +135,10 @@ export function NavBar({
                   }}
                 />
                 <motion.span
-                  className="absolute left-0 top-1/2 block w-6 h-0.5 bg-[var(--neutral-ink)] rounded-full transform -translate-y-1/2"
+                  className="absolute block w-6 h-0.5 bg-[var(--neutral-ink)] rounded-full"
                   animate={{
                     opacity: isMobileMenuOpen ? 0 : 1,
-                    x: isMobileMenuOpen ? 10 : 0,
+                    scale: isMobileMenuOpen ? 0.8 : 1,
                   }}
                   transition={{
                     duration: 0.3,
@@ -147,11 +146,10 @@ export function NavBar({
                   }}
                 />
                 <motion.span
-                  className="absolute left-0 block w-6 h-0.5 bg-[var(--neutral-ink)] rounded-full"
-                  style={{ bottom: "6px" }}
+                  className="absolute block w-6 h-0.5 bg-[var(--neutral-ink)] rounded-full"
                   animate={{
                     rotate: isMobileMenuOpen ? -45 : 0,
-                    y: isMobileMenuOpen ? -6 : 0,
+                    y: isMobileMenuOpen ? 0 : 6,
                   }}
                   transition={{
                     duration: 0.3,
@@ -180,7 +178,7 @@ export function NavBar({
 
             {/* Mobile Menu Dropdown Panel */}
             <motion.div
-              className="fixed top-20 left-0 right-0 bg-white/95 backdrop-blur-md z-50 lg:hidden shadow-2xl border-b border-[var(--border-color)]"
+              className="fixed top-[75px] left-0 right-0 bg-white/95 backdrop-blur-md z-50 lg:hidden shadow-2xl border-b border-[var(--border-color)]"
               initial={{ y: "-100%", opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: "-100%", opacity: 0 }}

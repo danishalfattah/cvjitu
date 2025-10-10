@@ -5,6 +5,7 @@ import { CVScoringPage } from "./CVScoringPage";
 import { Button } from "../ui/button";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import Image from "next/image";
 
 interface User {
   id: string;
@@ -140,13 +141,15 @@ export function DashboardLayout({
               >
                 <Menu className="w-5 h-5" />
               </Button>
-              <div className="flex items-center space-x-2">
-                <div className="w-6 h-6 bg-[var(--red-normal)] rounded-md flex items-center justify-center">
-                  <span className="text-white font-semibold text-xs">CV</span>
-                </div>
-                <span className="font-poppins font-semibold text-lg text-[var(--neutral-ink)]">
-                  CVJitu
-                </span>
+              <div className="">
+                <Image
+                  src="/logo.svg"
+                  width={80}
+                  height={80}
+                  quality={100}
+                  alt="CVJitu Logo"
+                  className=""
+                />
               </div>
             </div>
 

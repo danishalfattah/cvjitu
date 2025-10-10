@@ -93,21 +93,6 @@ export function DashboardSidebar({
             </li>
           ))}
         </ul>
-
-        {/* Mobile-only quick actions */}
-        {isMobile && (
-          <div className="mt-6 pt-6 border-t border-[var(--border-color)]">
-            <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3 px-4">
-              Aksi Cepat
-            </p>
-            <div className="space-y-2">
-              <button className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left text-gray-600 hover:bg-[var(--red-light)] hover:text-[var(--red-normal)] transition-colors">
-                <User className="w-5 h-5" />
-                <span>Profil Saya</span>
-              </button>
-            </div>
-          </div>
-        )}
       </nav>
 
       {/* User Profile & Logout */}

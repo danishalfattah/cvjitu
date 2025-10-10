@@ -532,19 +532,15 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
               ))}
             </div>
           ) : (
-            <div className="mb-6 sm:mb-8 overflow-x-auto">
-              <div className="min-w-[600px]">
-                <CVTable
-                  cvs={paginatedCVs}
-                  onPreview={(cv) => handleCVAction("preview", cv)}
-                  onDownload={(cv) => handleCVAction("download", cv)}
-                  onUpdate={(cv) => handleCVAction("update", cv)}
-                  onDelete={(cv) => handleCVAction("delete", cv)}
-                  onShare={(cv) => handleCVAction("share", cv)}
-                  onVisibilityChange={handleVisibilityChange}
-                />
-              </div>
-            </div>
+            <CVTable
+              cvs={paginatedCVs}
+              onPreview={(cv) => handleCVAction("preview", cv)}
+              onDownload={(cv) => handleCVAction("download", cv)}
+              onUpdate={(cv) => handleCVAction("update", cv)}
+              onDelete={(cv) => handleCVAction("delete", cv)}
+              onShare={(cv) => handleCVAction("share", cv)}
+              onVisibilityChange={handleVisibilityChange}
+            />
           )}
 
           {totalPages > 1 && (

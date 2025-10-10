@@ -80,18 +80,20 @@ export function CVFilters({
           </Select>
         </div>
 
-        <div className="space-y-2 pt-2 ">
-          <span className="text-sm text-gray-600 ">
+        <div className="space-y-4 pt-3">
+          <span className="text-sm text-gray-600">
             Skor: {filters.scoreRange[0]} - {filters.scoreRange[1]}
           </span>
-          <Slider
-            value={filters.scoreRange}
-            onValueChange={(value) => updateFilter("scoreRange", value)}
-            max={100}
-            min={1}
-            step={1}
-            className="w-full"
-          />
+          <div className="pt-2">
+            <Slider
+              value={filters.scoreRange}
+              onValueChange={(value) => updateFilter("scoreRange", value)}
+              max={100}
+              min={1}
+              step={1}
+              className="w-full"
+            />
+          </div>
         </div>
 
         {activeFiltersCount > 0 && (

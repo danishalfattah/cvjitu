@@ -5,6 +5,7 @@ import { CVScoringData } from "../../src/utils/cvScoringService";
 import { Upload, FileText } from "lucide-react";
 import { RadialScore } from "../RadialScore";
 import { ImageWithFallback } from "../figma/ImageWithFallback";
+import Image from "next/image";
 
 interface HeroSectionProps {
   onFileUpload: (file: File) => void;
@@ -30,11 +31,11 @@ export function HeroSection({
   isAuthenticated = false,
 }: HeroSectionProps) {
   return (
-    <section className="bg-gradient-to-br from-[var(--surface)] to-[var(--red-light)] py-12 px-6">
+    <section className="bg-gradient-to-br from-[var(--surface)] to-[var(--red-light)] py-18 px-6">
       <div className="max-w-7xl mx-auto">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          <div className="space-y-8">
-            <div className="space-y-4">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center  ">
+          <div className="space-y-8 ">
+            <div className="space-y-4 ">
               <h1 className="text-4xl lg:text-5xl font-poppins font-bold text-[var(--neutral-ink)] leading-tight">
                 Bangun CV Kuat, <br />
                 <span className="text-[var(--red-normal)] ">
@@ -81,66 +82,65 @@ export function HeroSection({
               />
             </div>
           </div>
-
-          <div className="flex justify-center ">
-            <div className="relative">
-              {/* Main illustration card */}
-              <div className="bg-gradient-to-br from-[var(--red-light)] to-white rounded-2xl shadow-2xl p-8 max-w-md">
-                <div className="text-center mb-6">
-                  <ImageWithFallback
-                    src="https://images.unsplash.com/photo-1631038506857-6c970dd9ba02?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBjcmVhdGluZyUyMGN2JTIwd29ya3NwYWNlfGVufDF8fHx8MTc1OTY2MTcwN3ww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
-                    alt="Profesional Membuat CV"
-                    className="w-full h-48 object-cover rounded-xl mb-4 shadow-lg"
+          <div className="flex justify-center  ">
+            <div className="relative w-full max-w-2xl h-[500px] lg:h-[600px]">
+              {/* Background blob shape - positioned behind image */}
+              <div
+                className="absolute inset-0 flex items-center justify-center"
+                style={{ zIndex: 0 }}
+              >
+                <svg
+                  viewBox="0 0 600 600"
+                  className="w-full h-full"
+                  style={{
+                    animation: "blob-morph 8s ease-in-out infinite",
+                  }}
+                >
+                  <defs>
+                    <linearGradient
+                      id="blobGradient"
+                      x1="0%"
+                      y1="0%"
+                      x2="100%"
+                      y2="100%"
+                    >
+                      <stop
+                        offset="0%"
+                        style={{ stopColor: "#F6E8EC", stopOpacity: 1 }}
+                      />
+                      <stop
+                        offset="50%"
+                        style={{ stopColor: "#E2B8C5", stopOpacity: 1 }}
+                      />
+                      <stop
+                        offset="100%"
+                        style={{ stopColor: "#A21944", stopOpacity: 0.4 }}
+                      />
+                    </linearGradient>
+                  </defs>
+                  <path
+                    d="M 300 80 C 380 60 470 100 510 180 C 550 260 540 360 490 440 C 440 520 340 560 250 540 C 160 520 80 460 70 360 C 60 260 120 140 200 100 C 240 80 260 90 300 80 Z"
+                    fill="url(#blobGradient)"
                   />
-                  <div className="bg-white/90 backdrop-blur-sm rounded-lg p-4 shadow-sm">
-                    <h3 className="font-poppins font-semibold text-[var(--neutral-ink)] mb-1">
-                      Buat CV Profesional
-                    </h3>
-                    <p className="text-sm text-gray-600 mb-3">
-                      Dengan bantuan AI untuk hasil optimal
-                    </p>
-                    <div className="flex items-center justify-center space-x-4">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-2 h-2 bg-[var(--red-normal)] rounded-full"></div>
-                        <span className="text-xs text-gray-500">
-                          ATS Friendly
-                        </span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <div className="w-2 h-2 bg-[var(--success)] rounded-full"></div>
-                        <span className="text-xs text-gray-500">
-                          Auto Score
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                </svg>
               </div>
 
-              {/* Floating score indicator */}
-              <div className="absolute -top-4 -right-4 bg-[var(--red-normal)] rounded-full p-3 shadow-lg">
-                <div className="text-white text-center">
-                  <div className="text-lg font-bold">98</div>
-                  <div className="text-xs">Score</div>
-                </div>
-              </div>
-
-              {/* Floating feature badges */}
-              <div className="absolute -bottom-6 -left-4 bg-white rounded-full px-4 py-2 shadow-lg border border-[var(--border-color)]">
-                <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-[var(--success)] rounded-full animate-pulse"></div>
-                  <span className="text-sm font-medium text-[var(--neutral-ink)]">
-                    AI Powered
-                  </span>
-                </div>
-              </div>
-
-              <div className="absolute -top-6 -left-6 bg-white rounded-full px-4 py-2 shadow-lg border border-[var(--border-color)]">
-                <div className="flex items-center space-x-2">
-                  <FileText className="w-4 h-4 text-[var(--red-normal)]" />
-                  <span className="text-sm font-medium text-[var(--neutral-ink)]">
-                    Template Pro
-                  </span>
+              {/* Professional image - positioned on top of blob */}
+              <div
+                className="absolute inset-0 flex items-center justify-center"
+                style={{ zIndex: 1 }}
+              >
+                <div className="relative w-full h-full">
+                  <Image
+                    src="/professional-man.png"
+                    alt="Profesional dengan Laptop"
+                    fill
+                    className="object-contain object-bottom rounded-xl  "
+                    style={{
+                      filter: "drop-shadow(0 25px 50px rgba(162, 25, 68, 0.2))",
+                    }}
+                    priority
+                  />
                 </div>
               </div>
             </div>
