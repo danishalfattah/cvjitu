@@ -147,7 +147,7 @@ export function HeroSection({
                     src="/professional-man.png"
                     alt="Profesional dengan Laptop"
                     fill
-                    className="object-contain object-bottom rounded-xl  "
+                    className="object-contain object-bottom rounded-xl -translate-y-10"
                     style={{
                       filter: "drop-shadow(0 25px 50px rgba(162, 25, 68, 0.2))",
                     }}
