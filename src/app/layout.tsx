@@ -34,8 +34,6 @@ export const metadata: Metadata = {
     apple: "/icon.png",
   },
 };
-// tes aja
-// ts lagi
 export default function RootLayout({
   children,
 }: Readonly<{
