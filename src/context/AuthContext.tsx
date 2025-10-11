@@ -1,3 +1,6 @@
+// src/context/AuthContext.tsx
+"use client";
+
 import {
   createContext,
   useContext,
@@ -5,6 +8,19 @@ import {
   useEffect,
   ReactNode,
 } from "react";
+import {
+  onAuthStateChanged,
+  User as FirebaseUser,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
+  signOut,
+  updateProfile,
+  sendEmailVerification, // Impor fungsi verifikasi email
+} from "firebase/auth";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { auth, db } from "@/src/lib/firebase"; // Import dari konfigurasi Firebase
 
 export interface User {
   id: string;
@@ -20,22 +36,21 @@ export interface User {
   scoringCreditsTotal: number;
 }
 
+interface RegisterData {
+  fullName: string;
+  email: string;
+  password: string;
+}
+
 interface AuthContextType {
   user: User | null;
+  firebaseUser: FirebaseUser | null; // Tambahkan untuk akses user firebase asli
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
-}
-
-interface RegisterData {
-  fullName: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-  agreeToTerms: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -52,49 +67,75 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
+const getUserProfile = async (firebaseUser: FirebaseUser): Promise<User> => {
+  const userDocRef = doc(db, "users", firebaseUser.uid);
+  const userDoc = await getDoc(userDocRef);
+
+  if (userDoc.exists()) {
+    return userDoc.data() as User;
+  } else {
+    const newUser: User = {
+      id: firebaseUser.uid,
+      email: firebaseUser.email || "",
+      fullName: firebaseUser.displayName || "New User",
+      avatar: firebaseUser.photoURL || undefined,
+      provider: firebaseUser.providerData[0]?.providerId.includes("google")
+        ? "google"
+        : "email",
+      createdAt: new Date().toISOString(),
+      plan: "Basic",
+      cvCreditsUsed: 0,
+      cvCreditsTotal: 5,
+      scoringCreditsUsed: 0,
+      scoringCreditsTotal: 10,
+    };
+    await setDoc(userDocRef, newUser);
+    return newUser;
+  }
+};
+
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Check for existing session on mount
   useEffect(() => {
-    const savedUser = localStorage.getItem("cvjitu_user");
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch (error) {
-        localStorage.removeItem("cvjitu_user");
+    const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
+      setFirebaseUser(fbUser);
+      if (fbUser) {
+        // Hanya set user jika email sudah terverifikasi (kecuali untuk provider non-password)
+        if (
+          fbUser.emailVerified ||
+          fbUser.providerData[0]?.providerId !== "password"
+        ) {
+          const userProfile = await getUserProfile(fbUser);
+          setUser(userProfile);
+        } else {
+          setUser(null); // Anggap belum login jika email belum diverifikasi
+        }
+      } else {
+        setUser(null);
       }
-    }
+      setIsLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
   const login = async (email: string, password: string): Promise<void> => {
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      // Mock successful login
-      if (email === "demo@cvjitu.com" && password === "password123") {
-        const mockUser: User = {
-          id: "1",
-          email: email,
-          fullName: "Demo User",
-          provider: "email",
-          createdAt: new Date().toISOString(),
-          plan: "Basic", // Default plan for demo user
-          cvCreditsUsed: 3,
-          cvCreditsTotal: 5,
-          scoringCreditsUsed: 8,
-          scoringCreditsTotal: 10,
-        };
-        setUser(mockUser);
-        localStorage.setItem("cvjitu_user", JSON.stringify(mockUser));
-      } else {
-        throw new Error("Email atau password salah");
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      if (!userCredential.user.emailVerified) {
+        await signOut(auth);
+        throw new Error(
+          "Silakan verifikasi email Anda terlebih dahulu. Cek kotak masuk Anda."
+        );
       }
-    } catch (error) {
-      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -103,26 +144,30 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const register = async (data: RegisterData): Promise<void> => {
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        data.email,
+        data.password
+      );
+      const fbUser = userCredential.user;
 
-      // Mock successful registration
-      const mockUser: User = {
-        id: Date.now().toString(),
+      await updateProfile(fbUser, { displayName: data.fullName });
+      await sendEmailVerification(fbUser); // Kirim email verifikasi
+
+      const newUserProfile: User = {
+        id: fbUser.uid,
         email: data.email,
         fullName: data.fullName,
         provider: "email",
         createdAt: new Date().toISOString(),
-        plan: "Basic", // New users start with Basic plan
+        plan: "Basic",
         cvCreditsUsed: 0,
         cvCreditsTotal: 5,
         scoringCreditsUsed: 0,
         scoringCreditsTotal: 10,
       };
-      setUser(mockUser);
-      localStorage.setItem("cvjitu_user", JSON.stringify(mockUser));
-    } catch (error) {
-      throw error;
+      await setDoc(doc(db, "users", fbUser.uid), newUserProfile);
+      // Jangan set user di sini, biarkan onAuthStateChanged yang menangani setelah verifikasi
     } finally {
       setIsLoading(false);
     }
@@ -131,39 +176,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const loginWithGoogle = async (): Promise<void> => {
     setIsLoading(true);
     try {
-      // Simulate Google OAuth
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      const mockUser: User = {
-        id: "google_" + Date.now(),
-        email: "user@gmail.com",
-        fullName: "Google User",
-        avatar:
-          "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face",
-        provider: "google",
-        createdAt: new Date().toISOString(),
-        plan: "Fresh Graduate", // Mock plan for Google user
-        cvCreditsUsed: 15,
-        cvCreditsTotal: 50,
-        scoringCreditsUsed: 45,
-        scoringCreditsTotal: 200,
-      };
-      setUser(mockUser);
-      localStorage.setItem("cvjitu_user", JSON.stringify(mockUser));
-    } catch (error) {
-      throw error;
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    await signOut(auth);
     setUser(null);
-    localStorage.removeItem("cvjitu_user");
   };
 
   const value: AuthContextType = {
     user,
+    firebaseUser,
     isLoading,
     login,
     register,
