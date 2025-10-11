@@ -1,3 +1,5 @@
+// app/page.tsx
+
 "use client";
 
 import { useState } from "react";
@@ -50,9 +52,12 @@ export default function Page() {
     console.log("Downloading optimized CV...");
   };
 
-  const handleTryScoring = () => {
-    if (isAuthenticated) router.push("/dashboard");
-    else router.push("/login");
+  const handleStartNow = () => {
+    if (isAuthenticated) {
+      router.push("/dashboard");
+    } else {
+      router.push("/login");
+    }
   };
 
   const handleLogout = () => {
@@ -76,7 +81,7 @@ export default function Page() {
         <HeroSection
           onFileUpload={handleCVUpload}
           isProcessing={isProcessingCV}
-          onTryScoring={handleTryScoring}
+          onStartNow={handleStartNow}
           scoringData={scoringData}
           onResetScoring={handleResetScoring}
           onSaveToRepository={handleSaveToRepository}

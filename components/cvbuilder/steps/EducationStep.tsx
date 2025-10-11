@@ -45,7 +45,7 @@ export function EducationStep({
       {data.educations.map((education: Education, index: number) => (
         <Card
           key={education.id}
-          className="border border-[var(--border-color)] "
+          className="border border-[var(--border-color)]  "
         >
           <CardHeader className="flex flex-row items-center justify-between pb-4">
             <div className="flex items-center space-x-3">

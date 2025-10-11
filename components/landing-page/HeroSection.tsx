@@ -1,3 +1,5 @@
+// components/landing-page/HeroSection.tsx
+
 import { useState } from "react";
 import { Button } from "../ui/button";
 import { FileUploadZone } from "../FileUploadZone";
@@ -10,7 +12,7 @@ import Image from "next/image";
 interface HeroSectionProps {
   onFileUpload: (file: File) => void;
   isProcessing?: boolean;
-  onTryScoring?: () => void;
+  onStartNow?: () => void;
   scoringData?: CVScoringData | null;
   onResetScoring?: () => void;
   onSaveToRepository?: () => void;
@@ -22,7 +24,7 @@ interface HeroSectionProps {
 export function HeroSection({
   onFileUpload,
   isProcessing = false,
-  onTryScoring,
+  onStartNow,
   scoringData,
   onResetScoring,
   onSaveToRepository,
@@ -30,6 +32,15 @@ export function HeroSection({
   hasTriedScoring = false,
   isAuthenticated = false,
 }: HeroSectionProps) {
+  const [isHighlighting, setIsHighlighting] = useState(false);
+
+  const handleTriggerHighlight = () => {
+    setIsHighlighting(true);
+    setTimeout(() => {
+      setIsHighlighting(false);
+    }, 500); // Highlight for 1 second
+  };
+
   return (
     <section className="bg-gradient-to-br from-[var(--surface)] to-[var(--red-light)] py-18 px-6">
       <div className="max-w-7xl mx-auto">
@@ -53,6 +64,7 @@ export function HeroSection({
               <Button
                 size="lg"
                 className="bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white px-8"
+                onClick={onStartNow}
               >
                 Mulai Sekarang
               </Button>
@@ -60,7 +72,7 @@ export function HeroSection({
                 size="lg"
                 variant="outline"
                 className="border-[var(--red-normal)] text-[var(--red-normal)] hover:bg-[var(--red-light)]"
-                onClick={onTryScoring}
+                onClick={handleTriggerHighlight}
               >
                 Coba Scoring
               </Button>
@@ -78,7 +90,7 @@ export function HeroSection({
                 onDownloadOptimized={onDownloadOptimized}
                 hasTriedScoring={hasTriedScoring}
                 isAuthenticated={isAuthenticated}
-                onTryScoring={onTryScoring}
+                isHighlighted={isHighlighting}
               />
             </div>
           </div>

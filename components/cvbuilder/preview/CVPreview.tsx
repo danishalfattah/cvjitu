@@ -26,10 +26,10 @@ export function CVPreview({ data, lang }: CVPreviewProps) {
   const fullName = `${data.firstName || ""} ${data.lastName || ""}`.trim();
 
   return (
-    <Card className="border border-[var(--border-color)] h-fit overflow-hidden">
+    <Card className="border border-[var(--border-color)] h-fit overflow-hidden p-0">
       <CardContent className="p-0">
         <div
-          className="bg-white w-full overflow-y-auto font-serif"
+          className="bg-white w-full overflow-y-auto font-serif "
           id="cv-print-container"
           style={{
             aspectRatio: "210/297",

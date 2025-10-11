@@ -1,3 +1,5 @@
+// components/dashboard/CVBuilderPage.tsx
+
 "use client";
 
 import { useState } from "react";
@@ -227,44 +229,46 @@ export function CVBuilderPage({ onBack, onSave, lang }: CVBuilderPageProps) {
 
       <div className="bg-white border-b border-[var(--border-color)] px-6 py-4">
         <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between mb-4">
-            {steps.map((step, index) => (
-              <div key={step.id} className="flex items-center">
-                <button
-                  onClick={() => setCurrentStep(index)}
-                  className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium transition-all duration-200 hover:scale-105 cursor-pointer ${
-                    index < currentStep
-                      ? "bg-[var(--success)] text-white hover:bg-green-600"
-                      : index === currentStep
-                      ? "bg-[var(--red-normal)] text-white hover:bg-[var(--red-normal-hover)]"
-                      : "bg-gray-200 text-gray-500 hover:bg-gray-300"
-                  }`}
-                  title={`Go to ${t(step.title, lang)}`}
-                >
-                  {index < currentStep ? "✓" : index + 1}
-                </button>
-                <button
-                  onClick={() => setCurrentStep(index)}
-                  className={`ml-2 text-sm font-medium transition-colors duration-200 hover:opacity-80 cursor-pointer ${
-                    index === currentStep
-                      ? "text-[var(--red-normal)]"
-                      : "text-gray-500 hover:text-gray-700"
-                  }`}
-                  title={`Go to ${t(step.title, lang)}`}
-                >
-                  {t(step.title, lang)}
-                </button>
-                {index < steps.length - 1 && (
-                  <div
-                    className={`mx-4 h-px flex-1 transition-colors duration-300 ${
+          <div className="overflow-x-auto horizontal-scroll-hidden">
+            <div className="flex items-center justify-between mb-4 min-w-[750px] ">
+              {steps.map((step, index) => (
+                <div key={step.id} className="flex items-center">
+                  <button
+                    onClick={() => setCurrentStep(index)}
+                    className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium transition-all duration-200 hover:scale-105 cursor-pointer flex-shrink-0 ${
                       index < currentStep
-                        ? "bg-[var(--success)]"
-                        : "bg-gray-200"
+                        ? "bg-[var(--success)] text-white hover:bg-green-600"
+                        : index === currentStep
+                        ? "bg-[var(--red-normal)] text-white hover:bg-[var(--red-normal-hover)]"
+                        : "bg-gray-200 text-gray-500 hover:bg-gray-300"
                     }`}
-                  />
-                )}
-              </div>
-            ))}
+                    title={`Go to ${t(step.title, lang)}`}
+                  >
+                    {index < currentStep ? "✓" : index + 1}
+                  </button>
+                  <button
+                    onClick={() => setCurrentStep(index)}
+                    className={`ml-2 text-sm font-medium transition-colors duration-200 hover:opacity-80 cursor-pointer whitespace-nowrap ${
+                      index === currentStep
+                        ? "text-[var(--red-normal)]"
+                        : "text-gray-500 hover:text-gray-700"
+                    }`}
+                    title={`Go to ${t(step.title, lang)}`}
+                  >
+                    {t(step.title, lang)}
+                  </button>
+                  {index < steps.length - 1 && (
+                    <div
+                      className={`mx-4 h-px flex-1 transition-colors duration-300 ${
+                        index < currentStep
+                          ? "bg-[var(--success)]"
+                          : "bg-gray-200"
+                      }`}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
           <Progress value={progressPercentage} className="h-2" />
         </div>
@@ -274,7 +278,7 @@ export function CVBuilderPage({ onBack, onSave, lang }: CVBuilderPageProps) {
         <div className="grid lg:grid-cols-2 gap-8 min-h-[600px]">
           <div className="space-y-6">
             <Card className="border border-[var(--border-color)]">
-              <CardContent className="p-6">
+              <CardContent className="">
                 <div className="mb-6">
                   <h2 className="text-lg font-poppins font-semibold text-[var(--neutral-ink)] mb-2">
                     {t(`${steps[currentStep].id}Title`, lang)}

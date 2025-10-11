@@ -7,7 +7,6 @@ import { CVBuilderPage } from "@/components/dashboard/CVBuilderPage";
 import { toast } from "sonner";
 import type { Language } from "@/lib/translations";
 
-// Komponen ini berisi semua logic client-side
 function CVBuilderClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -31,7 +30,7 @@ function CVBuilderClient() {
       lang={lang}
       onBack={() => router.push("/dashboard")}
       onSave={(cvData) => {
-        console.log("[v0] Saving CV:", cvData);
+        console.log("Saving CV:", cvData);
         toast.success("CV berhasil disimpan!");
         router.push("/dashboard");
       }}

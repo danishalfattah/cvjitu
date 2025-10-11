@@ -1,3 +1,5 @@
+// components/FileUploadZone.tsx
+
 import { useState, useCallback } from "react";
 import {
   Upload,
@@ -29,6 +31,7 @@ interface FileUploadZoneProps {
   hasTriedScoring?: boolean;
   isAuthenticated?: boolean;
   onTryScoring?: () => void;
+  isHighlighted?: boolean;
 }
 
 export function FileUploadZone({
@@ -43,6 +46,7 @@ export function FileUploadZone({
   hasTriedScoring = false,
   isAuthenticated = false,
   onTryScoring,
+  isHighlighted = false,
 }: FileUploadZoneProps) {
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -352,8 +356,8 @@ export function FileUploadZone({
       </div>
 
       <div
-        className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer ${
-          dragActive
+        className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-colors duration-300 cursor-pointer ${
+          dragActive || isHighlighted
             ? "border-[var(--red-normal)] bg-[var(--red-light)]"
             : error
             ? "border-red-300 bg-red-50"

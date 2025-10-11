@@ -16,7 +16,7 @@ export function GeneralInfoStep({
   lang,
 }: GeneralInfoStepProps) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 ">
       <div className="space-y-2">
         <Label htmlFor="jobTitle" className="text-sm font-medium">
           {t("jobTitleLabel", lang)} <span className="text-red-500">*</span>
