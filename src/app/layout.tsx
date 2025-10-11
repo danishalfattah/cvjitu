@@ -35,6 +35,7 @@ export const metadata: Metadata = {
   },
 };
 // tes aja
+// ts lagi
 export default function RootLayout({
   children,
 }: Readonly<{
