@@ -5,5 +5,5 @@ import { PrivacyPolicyPage } from "@/components/PrivacyPolicyPage";
 
 export default function PrivacyPage() {
   const router = useRouter();
-  return <PrivacyPolicyPage onBack={() => router.push("/register")} />;
+  return <PrivacyPolicyPage onBack={() => router.back()} />;
 }

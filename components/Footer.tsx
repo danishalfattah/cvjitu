@@ -23,22 +23,16 @@ export function Footer() {
           <div className="flex items-center space-x-6">
             <div className="flex space-x-6 text-sm text-gray-600">
               <a
-                href="#"
+                href="/terms"
                 className="hover:text-[var(--red-normal)] transition-colors"
               >
                 Syarat
               </a>
               <a
-                href="#"
+                href="/privacy"
                 className="hover:text-[var(--red-normal)] transition-colors"
               >
                 Privasi
-              </a>
-              <a
-                href="#"
-                className="hover:text-[var(--red-normal)] transition-colors"
-              >
-                Kontak
               </a>
             </div>
             <div className="flex space-x-3">

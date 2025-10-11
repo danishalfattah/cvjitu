@@ -83,6 +83,14 @@ export function CVCard({
               <Badge variant="outline" className="text-xs">
                 {cv.lang === "id" ? "ID" : "EN"}
               </Badge>
+              <Badge variant="outline" className="text-xs">
+                {cv.visibility === "public" ? (
+                  <Globe className="w-3 h-3 mr-1" />
+                ) : (
+                  <Lock className="w-3 h-3 mr-1" />
+                )}
+                {cv.visibility === "public" ? "Publik" : "Privat"}
+              </Badge>
             </div>
           </div>
           <div className="flex items-center space-x-2 sm:space-x-3 ml-2 sm:ml-4">

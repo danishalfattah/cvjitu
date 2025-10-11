@@ -48,7 +48,7 @@ export function FeaturesSection() {
               key={index}
               className="border border-[var(--border-color)] hover:shadow-lg transition-shadow duration-300"
             >
-              <CardHeader className="text-center pb-4">
+              <CardHeader className="text-center ">
                 <div className="w-16 h-16 bg-[var(--red-light)] rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <feature.icon className="w-8 h-8 text-[var(--red-normal)]" />
                 </div>

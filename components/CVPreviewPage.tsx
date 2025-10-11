@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Globe, Lock, Download, User } from "lucide-react";
+import { Globe, Lock, Download, User, ArrowLeft, Home } from "lucide-react";
 import { CVData } from "@/components/dashboard/CVCard";
 import { dummyCVs } from "@/components/dashboard/Dashboard";
 import { CVBuilderData } from "./cvbuilder/types";
@@ -183,6 +183,26 @@ export function CVPreviewPage() {
                   )}
                 </CardContent>
               </Card>
+
+              {isOwner ? (
+                <Button
+                  onClick={() => router.push("/dashboard")}
+                  variant="outline"
+                  className="w-full"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Kembali ke Dashboard
+                </Button>
+              ) : (
+                <Button
+                  onClick={() => router.push("/")}
+                  variant="outline"
+                  className="w-full"
+                >
+                  <Home className="w-4 h-4 mr-2" />
+                  Kembali ke Beranda
+                </Button>
+              )}
 
               <Button className="w-full bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white">
                 <Download className="w-4 h-4 mr-2" />

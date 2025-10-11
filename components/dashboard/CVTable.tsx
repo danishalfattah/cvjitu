@@ -61,14 +61,16 @@ export function CVTable({
   };
 
   return (
-    <div className="bg-white rounded-lg border border-[var(--border-color)]  ">
-      <div className="w-full overflow-x-auto md:overflow-x-visible">
-        <Table className="md:min-w-0">
+    <div className="bg-white rounded-lg border border-[var(--border-color)] overflow-hidden">
+      {/* Wrapper untuk scroll horizontal di mobile */}
+      <div className="w-full overflow-x-auto horizontal-scroll-hidden">
+        <table className="w-full caption-bottom text-sm min-w-[700px]">
           <TableHeader>
             <TableRow className="bg-[var(--surface)]">
               <TableHead>Posisi yang Dilamar</TableHead>
               <TableHead>Tahun</TableHead>
               <TableHead>Bahasa</TableHead>
+              <TableHead>Privasi</TableHead>
               <TableHead>Dibuat</TableHead>
               <TableHead>Diperbarui</TableHead>
               <TableHead>Status</TableHead>
@@ -85,6 +87,18 @@ export function CVTable({
                   <Badge variant="outline">
                     {cv.lang === "id" ? "ID" : "EN"}
                   </Badge>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-1.5">
+                    {cv.visibility === "public" ? (
+                      <Globe className="w-4 h-4 text-gray-500" />
+                    ) : (
+                      <Lock className="w-4 h-4 text-gray-500" />
+                    )}
+                    <span className="text-gray-600">
+                      {cv.visibility === "public" ? "Publik" : "Privat"}
+                    </span>
+                  </div>
                 </TableCell>
                 <TableCell className="text-gray-600">{cv.created}</TableCell>
                 <TableCell className="text-gray-600">{cv.updated}</TableCell>
@@ -164,7 +178,7 @@ export function CVTable({
               </TableRow>
             ))}
           </TableBody>
-        </Table>
+        </table>
       </div>
     </div>
   );
