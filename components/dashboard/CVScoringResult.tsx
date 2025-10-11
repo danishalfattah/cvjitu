@@ -97,16 +97,6 @@ export function CVScoringResult({
               </p>
             </div>
           </div>
-
-          <div className="w-full md:w-auto">
-            <Button
-              onClick={onSaveToRepository}
-              className="bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white w-full"
-            >
-              <FileText className="w-4 h-4 mr-2" />
-              Kembali ke Dashboard
-            </Button>
-          </div>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8">

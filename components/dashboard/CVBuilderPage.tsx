@@ -1,12 +1,10 @@
-// components/dashboard/CVBuilderPage.tsx
-
 "use client";
 
 import { useState } from "react";
 import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
 import { Progress } from "../ui/progress";
-import { ArrowLeft, ArrowRight, Download } from "lucide-react";
+import { ArrowLeft, ArrowRight, Download, Save } from "lucide-react";
 import { GeneralInfoStep } from "../cvbuilder/steps/GeneralInfoStep";
 import { PersonalInfoStep } from "../cvbuilder/steps/PersonalInfoStep";
 import { WorkExperienceStep } from "../cvbuilder/steps/WorkExperienceStep";
@@ -25,6 +23,7 @@ import { t, type Language } from "@/lib/translations";
 interface CVBuilderPageProps {
   onBack: () => void;
   onSave: (data: CVBuilderData) => void;
+  onSaveDraft: (data: CVBuilderData) => void;
   lang: Language;
 }
 
@@ -38,7 +37,12 @@ const steps = [
   { id: "grade", title: "gradeTitle" },
 ];
 
-export function CVBuilderPage({ onBack, onSave, lang }: CVBuilderPageProps) {
+export function CVBuilderPage({
+  onBack,
+  onSave,
+  onSaveDraft,
+  lang,
+}: CVBuilderPageProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [cvData, setCvData] = useState<CVBuilderData>({
     jobTitle: "",
@@ -147,6 +151,10 @@ export function CVBuilderPage({ onBack, onSave, lang }: CVBuilderPageProps) {
     onSave(cvData);
   };
 
+  const handleSaveDraft = () => {
+    onSaveDraft(cvData);
+  };
+
   const handleExportPDF = () => {
     setTimeout(() => {
       const fullName = `${cvData.firstName} ${cvData.lastName}`.trim();
@@ -230,7 +238,7 @@ export function CVBuilderPage({ onBack, onSave, lang }: CVBuilderPageProps) {
       <div className="bg-white border-b border-[var(--border-color)] px-6 py-4">
         <div className="max-w-7xl mx-auto">
           <div className="overflow-x-auto horizontal-scroll-hidden">
-            <div className="flex items-center justify-between mb-4 min-w-[750px] ">
+            <div className="flex items-center justify-between mb-4 min-w-[750px]">
               {steps.map((step, index) => (
                 <div key={step.id} className="flex items-center">
                   <button
@@ -278,7 +286,7 @@ export function CVBuilderPage({ onBack, onSave, lang }: CVBuilderPageProps) {
         <div className="grid lg:grid-cols-2 gap-8 min-h-[600px]">
           <div className="space-y-6">
             <Card className="border border-[var(--border-color)]">
-              <CardContent className="">
+              <CardContent className="p-6">
                 <div className="mb-6">
                   <h2 className="text-lg font-poppins font-semibold text-[var(--neutral-ink)] mb-2">
                     {t(`${steps[currentStep].id}Title`, lang)}
@@ -293,8 +301,18 @@ export function CVBuilderPage({ onBack, onSave, lang }: CVBuilderPageProps) {
             </Card>
 
             <div className="flex items-center justify-between">
-              <div className="text-sm text-gray-500">
-                {t("stepOf", lang)} {currentStep + 1} of {steps.length}
+              <div className="flex items-center space-x-4">
+                <div className="text-sm text-gray-500">
+                  {t("stepOf", lang)} {currentStep + 1} of {steps.length}
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={handleSaveDraft}
+                  className="border-gray-300 text-gray-600 hover:bg-gray-50"
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  Simpan Draft
+                </Button>
               </div>
               <div className="flex items-center space-x-3">
                 <Button

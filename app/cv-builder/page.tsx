@@ -1,48 +1,38 @@
 "use client";
 
-import { useEffect, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useAuth } from "@/src/context/AuthContext";
-import { CVBuilderPage } from "@/components/dashboard/CVBuilderPage";
+import { useSearchParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
-import type { Language } from "@/lib/translations";
+import { CVBuilderPage } from "@/components/dashboard/CVBuilderPage";
+import { type CVBuilderData } from "@/components/cvbuilder/types";
+import { type Language } from "@/lib/translations";
 
-function CVBuilderClient() {
+export default function Page() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { isAuthenticated } = useAuth();
-
-  // Baca 'lang' dari URL, dengan default 'id' jika tidak ada
   const lang = (searchParams.get("lang") as Language) || "id";
 
-  useEffect(() => {
-    if (!isAuthenticated) {
-      router.replace("/login");
-    }
-  }, [isAuthenticated, router]);
+  const handleBack = () => {
+    router.push("/dashboard");
+  };
 
-  if (!isAuthenticated) {
-    return null; // Atau tampilkan loading skeleton
-  }
+  const handleSave = (data: CVBuilderData) => {
+    console.log("Saving final CV:", data);
+    toast.success("CV Anda berhasil disimpan!");
+    router.push("/dashboard");
+  };
+
+  const handleSaveDraft = (data: CVBuilderData) => {
+    console.log("Saving CV as draft:", data);
+    toast.info("CV Anda disimpan sebagai draft.");
+    router.push("/dashboard");
+  };
 
   return (
     <CVBuilderPage
+      onBack={handleBack}
+      onSave={handleSave}
+      onSaveDraft={handleSaveDraft}
       lang={lang}
-      onBack={() => router.push("/dashboard")}
-      onSave={(cvData) => {
-        console.log("Saving CV:", cvData);
-        toast.success("CV berhasil disimpan!");
-        router.push("/dashboard");
-      }}
     />
-  );
-}
-
-// Default export adalah wrapper yang aman untuk Server Component
-export default function CVBuilderRoute() {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <CVBuilderClient />
-    </Suspense>
   );
 }

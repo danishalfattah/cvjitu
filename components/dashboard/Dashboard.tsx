@@ -596,7 +596,7 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
       ) : (
         <>
           {viewMode === "cards" ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
               {paginatedCVs.map((cv) => (
                 <CVCard
                   key={cv.id}
