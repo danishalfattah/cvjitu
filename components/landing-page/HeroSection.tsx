@@ -42,7 +42,7 @@ export function HeroSection({
   };
 
   return (
-    <section className="bg-gradient-to-br from-[var(--surface)] to-[var(--red-light)] py-18 px-6">
+    <section className="bg-gradient-to-br from-[var(--surface)] to-[var(--red-light)] py-10  2xl:py-20 px-6 ">
       <div className="max-w-7xl mx-auto">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center  ">
           <div className="space-y-8 ">
