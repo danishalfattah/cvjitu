@@ -564,9 +564,6 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
             } px-3 py-2`}
           >
             <Grid className="w-3 h-3 sm:w-4 sm:h-4" />
-            <span className="ml-1 text-xs sm:text-sm hidden sm:inline">
-              Cards
-            </span>
           </Button>
           <Button
             variant={viewMode === "table" ? "default" : "outline"}
@@ -577,9 +574,6 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
             } px-3 py-2`}
           >
             <List className="w-3 h-3 sm:w-4 sm:h-4" />
-            <span className="ml-1 text-xs sm:text-sm hidden sm:inline">
-              Table
-            </span>
           </Button>
         </div>
       </div>
