@@ -12,6 +12,8 @@ import {
   XCircle,
   Download,
   ArrowLeft,
+  LogIn,
+  LayoutDashboard,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
@@ -32,6 +34,7 @@ interface FileUploadZoneProps {
   isAuthenticated?: boolean;
   onTryScoring?: () => void;
   isHighlighted?: boolean;
+  onAuthAction?: () => void;
 }
 
 export function FileUploadZone({
@@ -47,6 +50,7 @@ export function FileUploadZone({
   isAuthenticated = false,
   onTryScoring,
   isHighlighted = false,
+  onAuthAction,
 }: FileUploadZoneProps) {
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -282,23 +286,26 @@ export function FileUploadZone({
           ))}
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200">
-          <Button
-            onClick={onSaveToRepository}
-            variant="outline"
-            className="flex-1 border-[var(--red-normal)] text-[var(--red-normal)] hover:bg-[var(--red-light)]"
-          >
-            <FileText className="w-4 h-4 mr-2" />
-            Simpan ke Repositori
-          </Button>
-          <Button
-            onClick={onDownloadOptimized}
-            className="flex-1 bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white"
-          >
-            <Download className="w-4 h-4 mr-2" />
-            Download CV Optimal
-          </Button>
+        {/* Action Buttons based on Auth State */}
+        <div className="pt-4 border-t border-gray-200">
+          {isAuthenticated ? (
+            <Button
+              onClick={onSaveToRepository}
+              className="w-full bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white"
+            >
+              <LayoutDashboard className="w-4 h-4 mr-2" />
+              Lihat Dashboard
+            </Button>
+          ) : (
+            <Button
+              onClick={onAuthAction}
+              variant="outline"
+              className="w-full border-[var(--red-normal)] text-[var(--red-normal)] hover:bg-[var(--red-light)]"
+            >
+              <LogIn className="w-4 h-4 mr-2" />
+              Login untuk hasil lebih optimal
+            </Button>
+          )}
         </div>
       </div>
     );

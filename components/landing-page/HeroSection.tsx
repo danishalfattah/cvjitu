@@ -38,13 +38,13 @@ export function HeroSection({
     setIsHighlighting(true);
     setTimeout(() => {
       setIsHighlighting(false);
-    }, 500); // Highlight for 1 second
+    }, 1000); // Highlight for 1 second
   };
 
   return (
-    <section className="bg-gradient-to-br from-[var(--surface)] to-[var(--red-light)] py-10  2xl:py-20 px-6 ">
+    <section className="bg-gradient-to-br from-[var(--surface)] to-[var(--red-light)] py-18 px-6">
       <div className="max-w-7xl mx-auto">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center  ">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-start">
           <div className="space-y-8 ">
             <div className="space-y-4 ">
               <h1 className="text-4xl lg:text-5xl font-poppins font-bold text-[var(--neutral-ink)] leading-tight">
@@ -91,6 +91,7 @@ export function HeroSection({
                 hasTriedScoring={hasTriedScoring}
                 isAuthenticated={isAuthenticated}
                 isHighlighted={isHighlighting}
+                onAuthAction={onStartNow}
               />
             </div>
           </div>
@@ -147,7 +148,7 @@ export function HeroSection({
                     src="/professional-man.png"
                     alt="Profesional dengan Laptop"
                     fill
-                    className="object-contain object-bottom rounded-xl -translate-y-10"
+                    className="object-contain object-bottom rounded-xl -translate-y-8"
                     style={{
                       filter: "drop-shadow(0 25px 50px rgba(162, 25, 68, 0.2))",
                     }}
