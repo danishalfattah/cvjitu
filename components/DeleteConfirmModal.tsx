@@ -9,6 +9,7 @@ import {
   AlertDialogTitle,
 } from "./ui/alert-dialog";
 import { CVData } from "./dashboard/CVCard";
+import { Trash2 } from "lucide-react";
 
 interface DeleteConfirmModalProps {
   isOpen: boolean;
@@ -27,23 +28,24 @@ export function DeleteConfirmModal({
     <AlertDialog open={isOpen} onOpenChange={onClose}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle className="text-[var(--neutral-ink)]">
-            Delete CV
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-4">
+            <Trash2 className="h-6 w-6 text-red-600" />
+          </div>
+          <AlertDialogTitle className="text-center">
+            Anda yakin ingin menghapus CV ini?
           </AlertDialogTitle>
-          <AlertDialogDescription>
-            Are you sure you want to delete "{cv?.name}"? This action cannot be
-            undone.
+          <AlertDialogDescription className="text-center">
+            CV "<b>{cv?.name}</b>" akan dihapus secara permanen. Tindakan ini
+            tidak dapat dibatalkan.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel className="border-[var(--border-color)]">
-            Cancel
-          </AlertDialogCancel>
+        <AlertDialogFooter className="sm:justify-center">
+          <AlertDialogCancel onClick={onClose}>Batal</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
-            className="bg-[var(--error)] hover:bg-red-600 text-white"
+            className="bg-[var(--error)] text-white hover:bg-red-700"
           >
-            Delete CV
+            Ya, Hapus
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

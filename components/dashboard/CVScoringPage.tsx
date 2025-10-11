@@ -15,7 +15,7 @@ import {
   analyzeCVFile,
   type CVScoringData,
 } from "@/src/utils/cvScoringService";
-import { CVBuilderData } from "../cvbuilder/types"; // Impor tipe data
+import { CVBuilderData } from "../cvbuilder/types";
 import { Search, Grid, List } from "lucide-react";
 
 const dummyScoredCVs: CVData[] = [
@@ -45,7 +45,6 @@ const dummyScoredCVs: CVData[] = [
   },
 ];
 
-// Data CV mock untuk preview, bisa disesuaikan
 const mockBuilderData: CVBuilderData = {
   jobTitle: "Software Engineer",
   description: "CV for the position of Software Engineer",
@@ -174,7 +173,7 @@ export function CVScoringPage() {
     return (
       <CVScoringResult
         data={scoringResult}
-        cvBuilderData={mockBuilderData} // Kirim data mock untuk preview
+        cvBuilderData={mockBuilderData}
         onBack={handleBackToList}
         onSaveToRepository={() => {
           toast.success(
@@ -189,6 +188,11 @@ export function CVScoringPage() {
   return (
     <div className="p-4 sm:p-6 min-h-screen">
       <div className="mb-6 sm:mb-8">
+        <div className="flex items-center space-x-2 text-sm text-gray-500 mb-2">
+          <span>Pages</span>
+          <span>/</span>
+          <span className="text-[var(--neutral-ink)]">Scoring CV Anda</span>
+        </div>
         <h1 className="text-2xl sm:text-3xl font-poppins font-bold text-[var(--neutral-ink)]">
           Scoring CV Anda
         </h1>

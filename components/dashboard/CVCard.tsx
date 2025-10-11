@@ -85,21 +85,23 @@ export function CVCard({
                   ? "Selesai"
                   : cv.status === "Uploaded"
                   ? "Di-upload"
-                  : cv.status}
+                  : "Draf"}
               </Badge>
-              {cv.lang !== "unknown" && (
+              {cv.lang !== "unknown" && actionType === "builder" && (
                 <Badge variant="outline" className="text-xs">
                   {cv.lang === "id" ? "ID" : "EN"}
                 </Badge>
               )}
-              <Badge variant="outline" className="text-xs">
-                {cv.visibility === "public" ? (
-                  <Globe className="w-3 h-3 mr-1" />
-                ) : (
-                  <Lock className="w-3 h-3 mr-1" />
-                )}
-                {cv.visibility === "public" ? "Publik" : "Privat"}
-              </Badge>
+              {actionType === "builder" && (
+                <Badge variant="outline" className="text-xs">
+                  {cv.visibility === "public" ? (
+                    <Globe className="w-3 h-3 mr-1" />
+                  ) : (
+                    <Lock className="w-3 h-3 mr-1" />
+                  )}
+                  {cv.visibility === "public" ? "Publik" : "Privat"}
+                </Badge>
+              )}
             </div>
           </div>
           <div className="flex items-center space-x-2 sm:space-x-3 ml-2 sm:ml-4">
@@ -180,12 +182,10 @@ export function CVCard({
         </div>
         <div className="space-y-1 sm:space-y-2 text-xs sm:text-sm text-gray-500 mb-4 sm:mb-6">
           <p>
-            {cv.status === "Uploaded" ? "Di-upload" : "Dibuat"}: {cv.created}
+            {actionType === "scoring" ? "Tanggal Upload" : "Dibuat"}:{" "}
+            {cv.created}
           </p>
-          <p>
-            {cv.status === "Uploaded" ? "Skor Terakhir" : "Diperbarui"}:{" "}
-            {cv.updated}
-          </p>
+          {actionType === "builder" && <p>Diperbarui: {cv.updated}</p>}
         </div>
         <Button
           onClick={() => onPreview(cv)}

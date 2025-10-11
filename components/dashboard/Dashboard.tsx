@@ -440,7 +440,7 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
     const matchesStatus =
       filters.status === "Semua Status" ||
       (filters.status === "Selesai" && cv.status === "Completed") ||
-      (filters.status === "Draft" && cv.status === "Draft");
+      (filters.status === "Draf" && cv.status === "Draft");
     const matchesYear =
       filters.year === "Semua Tahun" || cv.year.toString() === filters.year;
     const matchesScore =
@@ -509,7 +509,7 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
           change={{ value: "+2 selesai bulan ini", type: "increase" }}
         />
         <StatTile
-          title="Total Draft"
+          title="Total Draf"
           value={stats.drafted}
           icon={Edit3}
           change={{ value: "Perlu diselesaikan", type: "warning" }}
@@ -596,7 +596,7 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
       ) : (
         <>
           {viewMode === "cards" ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
               {paginatedCVs.map((cv) => (
                 <CVCard
                   key={cv.id}
@@ -628,20 +628,28 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
                 <PaginationContent className="flex-wrap gap-1">
                   <PaginationItem>
                     <PaginationPrevious
-                      onClick={() =>
-                        setCurrentPage(Math.max(1, currentPage - 1))
-                      }
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setCurrentPage(Math.max(1, currentPage - 1));
+                      }}
                       className={`${
                         currentPage === 1
                           ? "pointer-events-none opacity-50"
                           : "cursor-pointer hover:bg-[var(--red-light)] hover:text-[var(--red-normal)]"
                       } transition-colors`}
-                    />
+                    >
+                      Sebelumnya
+                    </PaginationPrevious>
                   </PaginationItem>
                   {Array.from({ length: totalPages }, (_, i) => (
                     <PaginationItem key={i + 1}>
                       <PaginationLink
-                        onClick={() => setCurrentPage(i + 1)}
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setCurrentPage(i + 1);
+                        }}
                         isActive={currentPage === i + 1}
                         className={`cursor-pointer transition-colors ${
                           currentPage === i + 1
@@ -655,15 +663,19 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
                   ))}
                   <PaginationItem>
                     <PaginationNext
-                      onClick={() =>
-                        setCurrentPage(Math.min(totalPages, currentPage + 1))
-                      }
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setCurrentPage(Math.min(totalPages, currentPage + 1));
+                      }}
                       className={`${
                         currentPage === totalPages
                           ? "pointer-events-none opacity-50"
                           : "cursor-pointer hover:bg-[var(--red-light)] hover:text-[var(--red-normal)]"
                       } transition-colors`}
-                    />
+                    >
+                      Selanjutnya
+                    </PaginationNext>
                   </PaginationItem>
                 </PaginationContent>
               </Pagination>

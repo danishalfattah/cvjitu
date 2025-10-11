@@ -74,13 +74,11 @@ export function CVTable({
               </TableHead>
               <TableHead>Tahun</TableHead>
               {actionType === "builder" && <TableHead>Bahasa</TableHead>}
-              <TableHead>Privasi</TableHead>
+              {actionType === "builder" && <TableHead>Privasi</TableHead>}
               <TableHead>
-                {actionType === "builder" ? "Dibuat" : "Di-upload"}
+                {actionType === "builder" ? "Dibuat" : "Tanggal Upload"}
               </TableHead>
-              <TableHead>
-                {actionType === "builder" ? "Diperbarui" : "Skor Terakhir"}
-              </TableHead>
+              {actionType === "builder" && <TableHead>Diperbarui</TableHead>}
               <TableHead>Status</TableHead>
               <TableHead>Skor</TableHead>
               <TableHead className="text-right">Aksi</TableHead>
@@ -92,28 +90,32 @@ export function CVTable({
                 <TableCell className="font-medium">{cv.name}</TableCell>
                 <TableCell>{cv.year}</TableCell>
                 {actionType === "builder" && (
-                  <TableCell>
-                    {cv.lang !== "unknown" && (
-                      <Badge variant="outline">
-                        {cv.lang === "id" ? "ID" : "EN"}
-                      </Badge>
-                    )}
-                  </TableCell>
+                  <>
+                    <TableCell>
+                      {cv.lang !== "unknown" && (
+                        <Badge variant="outline">
+                          {cv.lang === "id" ? "ID" : "EN"}
+                        </Badge>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1.5">
+                        {cv.visibility === "public" ? (
+                          <Globe className="w-4 h-4 text-gray-500" />
+                        ) : (
+                          <Lock className="w-4 h-4 text-gray-500" />
+                        )}
+                        <span className="text-gray-600">
+                          {cv.visibility === "public" ? "Publik" : "Privat"}
+                        </span>
+                      </div>
+                    </TableCell>
+                  </>
                 )}
-                <TableCell>
-                  <div className="flex items-center gap-1.5">
-                    {cv.visibility === "public" ? (
-                      <Globe className="w-4 h-4 text-gray-500" />
-                    ) : (
-                      <Lock className="w-4 h-4 text-gray-500" />
-                    )}
-                    <span className="text-gray-600">
-                      {cv.visibility === "public" ? "Publik" : "Privat"}
-                    </span>
-                  </div>
-                </TableCell>
                 <TableCell className="text-gray-600">{cv.created}</TableCell>
-                <TableCell className="text-gray-600">{cv.updated}</TableCell>
+                {actionType === "builder" && (
+                  <TableCell className="text-gray-600">{cv.updated}</TableCell>
+                )}
                 <TableCell>
                   <Badge className={getStatusColor(cv.status)}>
                     {cv.status === "Completed"
