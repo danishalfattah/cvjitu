@@ -21,9 +21,18 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "v0 App",
-  description: "Created with v0",
-  generator: "v0.app",
+  title: {
+    template: "%s | CVJitu",
+    default: "CVJitu - AI Powered CV Builder & Scoring",
+  },
+  description:
+    "Platform bertenaga AI untuk membuat CV profesional dengan scoring otomatis dan saran optimasi. Tingkatkan peluang karir Anda dengan CV yang ramah ATS.",
+  themeColor: "#A21944",
+  icons: {
+    icon: "/icon.png",
+    shortcut: "/icon.png",
+    apple: "/icon.png",
+  },
 };
 
 export default function RootLayout({

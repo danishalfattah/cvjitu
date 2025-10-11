@@ -11,6 +11,10 @@ export default function DashboardPage() {
   const { user, isAuthenticated, logout } = useAuth();
 
   useEffect(() => {
+    document.title = "Dashboard - CVJitu";
+  }, []);
+
+  useEffect(() => {
     if (!isAuthenticated) router.replace("/login");
   }, [isAuthenticated, router]);
 

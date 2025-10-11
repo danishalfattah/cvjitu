@@ -1,3 +1,5 @@
+// components/landing-page/FAQSection.tsx
+
 import {
   Accordion,
   AccordionContent,
@@ -9,12 +11,7 @@ const faqs = [
   {
     question: "Bagaimana cara kerja AI scoring di CVJitu?",
     answer:
-      "AI kami menganalisis CV berdasarkan 50+ kriteria termasuk format ATS, kelengkapan informasi, relevansi keyword, dan struktur konten. Setiap aspek diberi bobot dan menghasilkan skor 1-100 dengan breakdown detail.",
-  },
-  {
-    question: "Apakah template CVJitu benar-benar ATS-friendly?",
-    answer:
-      "Ya, semua template kami telah diuji dengan sistem ATS dari 100+ perusahaan besar. Kami secara berkala memperbarui template berdasarkan perubahan algoritma ATS terbaru.",
+      "CVJitu memanfaatkan kecerdasan buatan yaitu Gemini, untuk melakukan analisis CV yang komprehensif. Gemini akan mengevaluasi berbagai aspek penting seperti kesesuaian dengan ATS, penggunaan kata kunci yang relevan, struktur konten, kejelasan dalam penulisan pencapaian, dan memberikan skor objektif dari 1-100 beserta rekomendasi yang bisa langsung Anda terapkan.",
   },
   {
     question:
@@ -23,7 +20,7 @@ const faqs = [
       "Tentu! CVJitu mendukung pembuatan multiple CV dengan kategori berbeda. Anda bisa menyesuaikan setiap CV untuk posisi spesifik dengan keyword matching yang optimal.",
   },
   {
-    question: "Bagaimana kebijakan privasi dan keamanan data di CVJitu?",
+    question: "Bagaimana Kebijakan privasi dan keamanan data di CVJiitu?",
     answer:
       "Data Anda diamankan dengan enkripsi end-to-end. Kami tidak membagikan informasi pribadi kepada pihak ketiga dan mematuhi standar GDPR. Anda memiliki kontrol penuh atas data CV Anda.",
   },

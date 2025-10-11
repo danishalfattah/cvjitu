@@ -18,6 +18,7 @@ interface CVFiltersProps {
   };
   onFiltersChange: (filters: any) => void;
   onReset: () => void;
+  hideStatusFilter?: boolean; // New prop to control status filter visibility
 }
 
 const years = ["Semua Tahun", "2022", "2023", "2024", "2025", "2026"];
@@ -26,6 +27,7 @@ export function CVFilters({
   filters,
   onFiltersChange,
   onReset,
+  hideStatusFilter = false, // Default to false
 }: CVFiltersProps) {
   const updateFilter = (key: string, value: any) => {
     onFiltersChange({
@@ -35,7 +37,7 @@ export function CVFilters({
   };
 
   const activeFiltersCount = [
-    filters.status !== "Semua Status",
+    !hideStatusFilter && filters.status !== "Semua Status",
     filters.year !== "Semua Tahun",
     filters.scoreRange[0] !== 1 || filters.scoreRange[1] !== 100,
   ].filter(Boolean).length;
@@ -45,21 +47,25 @@ export function CVFilters({
       {/* Mobile: Stacked Layout */}
       <div className="block sm:hidden space-y-3">
         <div className="grid grid-cols-2 gap-3">
-          <Select
-            value={filters.status}
-            onValueChange={(value) => updateFilter("status", value)}
-          >
-            <SelectTrigger className="text-sm">
-              <SelectValue>
-                {filters.status === "Semua Status" ? "Status" : filters.status}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Semua Status">Semua Status</SelectItem>
-              <SelectItem value="Draft">Draft</SelectItem>
-              <SelectItem value="Selesai">Selesai</SelectItem>
-            </SelectContent>
-          </Select>
+          {!hideStatusFilter && (
+            <Select
+              value={filters.status}
+              onValueChange={(value) => updateFilter("status", value)}
+            >
+              <SelectTrigger className="text-sm">
+                <SelectValue>
+                  {filters.status === "Semua Status"
+                    ? "Status"
+                    : filters.status}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Semua Status">Semua Status</SelectItem>
+                <SelectItem value="Draft">Draft</SelectItem>
+                <SelectItem value="Selesai">Selesai</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
 
           <Select
             value={filters.year}
@@ -110,21 +116,23 @@ export function CVFilters({
 
       {/* Desktop: Horizontal Layout */}
       <div className="hidden sm:flex sm:flex-wrap gap-3 items-center">
-        <Select
-          value={filters.status}
-          onValueChange={(value) => updateFilter("status", value)}
-        >
-          <SelectTrigger className="w-32">
-            <SelectValue>
-              {filters.status === "Semua Status" ? "Status" : filters.status}
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Semua Status">Semua Status</SelectItem>
-            <SelectItem value="Draft">Draft</SelectItem>
-            <SelectItem value="Selesai">Selesai</SelectItem>
-          </SelectContent>
-        </Select>
+        {!hideStatusFilter && (
+          <Select
+            value={filters.status}
+            onValueChange={(value) => updateFilter("status", value)}
+          >
+            <SelectTrigger className="w-32">
+              <SelectValue>
+                {filters.status === "Semua Status" ? "Status" : filters.status}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Semua Status">Semua Status</SelectItem>
+              <SelectItem value="Draft">Draft</SelectItem>
+              <SelectItem value="Selesai">Selesai</SelectItem>
+            </SelectContent>
+          </Select>
+        )}
 
         <Select
           value={filters.year}

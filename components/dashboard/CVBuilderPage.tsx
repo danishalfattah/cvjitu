@@ -311,7 +311,7 @@ export function CVBuilderPage({
                   className="border-gray-300 text-gray-600 hover:bg-gray-50"
                 >
                   <Save className="w-4 h-4 mr-2" />
-                  Simpan Draft
+                  {t("saveDraftButton", lang)}
                 </Button>
               </div>
               <div className="flex items-center space-x-3">

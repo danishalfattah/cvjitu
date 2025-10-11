@@ -4,10 +4,15 @@ import { useAuth } from "@/src/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { LoginPage } from "@/components/LoginPage";
+import { useEffect } from "react";
 
 export default function Login() {
   const router = useRouter();
   const { login, loginWithGoogle, isLoading } = useAuth();
+
+  useEffect(() => {
+    document.title = "Masuk - CVJitu";
+  }, []);
 
   const handleLogin = async (email: string, password: string) => {
     try {

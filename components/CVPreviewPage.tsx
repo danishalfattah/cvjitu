@@ -44,6 +44,7 @@ export function CVPreviewPage() {
     const fetchedCV = dummyCVs.find((cv) => cv.id === cvId);
 
     if (fetchedCV) {
+      document.title = `${fetchedCV.name} by ${fetchedCV.owner} | CVJitu`;
       setCvData(fetchedCV);
       setIsPublic(fetchedCV.visibility === "public");
 
@@ -97,6 +98,7 @@ export function CVPreviewPage() {
         setError("This CV is private and cannot be viewed.");
       }
     } else {
+      document.title = "CV Tidak Ditemukan | CVJitu";
       setError("CV not found.");
     }
     setIsLoading(false);

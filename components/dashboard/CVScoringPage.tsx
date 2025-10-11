@@ -166,7 +166,15 @@ export function CVScoringPage() {
   };
 
   const filteredCVs = cvs.filter((cv) => {
-    return cv.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = cv.name
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+    const matchesYear =
+      filters.year === "Semua Tahun" || cv.year.toString() === filters.year;
+    const matchesScore =
+      cv.score >= filters.scoreRange[0] && cv.score <= filters.scoreRange[1];
+
+    return matchesSearch && matchesYear && matchesScore;
   });
 
   if (scoringResult) {
@@ -223,6 +231,7 @@ export function CVScoringPage() {
             scoreRange: [1, 100],
           })
         }
+        hideStatusFilter={true}
       />
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mb-6">
         <div className="relative flex-1 max-w-full sm:max-w-md">

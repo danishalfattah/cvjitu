@@ -4,10 +4,15 @@ import { useAuth } from "@/src/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { RegisterPage } from "@/components/RegisterPage";
+import { useEffect } from "react";
 
 export default function Register() {
   const router = useRouter();
   const { register, loginWithGoogle, isLoading } = useAuth();
+
+  useEffect(() => {
+    document.title = "Daftar Akun - CVJitu";
+  }, []);
 
   const handleRegister = async (data: any) => {
     try {

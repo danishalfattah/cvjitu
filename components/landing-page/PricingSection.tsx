@@ -6,57 +6,49 @@ import { Check } from "lucide-react";
 const pricingPlans = [
   {
     name: "Basic",
-    price: "IDR 0",
-    billing: "IDR 0",
-    period: "month",
+    price: "Rp 0",
+    billing: "Rp 0",
+    period: "bulan",
     popular: false,
     features: [
-      "5 CV total per akun",
-      "10 AI review credits / bulan",
-      "3 Basic templates (ATS-friendly)",
-      "Export PDF",
-      "Keyword Match (maks 3 keyword)",
-      "Version history (maks 3 revisi)",
-      "Support: Community",
+      "Buat CV hingga 5 CV per akun",
+      "Scoring CV hingga 10x / bulan",
+      "Ekspor 2 CV Pertama Tanpa Watermark",
+      "Saran perbaikan umum",
+      "Analisis kata kunci terbatas",
     ],
     cta: "Buat Akun Gratis",
     ctaVariant: "outline" as const,
   },
   {
     name: "Fresh Graduate",
-    price: "IDR 14.900",
-    billing: "≈ IDR 89.400",
-    period: "month",
+    price: "Rp 14.900",
+    billing: "≈ Rp 89.400",
+    period: "bulan",
     popular: true,
-    badge: "BEST FOR STUDENTS",
+    badge: "TERBAIK UNTUK LULUSAN BARU",
     features: [
-      "50 CV / bulan (reset bulanan)",
-      "200 AI review credits / bulan",
-      "10 Templates + tema kampus/entry-level",
-      "Export PDF & DOCX",
-      "Keyword Match (maks 10 lowongan tersimpan)",
-      "Version history (20 revisi)",
-      "Multi-bahasa (ID/EN)",
-      "Support: Standard",
+      "Buat CV hingga 10 CV per akun",
+      "Scoring CV hingga 30x / bulan",
+      "Ekspor PDF & DOCX Tanpa Watermark",
+      "Saran perbaikan detail",
+      "Buat CV Multi-bahasa (ID/EN)",
     ],
     cta: "Pilih Penawaran Terbaik",
     ctaVariant: "default" as const,
   },
   {
     name: "Job Seeker",
-    price: "IDR 39.000",
-    billing: "≈ IDR 234.000",
-    period: "month",
+    price: "Rp 39.000",
+    billing: "≈ Rp 234.000",
+    period: "bulan",
     popular: false,
     features: [
-      "Unlimited CV",
-      "AI review credits Unlimited + Smart Fix 1-klik",
-      "Semua Premium templates + custom cover letter",
-      "Export PDF & DOCX, custom watermark off",
-      "Advanced Keyword Match + rekomendasi optimasi",
-      "Version history Unlimited + analytics skor",
-      "Recruiter Share Link & view analytics",
-      "Support: Priority",
+      "Buat CV tanpa batas",
+      "Scoring CV tanpa batas",
+      "Ekspor PDF & DOCX Tanpa Watermark",
+      "Saran perbaikan Sangat detail",
+      "Multi-bahasa (ID/EN)",
     ],
     cta: "Pilih Paket Ini",
     ctaVariant: "default" as const,
@@ -81,13 +73,13 @@ export function PricingSection() {
           {pricingPlans.map((plan, index) => (
             <Card
               key={index}
-              className={`relative bg-[var(--card-background)] border-2 transition-all duration-300 hover:shadow-lg ${
+              className={`relative bg-white border-2 transition-all duration-300 hover:shadow-lg ${
                 plan.popular
                   ? "border-[var(--red-normal)] shadow-lg scale-105"
                   : "border-[var(--border-color)] hover:border-[var(--red-light)]"
               }`}
             >
-              {plan.popular && (
+              {plan.popular && plan.badge && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                   <Badge className="bg-[var(--red-normal)] text-white px-4 py-1">
                     {plan.badge}
@@ -106,9 +98,15 @@ export function PricingSection() {
                       /{plan.period}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-500">
-                    billed every 6 months: {plan.billing}
-                  </p>
+                  {plan.name === "Basic" ? (
+                    <p className="text-sm text-gray-500">Gratis</p>
+                  ) : (
+                    plan.billing && (
+                      <p className="text-sm text-gray-500">
+                        ditagih setiap 6 bulan: {plan.billing}
+                      </p>
+                    )
+                  )}
                 </div>
               </CardHeader>
 

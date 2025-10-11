@@ -5,11 +5,16 @@ import { toast } from "sonner";
 import { CVBuilderPage } from "@/components/dashboard/CVBuilderPage";
 import { type CVBuilderData } from "@/components/cvbuilder/types";
 import { type Language } from "@/lib/translations";
+import { useEffect } from "react";
 
 export default function Page() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const lang = (searchParams.get("lang") as Language) || "id";
+
+  useEffect(() => {
+    document.title = "CV Builder - CVJitu";
+  }, []);
 
   const handleBack = () => {
     router.push("/dashboard");
