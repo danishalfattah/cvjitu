@@ -61,10 +61,9 @@ export function CVTable({
   };
 
   return (
-    <div className="bg-white rounded-lg border border-[var(--border-color)] overflow-hidden">
-      {/* Wrapper untuk scroll horizontal di mobile */}
+    <div className="bg-white rounded-lg border border-[var(--border-color)]  ">
       <div className="w-full overflow-x-auto md:overflow-x-visible">
-        <Table className="min-w-[700px] md:min-w-0">
+        <Table className="md:min-w-0">
           <TableHeader>
             <TableRow className="bg-[var(--surface)]">
               <TableHead>Posisi yang Dilamar</TableHead>

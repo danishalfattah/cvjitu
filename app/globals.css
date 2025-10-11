@@ -130,7 +130,7 @@
   --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
   --color-sidebar-accent: var(--sidebar-accent);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-border: var(--border-color);
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
@@ -138,8 +138,10 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html,
   body {
     @apply bg-background text-foreground;
+    overflow-x: hidden;
   }
 }
 
@@ -177,5 +179,12 @@
   }
   .font-inter {
     font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  }
+  .horizontal-scroll-hidden {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+  .horizontal-scroll-hidden::-webkit-scrollbar {
+    display: none; /* Safari and Chrome */
   }
 }

@@ -1,3 +1,5 @@
+// components/dashboard/DashboardLayout.tsx
+
 import { useState, useEffect } from "react";
 import { DashboardSidebar } from "./DashboardSidebar";
 import { Dashboard } from "./Dashboard";
@@ -128,7 +130,7 @@ export function DashboardLayout({
       </AnimatePresence>
 
       {/* Main Content */}
-      <div className="flex-1 lg:ml-64">
+      <div className="flex-1 lg:ml-64 min-w-0">
         {/* Mobile Header */}
         <div className="lg:hidden bg-white/95 backdrop-blur-md border-b border-[var(--border-color)] px-4 py-3 sticky top-0 z-30">
           <div className="flex items-center justify-between">
