@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import {
@@ -15,16 +16,12 @@ import {
 import { StatTile } from "../StatTile";
 import { CVFilters } from "./CVFilters";
 import { CVCard, CVData } from "./CVCard";
-
-type Visibility = "public" | "private";
-
-interface CVDataWithVisibility extends CVData {
-  visibility: Visibility;
-  owner: string;
-}
 import { CVTable } from "./CVTable";
 import { EmptyState } from "../EmptyState";
 import { DeleteConfirmModal } from "../DeleteConfirmModal";
+import { CVScoringResult } from "./CVScoringResult";
+import { type CVScoringData } from "@/src/utils/cvScoringService";
+import { CVBuilderData } from "../cvbuilder/types";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -45,227 +42,265 @@ import {
   Edit3,
   X,
 } from "lucide-react";
-import { toast } from "sonner";
 import Image from "next/image";
 
-export const dummyCVs: CVDataWithVisibility[] = [
+export const dummyCVs: CVData[] = [
   {
     id: "1",
     name: "CV Frontend Developer",
     year: 2025,
-    created: "15 Jan 2025, 14:30",
-    updated: "17 Jan 2025, 09:15",
+    created: "15 Agu 2024, 14:30",
+    updated: "17 Agu 2024, 09:15",
     status: "Completed",
     score: 81,
     lang: "id",
     visibility: "public",
-    owner: "joko irawan",
+    owner: "1",
   },
   {
     id: "2",
     name: "Resume Backend Engineer",
     year: 2024,
-    created: "10 Jan 2025, 16:45",
-    updated: "10 Jan 2025, 16:45",
+    created: "10 Agu 2024, 16:45",
+    updated: "10 Agu 2024, 16:45",
     status: "Completed",
     score: 72,
     lang: "en",
     visibility: "private",
-    owner: "budi santoso",
+    owner: "1",
   },
   {
     id: "3",
     name: "Portfolio Data Scientist",
     year: 2023,
-    created: "12 Jan 2025, 11:20",
-    updated: "14 Jan 2025, 13:50",
+    created: "12 Agu 2024, 11:20",
+    updated: "14 Agu 2024, 13:50",
     status: "Completed",
     score: 90,
     lang: "en",
     visibility: "public",
-    owner: "siti aminah",
+    owner: "1",
   },
   {
     id: "4",
     name: "CV UI/UX Designer",
     year: 2025,
-    created: "08 Jan 2025, 10:15",
-    updated: "12 Jan 2025, 15:30",
+    created: "08 Agu 2024, 10:15",
+    updated: "12 Agu 2024, 15:30",
     status: "Draft",
     score: 65,
     lang: "id",
     visibility: "private",
-    owner: "agus wijaya",
+    owner: "1",
   },
   {
     id: "5",
     name: "Resume Product Manager",
     year: 2022,
-    created: "20 Des 2024, 09:00",
-    updated: "20 Des 2024, 09:00",
+    created: "20 Jul 2024, 09:00",
+    updated: "20 Jul 2024, 09:00",
     status: "Draft",
     score: 58,
     lang: "id",
     visibility: "private",
-    owner: "dian permata",
+    owner: "1",
   },
   {
     id: "6",
     name: "CV Fresh Graduate",
     year: 2025,
-    created: "16 Jan 2025, 08:45",
-    updated: "16 Jan 2025, 18:20",
+    created: "16 Agu 2024, 08:45",
+    updated: "16 Agu 2024, 18:20",
     status: "Completed",
     score: 84,
     lang: "en",
     visibility: "public",
-    owner: "rini susanti",
+    owner: "1",
   },
   {
     id: "7",
     name: "CV React Developer",
     year: 2024,
-    created: "28 Des 2024, 15:20",
-    updated: "03 Jan 2025, 11:30",
+    created: "28 Jul 2024, 15:20",
+    updated: "03 Agu 2024, 11:30",
     status: "Completed",
     score: 85,
     lang: "en",
     visibility: "public",
-    owner: "bambang setiawan",
+    owner: "1",
   },
   {
     id: "8",
     name: "Portfolio Machine Learning Engineer",
     year: 2025,
-    created: "20 Des 2024, 10:15",
-    updated: "20 Des 2024, 10:15",
+    created: "20 Jul 2024, 10:15",
+    updated: "20 Jul 2024, 10:15",
     status: "Draft",
     score: 78,
     lang: "id",
     visibility: "private",
-    owner: "lina mariani",
+    owner: "1",
   },
   {
     id: "9",
     name: "Resume DevOps Engineer",
     year: 2024,
-    created: "18 Des 2024, 14:45",
-    updated: "22 Des 2024, 16:20",
+    created: "18 Jul 2024, 14:45",
+    updated: "22 Jul 2024, 16:20",
     status: "Completed",
     score: 92,
     lang: "en",
     visibility: "public",
-    owner: "yusuf hidayat",
+    owner: "1",
   },
   {
     id: "10",
     name: "CV Senior Frontend",
     year: 2023,
-    created: "15 Des 2024, 09:30",
-    updated: "15 Des 2024, 09:30",
+    created: "15 Jul 2024, 09:30",
+    updated: "15 Jul 2024, 09:30",
     status: "Draft",
     score: 88,
     lang: "id",
     visibility: "private",
-    owner: "sari utami",
+    owner: "1",
   },
   {
     id: "11",
     name: "Portfolio UX Researcher",
     year: 2025,
-    created: "12 Des 2024, 13:15",
-    updated: "18 Des 2024, 10:45",
+    created: "12 Jul 2024, 13:15",
+    updated: "18 Jul 2024, 10:45",
     status: "Completed",
     score: 76,
     lang: "en",
     visibility: "public",
-    owner: "dedi supriyadi",
+    owner: "1",
   },
   {
     id: "12",
     name: "Resume Full Stack Developer",
     year: 2024,
-    created: "10 Des 2024, 16:30",
-    updated: "10 Des 2024, 16:30",
+    created: "10 Jul 2024, 16:30",
+    updated: "10 Jul 2024, 16:30",
     status: "Draft",
     score: 82,
     lang: "id",
     visibility: "private",
-    owner: "fitri handayani",
+    owner: "1",
   },
   {
     id: "13",
     name: "CV Data Analyst",
     year: 2025,
-    created: "08 Des 2024, 11:20",
-    updated: "14 Des 2024, 15:30",
+    created: "08 Jul 2024, 11:20",
+    updated: "14 Jul 2024, 15:30",
     status: "Completed",
     score: 74,
     lang: "id",
     visibility: "public",
-    owner: "andi saputra",
+    owner: "1",
   },
   {
     id: "14",
     name: "Portfolio Mobile Developer",
     year: 2024,
-    created: "05 Des 2024, 14:45",
-    updated: "05 Des 2024, 14:45",
+    created: "05 Jul 2024, 14:45",
+    updated: "05 Jul 2024, 14:45",
     status: "Draft",
     score: 79,
     lang: "en",
     visibility: "private",
-    owner: "nurul aini",
+    owner: "1",
   },
   {
     id: "15",
     name: "Resume Software Architect",
     year: 2023,
-    created: "03 Des 2024, 09:15",
-    updated: "07 Des 2024, 12:20",
+    created: "03 Jul 2024, 09:15",
+    updated: "07 Jul 2024, 12:20",
     status: "Completed",
     score: 95,
     lang: "en",
     visibility: "public",
-    owner: "roni gunawan",
+    owner: "1",
   },
   {
     id: "16",
     name: "CV Technical Product Manager",
     year: 2025,
-    created: "01 Des 2024, 17:30",
-    updated: "01 Des 2024, 17:30",
+    created: "01 Jul 2024, 17:30",
+    updated: "01 Jul 2024, 17:30",
     status: "Draft",
     score: 83,
     lang: "id",
     visibility: "private",
-    owner: "eka putra",
+    owner: "1",
   },
   {
     id: "17",
     name: "Portfolio AI Engineer",
     year: 2024,
-    created: "28 Nov 2024, 10:45",
-    updated: "30 Nov 2024, 14:15",
+    created: "28 Jun 2024, 10:45",
+    updated: "30 Jun 2024, 14:15",
     status: "Completed",
     score: 91,
     lang: "en",
     visibility: "public",
-    owner: "fajar ramadhan",
+    owner: "1",
   },
   {
     id: "18",
     name: "Resume QA Engineer",
     year: 2025,
-    created: "25 Nov 2024, 16:20",
-    updated: "25 Nov 2024, 16:20",
+    created: "25 Jun 2024, 16:20",
+    updated: "25 Jun 2024, 16:20",
     status: "Draft",
     score: 67,
     lang: "id",
     visibility: "private",
-    owner: "tini lestari",
+    owner: "1",
   },
 ];
+
+const mockBuilderData: CVBuilderData = {
+  jobTitle: "Software Engineer",
+  description: "CV for the position of Software Engineer",
+  firstName: "Demo",
+  lastName: "User",
+  email: "demo@cvjitu.com",
+  phone: "08123456789",
+  location: "Jakarta, Indonesia",
+  linkedin: "linkedin.com/in/demouser",
+  website: "demouser.com",
+  workExperiences: [
+    {
+      id: "1",
+      jobTitle: "Frontend Developer",
+      company: "Tech Corp",
+      location: "Jakarta",
+      startDate: "2022-01",
+      endDate: "2024-01",
+      current: false,
+      description: "Developing cool stuff.",
+      achievements: ["Achieved X", "Improved Y"],
+    },
+  ],
+  educations: [
+    {
+      id: "1",
+      degree: "S.Kom",
+      institution: "Universitas Coding",
+      location: "Bandung",
+      startDate: "2018-09",
+      endDate: "2022-05",
+      current: false,
+      gpa: "3.8",
+    },
+  ],
+  skills: ["React", "TypeScript", "Next.js"],
+  summary: "A passionate developer.",
+};
 
 interface DashboardProps {
   onCreateCV?: (lang: "id" | "en") => void;
@@ -284,66 +319,53 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
   const [deleteModal, setDeleteModal] = useState<{
     isOpen: boolean;
     cv: CVData | null;
-  }>({
-    isOpen: false,
-    cv: null,
-  });
+  }>({ isOpen: false, cv: null });
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
   const [isLangModalOpen, setIsLangModalOpen] = useState(false);
+  const [scoringResult, setScoringResult] = useState<CVScoringData | null>(
+    null
+  );
 
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery, filters]);
 
-  const filteredCVs = cvs.filter((cv) => {
-    const matchesSearch = cv.name
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    const matchesStatus =
-      filters.status === "Semua Status" ||
-      (filters.status === "Selesai" && cv.status === "Completed") ||
-      (filters.status === "Draft" && cv.status === "Draft");
-    const matchesYear =
-      filters.year === "Semua Tahun" || cv.year.toString() === filters.year;
-    const matchesScore =
-      cv.score >= filters.scoreRange[0] && cv.score <= filters.scoreRange[1];
-
-    return matchesSearch && matchesStatus && matchesYear && matchesScore;
-  });
-
-  const totalPages = Math.ceil(filteredCVs.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedCVs = filteredCVs.slice(startIndex, startIndex + itemsPerPage);
-
-  const stats = {
-    total: cvs.length,
-    avgScore: Math.round(
-      cvs.reduce((sum, cv) => sum + cv.score, 0) / (cvs.length || 1)
-    ),
-    completed: cvs.filter((cv) => cv.status === "Completed").length,
-    drafted: cvs.filter((cv) => cv.status === "Draft").length,
-  };
-
-  const handleLanguageSelect = (lang: "id" | "en") => {
-    setIsLangModalOpen(false);
-    if (onCreateCV) {
-      onCreateCV(lang);
-    } else {
-      router.push(`/cv-builder?lang=${lang}`);
-    }
-  };
-
   const handleCVAction = (action: string, cv: CVData) => {
     switch (action) {
       case "preview":
-        router.push(`/cv/${cv.id}`);
+        const mockResult: CVScoringData = {
+          fileName: cv.name,
+          overallScore: cv.score,
+          atsCompatibility: Math.min(cv.score + 5, 100),
+          keywordMatch: Math.max(cv.score - 3, 0),
+          readabilityScore: Math.min(cv.score + 2, 100),
+          sections: [
+            {
+              name: "Pengalaman Kerja",
+              score: cv.score + 10,
+              status: "excellent",
+              feedback: "Pengalaman kerja Anda sangat relevan.",
+            },
+            {
+              name: "Pendidikan",
+              score: cv.score - 5,
+              status: "good",
+              feedback: "Latar belakang pendidikan Anda baik.",
+            },
+          ],
+          suggestions: [
+            "Tambahkan lebih banyak kata kunci yang relevan dari deskripsi pekerjaan.",
+            "Kuantifikasi pencapaian Anda dengan angka untuk dampak yang lebih besar.",
+          ],
+        };
+        setScoringResult(mockResult);
         break;
       case "download":
-        console.log("Download PDF:", cv.name);
+        toast.info("Fitur download akan segera hadir!");
         break;
       case "update":
-        console.log("Edit CV:", cv.name);
+        router.push(`/cv-builder?id=${cv.id}`);
         break;
       case "share":
         handleShareCV(cv);
@@ -355,20 +377,16 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
   };
 
   const handleShareCV = (cv: CVData) => {
+    if (cv.visibility === "private") {
+      toast.warning(
+        "Ubah privasi CV menjadi 'Publik' untuk dapat membagikan link."
+      );
+      return;
+    }
     const shareUrl = `${window.location.origin}/cv/${cv.id}`;
-    navigator.clipboard
-      .writeText(shareUrl)
-      .then(() => {
-        toast.success(`Link CV "${cv.name}" berhasil disalin!`, {
-          description:
-            cv.visibility === "public"
-              ? "Link dapat dibagikan ke siapa saja."
-              : "CV ini privat. Ubah ke publik agar dapat dilihat orang lain.",
-        });
-      })
-      .catch(() => {
-        toast.error("Gagal menyalin link.");
-      });
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      toast.success(`Link publik CV "${cv.name}" berhasil disalin!`);
+    });
   };
 
   const handleVisibilityChange = (
@@ -402,8 +420,64 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
     setCurrentPage(1);
   };
 
+  const handleBackToDashboard = () => {
+    setScoringResult(null);
+  };
+
+  const handleLanguageSelect = (lang: "id" | "en") => {
+    setIsLangModalOpen(false);
+    if (onCreateCV) {
+      onCreateCV(lang);
+    } else {
+      router.push(`/cv-builder?lang=${lang}`);
+    }
+  };
+
+  const filteredCVs = cvs.filter((cv) => {
+    const matchesSearch = cv.name
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+    const matchesStatus =
+      filters.status === "Semua Status" ||
+      (filters.status === "Selesai" && cv.status === "Completed") ||
+      (filters.status === "Draft" && cv.status === "Draft");
+    const matchesYear =
+      filters.year === "Semua Tahun" || cv.year.toString() === filters.year;
+    const matchesScore =
+      cv.score >= filters.scoreRange[0] && cv.score <= filters.scoreRange[1];
+
+    return matchesSearch && matchesStatus && matchesYear && matchesScore;
+  });
+
+  const totalPages = Math.ceil(filteredCVs.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedCVs = filteredCVs.slice(startIndex, startIndex + itemsPerPage);
+
+  const stats = {
+    total: cvs.length,
+    avgScore: Math.round(
+      cvs.reduce((sum, cv) => sum + cv.score, 0) / (cvs.length || 1)
+    ),
+    completed: cvs.filter((cv) => cv.status === "Completed").length,
+    drafted: cvs.filter((cv) => cv.status === "Draft").length,
+  };
+
+  if (scoringResult) {
+    return (
+      <CVScoringResult
+        data={scoringResult}
+        cvBuilderData={mockBuilderData}
+        onBack={handleBackToDashboard}
+        onSaveToRepository={() => {
+          toast.success("Aksi ini akan kembali ke Dashboard.");
+          handleBackToDashboard();
+        }}
+      />
+    );
+  }
+
   return (
-    <div className="flex-1 p-4 sm:p-6 bg-[var(--surface)] min-h-screen">
+    <div className="flex-1 p-4 sm:p-6 bg-[var(--surface)] min-h-screen min-w-0">
       <div className="mb-6 sm:mb-8">
         <div className="flex items-center space-x-2 text-sm text-gray-500 mb-2">
           <span>Pages</span>
@@ -442,11 +516,16 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
         />
       </div>
 
-      <CVFilters
-        filters={filters}
-        onFiltersChange={setFilters}
-        onReset={resetFilters}
-      />
+      <div className="mb-8">
+        <h2 className="text-xl font-poppins font-semibold text-[var(--neutral-ink)] mb-4">
+          Repositori CV Anda
+        </h2>
+        <CVFilters
+          filters={filters}
+          onFiltersChange={setFilters}
+          onReset={resetFilters}
+        />
+      </div>
 
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mb-6">
         <div className="flex items-center space-x-4 flex-1 w-full sm:w-auto">

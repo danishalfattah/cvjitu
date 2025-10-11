@@ -1,5 +1,3 @@
-// components/CVPreviewPage.tsx
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -12,12 +10,20 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Globe, Lock, Download, User, ArrowLeft, Home } from "lucide-react";
+import {
+  Globe,
+  Lock,
+  Download,
+  User as UserIcon,
+  ArrowLeft,
+  Home,
+} from "lucide-react";
 import { CVData } from "@/components/dashboard/CVCard";
 import { dummyCVs } from "@/components/dashboard/Dashboard";
 import { CVBuilderData } from "./cvbuilder/types";
 import { t } from "@/lib/translations";
 import { Footer } from "@/components/Footer";
+import { User } from "@/src/context/AuthContext";
 
 export function CVPreviewPage() {
   const router = useRouter();
@@ -84,8 +90,10 @@ export function CVPreviewPage() {
       };
       setCvBuilderData(mockBuilderData);
 
-      // Check if user is authorized to view
-      if (fetchedCV.visibility === "private" && user?.id !== "1") {
+      if (
+        fetchedCV.visibility === "private" &&
+        user?.id !== (fetchedCV.owner as any)
+      ) {
         setError("This CV is private and cannot be viewed.");
       }
     } else {
@@ -108,7 +116,7 @@ export function CVPreviewPage() {
     );
   }
 
-  const isOwner = isAuthenticated && user?.id === "1"; // "1" is a mock owner ID
+  const isOwner = isAuthenticated && user?.id === (cvData?.owner as any);
 
   if (error && !isOwner) {
     return (
@@ -156,7 +164,14 @@ export function CVPreviewPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
               {cvBuilderData && (
-                <CVPreview data={cvBuilderData} lang={cvData?.lang || "id"} />
+                <CVPreview
+                  data={cvBuilderData}
+                  lang={
+                    cvData?.lang === "unknown" || !cvData?.lang
+                      ? "id"
+                      : cvData.lang
+                  }
+                />
               )}
             </div>
             <div className="space-y-6">
@@ -173,7 +188,7 @@ export function CVPreviewPage() {
                       </p>
                       <p className="flex items-center">
                         <strong className="mr-2">Pemilik:</strong>
-                        <User className="w-4 h-4 mr-1 text-gray-500" />{" "}
+                        <UserIcon className="w-4 h-4 mr-1 text-gray-500" />{" "}
                         {cvData.owner}
                       </p>
                       <p>

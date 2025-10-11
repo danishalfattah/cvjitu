@@ -3,12 +3,13 @@ import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Progress } from "../ui/progress";
 import { RadialScore } from "../RadialScore";
+import { CVPreview } from "../cvbuilder/preview/CVPreview";
+import { CVBuilderData } from "../cvbuilder/types";
 import {
   CheckCircle,
   AlertTriangle,
   XCircle,
   FileText,
-  Download,
   Edit,
   ArrowLeft,
 } from "lucide-react";
@@ -16,16 +17,16 @@ import { CVScoringData } from "../../src/utils/cvScoringService";
 
 interface CVScoringResultProps {
   data: CVScoringData;
+  cvBuilderData: CVBuilderData | null;
   onBack: () => void;
   onSaveToRepository: () => void;
-  onDownloadOptimized: () => void;
 }
 
 export function CVScoringResult({
   data,
+  cvBuilderData,
   onBack,
   onSaveToRepository,
-  onDownloadOptimized,
 }: CVScoringResultProps) {
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -74,51 +75,58 @@ export function CVScoringResult({
 
   return (
     <div className="min-h-screen bg-[var(--surface)] py-8 px-6">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center space-x-4">
+      <div className="max-w-7xl mx-auto">
+        {/* Header Responsif */}
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
+          <div className="flex items-center space-x-4 min-w-0">
             <Button
               variant="outline"
               onClick={onBack}
-              className="border-[var(--border-color)]"
+              className="border-[var(--border-color)] flex-shrink-0"
             >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Kembali
+              <ArrowLeft className="w-4 h-4 md:mr-2" />
+              <span className="hidden md:inline">Kembali</span>
             </Button>
-            <div>
-              <h1 className="text-2xl font-poppins font-bold text-[var(--neutral-ink)]">
-                Hasil Analisis CV
+            <div className="min-w-0">
+              <h1 className="text-xl md:text-2xl font-poppins font-bold text-[var(--neutral-ink)] truncate">
+                Hasil Analisis & Preview CV
               </h1>
-              <p className="text-gray-600 flex items-center mt-1">
-                <FileText className="w-4 h-4 mr-2" />
-                {data.fileName}
+              <p className="text-sm text-gray-600 flex items-center mt-1 truncate">
+                <FileText className="w-4 h-4 mr-2 flex-shrink-0" />
+                <span className="truncate">{data.fileName}</span>
               </p>
             </div>
           </div>
-          <div className="flex space-x-3">
+
+          <div className="w-full md:w-auto">
             <Button
-              variant="outline"
               onClick={onSaveToRepository}
-              className="border-[var(--red-normal)] text-[var(--red-normal)] hover:bg-[var(--red-light)]"
+              className="bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white w-full"
             >
               <FileText className="w-4 h-4 mr-2" />
-              Simpan ke Repositori
-            </Button>
-            <Button
-              onClick={onDownloadOptimized}
-              className="bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white"
-            >
-              <Download className="w-4 h-4 mr-2" />
-              Download CV Optimal
+              Kembali ke Dashboard
             </Button>
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Overall Score */}
-          <div className="lg:col-span-1">
-            <Card className="border border-[var(--border-color)] mb-6">
+        <div className="grid lg:grid-cols-2 gap-8">
+          {/* Kolom Kiri: CV Preview */}
+          <div className="lg:sticky lg:top-8 h-fit">
+            <h2 className="text-lg font-semibold mb-4 font-poppins">
+              Preview CV
+            </h2>
+            {cvBuilderData ? (
+              <CVPreview data={cvBuilderData} lang="id" />
+            ) : (
+              <div className="w-full aspect-[210/297] bg-gray-100 rounded-lg flex items-center justify-center">
+                <p className="text-gray-500">Preview tidak tersedia.</p>
+              </div>
+            )}
+          </div>
+
+          {/* Kolom Kanan: Hasil Analisis */}
+          <div className="space-y-6">
+            <Card className="border border-[var(--border-color)]">
               <CardHeader className="text-center">
                 <CardTitle className="text-xl font-poppins text-[var(--neutral-ink)]">
                   Skor Keseluruhan
@@ -167,11 +175,8 @@ export function CVScoringResult({
                 </div>
               </CardContent>
             </Card>
-          </div>
 
-          {/* Section Analysis */}
-          <div className="lg:col-span-2">
-            <Card className="border border-[var(--border-color)] mb-6">
+            <Card className="border border-[var(--border-color)]">
               <CardHeader>
                 <CardTitle className="text-xl font-poppins text-[var(--neutral-ink)]">
                   Analisis per Bagian
@@ -212,7 +217,6 @@ export function CVScoringResult({
               </CardContent>
             </Card>
 
-            {/* Suggestions */}
             <Card className="border border-[var(--border-color)]">
               <CardHeader>
                 <CardTitle className="text-xl font-poppins text-[var(--neutral-ink)]">

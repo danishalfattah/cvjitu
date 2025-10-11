@@ -45,7 +45,7 @@ export function EducationStep({
       {data.educations.map((education: Education, index: number) => (
         <Card
           key={education.id}
-          className="border border-[var(--border-color)]  "
+          className="border border-[var(--border-color)] "
         >
           <CardHeader className="flex flex-row items-center justify-between pb-4">
             <div className="flex items-center space-x-3">
@@ -77,6 +77,7 @@ export function EducationStep({
               </Label>
               <Input
                 id={`degree-${education.id}`}
+                placeholder={t("degreePlaceholder", lang)}
                 value={education.degree}
                 onChange={(e) =>
                   onUpdateEducation(education.id, { degree: e.target.value })
@@ -95,6 +96,7 @@ export function EducationStep({
               </Label>
               <Input
                 id={`institution-${education.id}`}
+                placeholder={t("institutionPlaceholder", lang)}
                 value={education.institution}
                 onChange={(e) =>
                   onUpdateEducation(education.id, {
@@ -114,6 +116,7 @@ export function EducationStep({
               </Label>
               <Input
                 id={`location-${education.id}`}
+                placeholder={t("locationPlaceholder", lang)}
                 value={education.location}
                 onChange={(e) =>
                   onUpdateEducation(education.id, { location: e.target.value })
@@ -192,35 +195,16 @@ export function EducationStep({
                 htmlFor={`gpa-${education.id}`}
                 className="text-sm font-medium"
               >
-                {t("gpaLabel", lang)}
+                {t("gradeGpaLabel", lang)}
               </Label>
               <Input
                 id={`gpa-${education.id}`}
+                placeholder={t("gradeGpaPlaceholder", lang)}
                 value={education.gpa || ""}
                 onChange={(e) =>
                   onUpdateEducation(education.id, { gpa: e.target.value })
                 }
                 className="border-2 border-gray-300 focus:border-[var(--red-normal)] transition-colors"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label
-                htmlFor={`description-${education.id}`}
-                className="text-sm font-medium"
-              >
-                {t("educationDescriptionLabel", lang)}
-              </Label>
-              <Textarea
-                id={`description-${education.id}`}
-                value={education.description || ""}
-                onChange={(e) =>
-                  onUpdateEducation(education.id, {
-                    description: e.target.value,
-                  })
-                }
-                className="border-2 border-gray-300 focus:border-[var(--red-normal)] transition-colors"
-                rows={3}
               />
             </div>
           </CardContent>

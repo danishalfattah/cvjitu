@@ -1,15 +1,11 @@
-import { LayoutDashboard, BarChart3, LogOut, User, X } from "lucide-react";
+import { LayoutDashboard, BarChart3, LogOut, X, Star } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Button } from "../ui/button";
+import { Badge } from "../ui/badge";
+import { Progress } from "../ui/progress";
+import { Label } from "../ui/label";
 import Image from "next/image";
-
-interface User {
-  id: string;
-  email: string;
-  fullName: string;
-  avatar?: string;
-  provider?: "email" | "google";
-}
+import { User } from "@/src/context/AuthContext";
 
 interface DashboardSidebarProps {
   activeTab: string;
@@ -59,8 +55,6 @@ export function DashboardSidebar({
               alt="logo"
             />
           </div>
-
-          {/* Close button for mobile */}
           {isMobile && onClose && (
             <Button
               variant="ghost"
@@ -95,11 +89,65 @@ export function DashboardSidebar({
         </ul>
       </nav>
 
+      {/* Account Status & Credits */}
+      {user && (
+        <div className="p-4 border-t border-[var(--border-color)] space-y-4">
+          <div className="p-3 bg-gray-50 rounded-lg border border-[var(--border-color)]">
+            <div className="flex flex-col items-start gap-2">
+              <Label className="text-xs text-gray-500 flex items-center">
+                <Star className="w-3 h-3 mr-1.5" />
+                Paket Anda
+              </Label>
+              <Badge
+                variant={user.plan === "Basic" ? "outline" : "default"}
+                className={
+                  user.plan !== "Basic"
+                    ? "bg-[var(--red-normal)] text-white text-xs"
+                    : "text-xs"
+                }
+              >
+                {user.plan}
+              </Badge>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <div>
+              <div className="flex justify-between items-center mb-1">
+                <Label className="text-xs text-gray-500">Kredit Buat CV</Label>
+                <span className="text-xs font-medium text-gray-600">
+                  {user.cvCreditsUsed} / {user.cvCreditsTotal}
+                </span>
+              </div>
+              <Progress
+                value={(user.cvCreditsUsed / user.cvCreditsTotal) * 100}
+                className="h-1.5"
+              />
+            </div>
+            <div>
+              <div className="flex justify-between items-center mb-1">
+                <Label className="text-xs text-gray-500">
+                  Kredit Scoring AI
+                </Label>
+                <span className="text-xs font-medium text-gray-600">
+                  {user.scoringCreditsUsed} / {user.scoringCreditsTotal}
+                </span>
+              </div>
+              <Progress
+                value={
+                  (user.scoringCreditsUsed / user.scoringCreditsTotal) * 100
+                }
+                className="h-1.5"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* User Profile & Logout */}
       {user && (
         <div className="p-4 border-t border-[var(--border-color)] bg-gray-50/50">
           <div className="space-y-3">
-            {/* User Profile Card */}
             <div className="flex items-center space-x-3 p-3 bg-white rounded-lg border border-[var(--border-color)] shadow-sm">
               <Avatar
                 className={`${
@@ -132,8 +180,6 @@ export function DashboardSidebar({
                 </p>
               </div>
             </div>
-
-            {/* Logout Button */}
             <Button
               onClick={onLogout}
               variant="ghost"
@@ -146,16 +192,6 @@ export function DashboardSidebar({
           </div>
         </div>
       )}
-
-      {/* Copyright Section */}
-      <div className="p-4 border-t border-[var(--border-color)] bg-gray-50/30">
-        <div className="text-center">
-          <p className="text-xs text-gray-500 mb-1">
-            © {new Date().getFullYear()} CVJitu
-          </p>
-          <p className="text-xs text-gray-400">All rights reserved</p>
-        </div>
-      </div>
     </div>
   );
 }

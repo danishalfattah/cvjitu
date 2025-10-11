@@ -1,21 +1,12 @@
-// components/dashboard/DashboardLayout.tsx
-
 import { useState, useEffect } from "react";
 import { DashboardSidebar } from "./DashboardSidebar";
 import { Dashboard } from "./Dashboard";
 import { CVScoringPage } from "./CVScoringPage";
 import { Button } from "../ui/button";
 import { Menu, X } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-
-interface User {
-  id: string;
-  email: string;
-  fullName: string;
-  avatar?: string;
-  provider?: "email" | "google";
-}
+import { User } from "@/src/context/AuthContext";
 
 interface DashboardLayoutProps {
   onLogout?: () => void;

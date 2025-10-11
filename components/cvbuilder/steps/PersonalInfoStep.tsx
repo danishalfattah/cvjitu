@@ -24,7 +24,7 @@ export function PersonalInfoStep({
           <Input
             id="firstName"
             type="text"
-            placeholder="John"
+            placeholder={t("firstNamePlaceholder", lang)}
             value={data.firstName}
             onChange={(e) => onUpdate({ firstName: e.target.value })}
             className="border-2 border-gray-300 focus:border-[var(--red-normal)] transition-colors"
@@ -37,7 +37,7 @@ export function PersonalInfoStep({
           <Input
             id="lastName"
             type="text"
-            placeholder="Doe"
+            placeholder={t("lastNamePlaceholder", lang)}
             value={data.lastName}
             onChange={(e) => onUpdate({ lastName: e.target.value })}
             className="border-2 border-gray-300 focus:border-[var(--red-normal)] transition-colors"
@@ -53,7 +53,7 @@ export function PersonalInfoStep({
           <Input
             id="email"
             type="email"
-            placeholder="john.doe@email.com"
+            placeholder={t("emailPlaceholder", lang)}
             value={data.email}
             onChange={(e) => onUpdate({ email: e.target.value })}
             className="border-2 border-gray-300 focus:border-[var(--red-normal)] transition-colors"
@@ -66,7 +66,7 @@ export function PersonalInfoStep({
           <Input
             id="phone"
             type="tel"
-            placeholder="+1 (555) 123-4567"
+            placeholder={t("phonePlaceholder", lang)}
             value={data.phone}
             onChange={(e) => onUpdate({ phone: e.target.value })}
             className="border-2 border-gray-300 focus:border-[var(--red-normal)] transition-colors"
@@ -81,7 +81,7 @@ export function PersonalInfoStep({
         <Input
           id="location"
           type="text"
-          placeholder="San Francisco, CA"
+          placeholder={t("locationPlaceholder", lang)}
           value={data.location}
           onChange={(e) => onUpdate({ location: e.target.value })}
           className="border-2 border-gray-300 focus:border-[var(--red-normal)] transition-colors"
@@ -96,7 +96,7 @@ export function PersonalInfoStep({
           <Input
             id="linkedin"
             type="url"
-            placeholder="linkedin.com/in/johndoe"
+            placeholder={t("linkedinPlaceholder", lang)}
             value={data.linkedin}
             onChange={(e) => onUpdate({ linkedin: e.target.value })}
             className="border-2 border-gray-300 focus:border-[var(--red-normal)] transition-colors"
@@ -109,7 +109,7 @@ export function PersonalInfoStep({
           <Input
             id="website"
             type="url"
-            placeholder="johndoe.com"
+            placeholder={t("websitePlaceholder", lang)}
             value={data.website}
             onChange={(e) => onUpdate({ website: e.target.value })}
             className="border-2 border-gray-300 focus:border-[var(--red-normal)] transition-colors"

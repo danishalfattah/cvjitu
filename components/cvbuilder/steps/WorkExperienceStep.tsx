@@ -144,7 +144,7 @@ export function WorkExperienceStep({
                 </Label>
                 <Input
                   id={`jobTitle-${experience.id}`}
-                  placeholder="e.g. Software Engineer"
+                  placeholder={t("jobTitleWorkPlaceholder", lang)}
                   value={experience.jobTitle}
                   onChange={(e) =>
                     onUpdateExperience(experience.id, {
@@ -165,7 +165,7 @@ export function WorkExperienceStep({
                 </Label>
                 <Input
                   id={`company-${experience.id}`}
-                  placeholder="Amazon"
+                  placeholder={t("companyPlaceholder", lang)}
                   value={experience.company}
                   onChange={(e) =>
                     onUpdateExperience(experience.id, {
@@ -186,7 +186,7 @@ export function WorkExperienceStep({
               </Label>
               <Input
                 id={`location-${experience.id}`}
-                placeholder="San Francisco, CA"
+                placeholder={t("locationPlaceholder", lang)}
                 value={experience.location}
                 onChange={(e) =>
                   onUpdateExperience(experience.id, {
@@ -271,7 +271,7 @@ export function WorkExperienceStep({
               </Label>
               <Textarea
                 id={`description-${experience.id}`}
-                placeholder="Brief description of your role"
+                placeholder={t("workDescriptionPlaceholder", lang)}
                 value={experience.description}
                 onChange={(e) =>
                   onUpdateExperience(experience.id, {

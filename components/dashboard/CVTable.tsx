@@ -1,5 +1,3 @@
-// components/dashboard/CVTable.tsx
-
 import {
   Table,
   TableBody,
@@ -20,6 +18,7 @@ import {
   MoreHorizontal,
   Globe,
   Lock,
+  BarChart3,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -43,6 +42,8 @@ interface CVTableProps {
   onDelete: (cv: CVData) => void;
   onShare: (cv: CVData) => void;
   onVisibilityChange: (cvId: string, visibility: "public" | "private") => void;
+  actionType?: "builder" | "scoring";
+  onScore?: (cv: CVData) => void;
 }
 
 export function CVTable({
@@ -53,26 +54,33 @@ export function CVTable({
   onDelete,
   onShare,
   onVisibilityChange,
+  actionType = "builder",
+  onScore,
 }: CVTableProps) {
-  const getStatusColor = (status: string) => {
-    return status === "Completed"
-      ? "bg-[var(--success)] text-white"
-      : "bg-[var(--warn)] text-white";
+  const getStatusColor = (status: CVData["status"]) => {
+    if (status === "Completed") return "bg-[var(--success)] text-white";
+    if (status === "Uploaded") return "bg-blue-500 text-white";
+    return "bg-[var(--warn)] text-white";
   };
 
   return (
     <div className="bg-white rounded-lg border border-[var(--border-color)] overflow-hidden">
-      {/* Wrapper untuk scroll horizontal di mobile */}
       <div className="w-full overflow-x-auto horizontal-scroll-hidden">
         <table className="w-full caption-bottom text-sm min-w-[700px]">
           <TableHeader>
             <TableRow className="bg-[var(--surface)]">
-              <TableHead>Posisi yang Dilamar</TableHead>
+              <TableHead>
+                {actionType === "builder" ? "Posisi yang Dilamar" : "Nama File"}
+              </TableHead>
               <TableHead>Tahun</TableHead>
-              <TableHead>Bahasa</TableHead>
+              {actionType === "builder" && <TableHead>Bahasa</TableHead>}
               <TableHead>Privasi</TableHead>
-              <TableHead>Dibuat</TableHead>
-              <TableHead>Diperbarui</TableHead>
+              <TableHead>
+                {actionType === "builder" ? "Dibuat" : "Di-upload"}
+              </TableHead>
+              <TableHead>
+                {actionType === "builder" ? "Diperbarui" : "Skor Terakhir"}
+              </TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Skor</TableHead>
               <TableHead className="text-right">Aksi</TableHead>
@@ -83,11 +91,15 @@ export function CVTable({
               <TableRow key={cv.id} className="hover:bg-[var(--surface)]">
                 <TableCell className="font-medium">{cv.name}</TableCell>
                 <TableCell>{cv.year}</TableCell>
-                <TableCell>
-                  <Badge variant="outline">
-                    {cv.lang === "id" ? "ID" : "EN"}
-                  </Badge>
-                </TableCell>
+                {actionType === "builder" && (
+                  <TableCell>
+                    {cv.lang !== "unknown" && (
+                      <Badge variant="outline">
+                        {cv.lang === "id" ? "ID" : "EN"}
+                      </Badge>
+                    )}
+                  </TableCell>
+                )}
                 <TableCell>
                   <div className="flex items-center gap-1.5">
                     {cv.visibility === "public" ? (
@@ -104,7 +116,11 @@ export function CVTable({
                 <TableCell className="text-gray-600">{cv.updated}</TableCell>
                 <TableCell>
                   <Badge className={getStatusColor(cv.status)}>
-                    {cv.status === "Completed" ? "Selesai" : cv.status}
+                    {cv.status === "Completed"
+                      ? "Selesai"
+                      : cv.status === "Uploaded"
+                      ? "Di-upload"
+                      : cv.status}
                   </Badge>
                 </TableCell>
                 <TableCell>
@@ -118,52 +134,61 @@ export function CVTable({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => onPreview(cv)}>
-                        <Eye className="w-4 h-4 mr-2" />
-                        Preview
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onUpdate(cv)}>
-                        <Edit className="w-4 h-4 mr-2" />
-                        Edit
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onDownload(cv)}>
-                        <Download className="w-4 h-4 mr-2" />
-                        Download
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onShare(cv)}>
-                        <Share2 className="w-4 h-4 mr-2" />
-                        Bagikan
-                      </DropdownMenuItem>
-                      <DropdownMenuSub>
-                        <DropdownMenuSubTrigger>
-                          {cv.visibility === "public" ? (
-                            <Globe className="w-4 h-4 mr-2" />
-                          ) : (
-                            <Lock className="w-4 h-4 mr-2" />
-                          )}
-                          Atur Privasi
-                        </DropdownMenuSubTrigger>
-                        <DropdownMenuSubContent>
-                          <DropdownMenuRadioGroup
-                            value={cv.visibility}
-                            onValueChange={(value) =>
-                              onVisibilityChange(
-                                cv.id,
-                                value as "public" | "private"
-                              )
-                            }
-                          >
-                            <DropdownMenuRadioItem value="public">
-                              <Globe className="w-4 h-4 mr-2" />
-                              Publik
-                            </DropdownMenuRadioItem>
-                            <DropdownMenuRadioItem value="private">
-                              <Lock className="w-4 h-4 mr-2" />
-                              Privat
-                            </DropdownMenuRadioItem>
-                          </DropdownMenuRadioGroup>
-                        </DropdownMenuSubContent>
-                      </DropdownMenuSub>
+                      {actionType === "builder" ? (
+                        <>
+                          <DropdownMenuItem onClick={() => onPreview(cv)}>
+                            <BarChart3 className="w-4 h-4 mr-2" />
+                            Lihat Analisis
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => onUpdate(cv)}>
+                            <Edit className="w-4 h-4 mr-2" />
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => onDownload(cv)}>
+                            <Download className="w-4 h-4 mr-2" />
+                            Download
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => onShare(cv)}>
+                            <Share2 className="w-4 h-4 mr-2" />
+                            Bagikan Link
+                          </DropdownMenuItem>
+                          <DropdownMenuSub>
+                            <DropdownMenuSubTrigger>
+                              {cv.visibility === "public" ? (
+                                <Globe className="w-4 h-4 mr-2" />
+                              ) : (
+                                <Lock className="w-4 h-4 mr-2" />
+                              )}
+                              Atur Privasi
+                            </DropdownMenuSubTrigger>
+                            <DropdownMenuSubContent>
+                              <DropdownMenuRadioGroup
+                                value={cv.visibility}
+                                onValueChange={(value) =>
+                                  onVisibilityChange(
+                                    cv.id,
+                                    value as "public" | "private"
+                                  )
+                                }
+                              >
+                                <DropdownMenuRadioItem value="public">
+                                  <Globe className="w-4 h-4 mr-2" />
+                                  Publik
+                                </DropdownMenuRadioItem>
+                                <DropdownMenuRadioItem value="private">
+                                  <Lock className="w-4 h-4 mr-2" />
+                                  Privat
+                                </DropdownMenuRadioItem>
+                              </DropdownMenuRadioGroup>
+                            </DropdownMenuSubContent>
+                          </DropdownMenuSub>
+                        </>
+                      ) : (
+                        <DropdownMenuItem onClick={() => onPreview(cv)}>
+                          <Eye className="w-4 h-4 mr-2" />
+                          Lihat Analisis CV
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         onClick={() => onDelete(cv)}

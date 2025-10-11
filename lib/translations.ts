@@ -58,11 +58,10 @@ const translations: { [key: string]: TranslationEntry } = {
   addEducationButton: { id: 'Tambah Pendidikan', en: 'Add Education' },
   noEducationYet: { id: 'Belum ada pendidikan yang ditambahkan.', en: 'No education added yet.' },
   clickToAddEducation: { id: 'Klik "Tambah Pendidikan" untuk memulai.', en: 'Click "Add Education" to get started.' },
-  degreeLabel: { id: 'Gelar', en: 'Degree' },
-  institutionLabel: { id: 'Institusi', en: 'Institution' },
-  gpaLabel: { id: 'IPK (Opsional)', en: 'GPA (Optional)' },
-  educationDescriptionLabel: { id: 'Deskripsi (Opsional)', en: 'Description (Optional)' },
-  currentStudyLabel: { id: 'Saya masih berkuliah di sini', en: 'I am currently studying here' },
+  degreeLabel: { id: 'Gelar/Jurusan', en: 'Degree/Major' },
+  institutionLabel: { id: 'Institusi/Sekolah', en: 'Institution/School' },
+  gradeGpaLabel: { id: 'Nilai/IPK (Opsional)', en: 'Grade/GPA (Optional)' },
+  currentStudyLabel: { id: 'Saya masih belajar di sini', en: 'I am currently studying here' },
 
   // SkillsStep.tsx
   skillsTitle: { id: 'Keahlian', en: 'Skills' },
@@ -98,12 +97,30 @@ const translations: { [key: string]: TranslationEntry } = {
   previewEducation: { id: "Pendidikan", en: "Education" },
   previewSkills: { id: "Keahlian", en: "Skills" },
   previewNow: { id: "Sekarang", en: "Now" },
-  previewGpa: { id: "IPK", en: "GPA" },
+  previewGpa: { id: "Nilai", en: "Grade" },
   
-
   //CVPreviewPage
   previewLangID: { id: "Bahasa Indonesia", en: "Indonesian" },
   previewLangEN: { id: "English", en: "English" },
+
+   // PersonalInfoStep.tsx Placeholders
+  firstNamePlaceholder: { id: 'Contoh: Budi', en: 'e.g., John' },
+  lastNamePlaceholder: { id: 'Contoh: Santoso', en: 'e.g., Doe' },
+  emailPlaceholder: { id: 'contoh@email.com', en: 'example@email.com' },
+  phonePlaceholder: { id: '081234567890', en: '+1 (555) 123-4567' },
+  locationPlaceholder: { id: 'Jakarta, Indonesia', en: 'San Francisco, CA' },
+  linkedinPlaceholder: { id: 'linkedin.com/in/namaanda', en: 'linkedin.com/in/yourname' },
+  websitePlaceholder: { id: 'portofolioanda.com', en: 'yourportfolio.com' },
+
+  // WorkExperienceStep.tsx Placeholders
+  jobTitleWorkPlaceholder: { id: 'Contoh: Software Engineer', en: 'e.g., Software Engineer' },
+  companyPlaceholder: { id: 'Contoh: CVJitu', en: 'e.g., Google' },
+  workDescriptionPlaceholder: { id: 'Jelaskan peran dan tanggung jawab utama Anda di sini...', en: 'Describe your main roles and responsibilities here...' },
+
+  // EducationStep.tsx Placeholders
+  degreePlaceholder: { id: 'Contoh: S1 Teknik Informatika', en: 'e.g., Bachelor of Computer Science' },
+  institutionPlaceholder: { id: 'Contoh: Universitas Gadjah Mada', en: 'e.g., Stanford University' },
+  gradeGpaPlaceholder: { id: 'Contoh: 3.82 atau Rata-rata: 88', en: 'e.g., 3.82 or Average: 88' },
 };
 
 export const t = (key: string, lang: Language): string => {
