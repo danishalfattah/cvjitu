@@ -13,8 +13,13 @@ import { FAQSection } from "@/src/components/landing-page/FAQSection";
 import { Footer } from "@/src/components/Footer";
 import { useAuth } from "@/src/context/AuthContext";
 import { type CVScoringData } from "@/src/utils/cvScoringService";
-import { model as geminiModel } from "@/src/lib/gemini"; // Import model Gemini
+import { model as geminiModel } from "@/src/lib/gemini";
 import pdfParse from "pdf-parse";
+
+// Menambahkan worker-loader untuk pdf.js
+if (typeof window !== "undefined") {
+  (window as any).pdfjsWorker = require("pdfjs-dist/build/pdf.worker.entry");
+}
 
 export default function Page() {
   const router = useRouter();
@@ -57,7 +62,6 @@ export default function Page() {
       // 1. Ekstrak teks dari file PDF
       const cvText = await extractTextFromPdf(file);
       if (!cvText || cvText.trim().length < 50) {
-        // Cek apakah ada cukup teks
         throw new Error(
           "File PDF tidak berisi teks yang cukup untuk dianalisis."
         );
@@ -65,16 +69,8 @@ export default function Page() {
 
       // 2. Buat Prompt untuk Gemini API
       const prompt = `
-        Anda adalah sistem AI perekrutan yang sangat cerdas. Tugas Anda adalah menganalisis teks berikut dan menentukan apakah itu adalah sebuah Curriculum Vitae (CV) atau bukan.
-
-        Teks untuk dianalisis: "${cvText}"
-
-        Lakukan tugas berikut:
-        1. Tentukan apakah teks tersebut adalah sebuah CV. Jawab dalam properti "isCV" (true jika ya, false jika tidak).
-        2. Jika teks tersebut BUKAN sebuah CV, kembalikan nilai 0 untuk semua properti skor ("overallScore", "atsCompatibility", "keywordMatch", "readabilityScore"), berikan array kosong untuk "sections", dan berikan satu pesan di "suggestions" yang menyatakan 'File yang diunggah sepertinya bukan CV. Mohon unggah file CV yang valid.'.
-        3. Jika teks tersebut ADALAH sebuah CV, lakukan analisis mendalam dan berikan penilaian objektif sesuai parameter yang benar.
-
-        Berikan output HANYA dalam format JSON yang valid tanpa markdown formatting (tanpa \`\`\`json ... \`\`\`). Strukturnya harus sebagai berikut:
+        Anda adalah sistem AI perekrutan yang sangat cerdas. Analisis teks CV berikut: "${cvText}"
+        Berikan output HANYA dalam format JSON yang valid tanpa markdown, dengan struktur:
         {
           "isCV": <true atau false>,
           "overallScore": <angka 0-100>,
@@ -82,14 +78,12 @@ export default function Page() {
           "keywordMatch": <angka 0-100>,
           "readabilityScore": <angka 0-100>,
           "sections": [
-            { "name": "Analisis Konten", "score": <angka 0-100>, "status": "<'excellent'|'good'|'needs_improvement'|'poor'>", "feedback": "<satu kalimat feedback>" },
-            { "name": "Struktur & Format", "score": <angka 0-100>, "status": "<'excellent'|'good'|'needs_improvement'|'poor'>", "feedback": "<satu kalimat feedback>" }
+            { "name": "Analisis Konten", "score": <angka>, "status": "<'excellent'|'good'|'needs_improvement'|'poor'>", "feedback": "<feedback>" },
+            { "name": "Struktur & Format", "score": <angka>, "status": "<'excellent'|'good'|'needs_improvement'|'poor'>", "feedback": "<feedback>" }
           ],
-          "suggestions": [
-            "<saran perbaikan pertama>",
-            "<saran perbaikan kedua>"
-          ]
+          "suggestions": ["<saran 1>", "<saran 2>"]
         }
+        Jika bukan CV, "isCV" harus false dan semua skor harus 0.
       `;
 
       // 3. Panggil Gemini API langsung dari frontend

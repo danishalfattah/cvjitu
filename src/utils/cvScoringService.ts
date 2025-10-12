@@ -1,9 +1,7 @@
-// src/utils/cvScoringService.ts
-
 // Dummy CV Scoring Service
 export interface CVScoringData {
   fileName: string;
-  isCV: boolean; // <-- TAMBAHKAN BARIS INI
+  isCV: boolean;
   overallScore: number;
   sections: {
     name: string;
@@ -119,7 +117,7 @@ export const analyzeCVFile = async (file: File): Promise<CVScoringData> => {
   // Calculate overall score (weighted average)
   const weights = [0.1, 0.2, 0.3, 0.15, 0.1, 0.15]; // Experience and Skills have higher weight
   const overallScore = Math.round(
-    sectionScores.reduce((acc, section, index) => 
+    sectionScores.reduce((acc, section, index) =>
       acc + (section.score * weights[index]), 0
     )
   );
@@ -137,7 +135,7 @@ export const analyzeCVFile = async (file: File): Promise<CVScoringData> => {
 
   return {
     fileName: file.name,
-    isCV: true, // Tambahkan nilai default
+    isCV: true,
     overallScore,
     sections: sectionScores,
     suggestions: selectedSuggestions,

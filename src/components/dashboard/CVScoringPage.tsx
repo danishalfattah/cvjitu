@@ -27,7 +27,7 @@ import {
   doc,
 } from "firebase/firestore";
 import { CVScoringData } from "@/src/utils/cvScoringService";
-import pdfParse from "pdf-parse/lib/pdf-parse";
+import pdfParse from "pdf-parse";
 import { model as geminiModel } from "@/src/lib/gemini";
 import { DeleteConfirmModal } from "../DeleteConfirmModal";
 
@@ -150,7 +150,7 @@ export function CVScoringPage() {
     setIsProcessing(true);
     setScoringResult(null);
     try {
-      // 1. Dapatkan Pre-signed URL dari API Route Anda
+      // 1. Dapatkan Pre-signed URL dari API Route Anda (untuk Cloudflare)
       toast.info("Menyiapkan unggahan aman...");
       const presignResponse = await fetch("/api/upload", {
         method: "POST",
@@ -177,7 +177,7 @@ export function CVScoringPage() {
 
       const publicUrl = `https://${process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_DOMAIN}/${key}`;
 
-      // 3. Ekstrak teks dan panggil Gemini API
+      // 3. Ekstrak teks dan panggil Gemini API dari Frontend
       toast.info("AI sedang menganalisis CV Anda...");
       const cvText = await extractTextFromPdf(file);
       if (!cvText.trim()) {
@@ -204,11 +204,9 @@ export function CVScoringPage() {
 
       const result = await geminiModel.generateContent(prompt);
       const response = await result.response;
+      const analysisResultText = response.text();
       const analysisResult = JSON.parse(
-        response
-          .text()
-          .replace(/```json/g, "")
-          .replace(/```/g, "")
+        analysisResultText.replace(/```json/g, "").replace(/```/g, "")
       );
 
       // 4. Simpan hasil ke Firestore
@@ -233,6 +231,7 @@ export function CVScoringPage() {
         score: analysisResult.overallScore,
         lang: "unknown",
         visibility: "private",
+        cvBuilderData: mockBuilderData,
       };
       setCvs((prev) => [newCVEntry, ...prev]);
 
@@ -252,8 +251,6 @@ export function CVScoringPage() {
   };
 
   const handleViewResult = (cv: CVData) => {
-    // Di aplikasi nyata, Anda akan mengambil data lengkap dari Firestore
-    // Untuk saat ini, kita hanya membuat mock untuk tampilan
     const mockResult: CVScoringData = {
       fileName: cv.name,
       isCV: true,
@@ -290,7 +287,8 @@ export function CVScoringPage() {
       .toLowerCase()
       .includes(searchQuery.toLowerCase());
     const matchesYear =
-      filters.year === "Semua Tahun" || cv.year.toString() === filters.year;
+      filters.year === "Semua Tahun" ||
+      (cv.year && cv.year.toString() === filters.year);
     const matchesScore =
       cv.score >= filters.scoreRange[0] && cv.score <= filters.scoreRange[1];
 
@@ -298,7 +296,7 @@ export function CVScoringPage() {
   });
 
   if (isLoading) {
-    return <div className="p-6">Memuat riwayat scoring...</div>;
+    return <div className="p-6 min-h-screen">Memuat riwayat scoring...</div>;
   }
 
   if (scoringResult) {
@@ -356,7 +354,7 @@ export function CVScoringPage() {
         onFiltersChange={setFilters}
         onReset={() =>
           setFilters({
-            status: "Semua Status",
+            status: "Semua Tahun",
             year: "Semua Tahun",
             scoreRange: [1, 100],
           })
