@@ -1,8 +1,7 @@
 // src/components/dashboard/CVScoringPage.tsx
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -12,88 +11,33 @@ import { CVTable } from "./CVTable";
 import { EmptyState } from "../EmptyState";
 import { FileUploadZone } from "../FileUploadZone";
 import { CVScoringResult } from "./CVScoringResult";
-import {
-  analyzeCVFile,
-  type CVScoringData,
-} from "@/src/utils/cvScoringService";
-import { CVBuilderData } from "../cvbuilder/types";
 import { Search, Grid, List } from "lucide-react";
-
-const dummyScoredCVs: CVData[] = [
-  {
-    id: "sc-1",
-    name: "CV_Budi_Santoso_2024.pdf",
-    year: 2024,
-    created: "15 Agu 2024, 10:00",
-    updated: "15 Agu 2024, 10:05",
-    status: "Uploaded",
-    score: 88,
-    lang: "unknown",
-    visibility: "private",
-    owner: "Demo User",
-  },
-  {
-    id: "sc-2",
-    name: "Resume_Siti_Aminah.docx",
-    year: 2024,
-    created: "14 Agu 2024, 11:30",
-    updated: "14 Agu 2024, 11:32",
-    status: "Uploaded",
-    score: 75,
-    lang: "unknown",
-    visibility: "private",
-    owner: "Demo User",
-  },
-];
-
-const mockBuilderData: CVBuilderData = {
-  jobTitle: "Software Engineer",
-  description: "CV for the position of Software Engineer",
-  firstName: "John",
-  lastName: "Doe",
-  email: "john.doe@example.com",
-  phone: "+1234567890",
-  location: "San Francisco, CA",
-  linkedin: "linkedin.com/in/johndoe",
-  website: "johndoe.com",
-  workExperiences: [
-    {
-      id: "1",
-      jobTitle: "Software Engineer",
-      company: "Tech Company",
-      location: "San Francisco, CA",
-      startDate: "2022-01",
-      endDate: "2024-01",
-      current: false,
-      description: `Worked as a Software Engineer on various projects.`,
-      achievements: [
-        "Developed and maintained web applications.",
-        "Collaborated with cross-functional teams.",
-      ],
-    },
-  ],
-  educations: [
-    {
-      id: "1",
-      degree: "Bachelor of Science in Computer Science",
-      institution: "University of Example",
-      location: "Example City",
-      startDate: "2018-09",
-      endDate: "2022-05",
-      current: false,
-    },
-  ],
-  skills: ["React", "Node.js", "TypeScript", "Next.js"],
-  summary: `A passionate Software Engineer with experience in building web applications.`,
-};
+import { useAuth } from "@/src/context/AuthContext";
+import { db } from "@/src/lib/firebase";
+import {
+  collection,
+  addDoc,
+  serverTimestamp,
+  query,
+  where,
+  getDocs,
+  orderBy,
+  Timestamp,
+  deleteDoc,
+  doc,
+  getDoc,
+} from "firebase/firestore";
+import { CVScoringData } from "@/src/utils/cvScoringService";
+import { DeleteConfirmModal } from "../DeleteConfirmModal";
 
 export function CVScoringPage() {
-  const router = useRouter();
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
-  const [cvs, setCvs] = useState(dummyScoredCVs);
+  const [cvs, setCvs] = useState<CVData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [filters, setFilters] = useState({
-    status: "Semua Status",
+    status: "Semua Tahun",
     year: "Semua Tahun",
     scoreRange: [1, 100],
   });
@@ -102,69 +46,172 @@ export function CVScoringPage() {
   const [scoringResult, setScoringResult] = useState<CVScoringData | null>(
     null
   );
+  const [uploadedFileUrl, setUploadedFileUrl] = useState<string | null>(null);
+  const [isFromRepository, setIsFromRepository] = useState(false);
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    cv: CVData | null;
+  }>({ isOpen: false, cv: null });
+
+  const fetchScoredCVs = async () => {
+    if (!user) {
+      setIsLoading(false);
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const q = query(
+        collection(db, "scoredCVs"),
+        where("ownerId", "==", user.id),
+        orderBy("createdAt", "desc")
+      );
+      const querySnapshot = await getDocs(q);
+      const userCVs = querySnapshot.docs.map((doc) => {
+        const data = doc.data();
+        const createdAtDate =
+          data.createdAt instanceof Timestamp
+            ? data.createdAt.toDate()
+            : new Date();
+        return {
+          id: doc.id,
+          name: data.fileName,
+          year: createdAtDate.getFullYear(),
+          created: createdAtDate.toLocaleString("id-ID"),
+          updated: createdAtDate.toLocaleString("id-ID"),
+          status: "Uploaded",
+          score: data.overallScore,
+          lang: "unknown",
+          visibility: "private",
+          fileUrl: data.fileUrl,
+        } as CVData;
+      });
+      setCvs(userCVs);
+    } catch (error) {
+      console.error("Error fetching scored CVs:", error);
+      // Notifikasi error dihapus agar tidak muncul saat repositori kosong
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (user) {
+      fetchScoredCVs();
+    }
+  }, [user]);
 
   const handleFileUpload = async (file: File) => {
     setIsProcessing(true);
     setScoringResult(null);
+    setUploadedFileUrl(null);
+    const toastId = toast.loading("Mengunggah file Anda...");
+
     try {
-      const results = await analyzeCVFile(file);
-      setScoringResult(results);
-      const newCV: CVData = {
-        id: `sc-${Date.now()}`,
-        name: file.name,
-        year: new Date().getFullYear(),
-        created: new Date().toLocaleString(),
-        updated: new Date().toLocaleString(),
-        status: "Uploaded",
-        score: results.overallScore || 0, // Fallback to 0 if overallScore is undefined
-        lang: "unknown",
-        visibility: "private",
-      };
-      setCvs((prev) => [newCV, ...prev]);
-    } catch (error) {
-      toast.error("Gagal menganalisis CV. Silakan coba lagi.");
+      // 1. Upload file ke storage, dapatkan URL
+      const uploadFormData = new FormData();
+      uploadFormData.append("file", file);
+      const uploadResponse = await fetch("/api/upload", {
+        method: "POST",
+        body: uploadFormData,
+      });
+      const uploadResult = await uploadResponse.json();
+      if (!uploadResponse.ok)
+        throw new Error(uploadResult.message || "Gagal mengunggah file.");
+
+      setUploadedFileUrl(uploadResult.url);
+      toast.info("Menganalisis CV dengan AI...", { id: toastId });
+
+      // 2. Kirim file untuk dianalisis
+      const analysisFormData = new FormData();
+      analysisFormData.append("file", file);
+      const analysisResponse = await fetch("/api/cv/analyze", {
+        method: "POST",
+        body: analysisFormData,
+      });
+      const analysisResult = await analysisResponse.json();
+      if (!analysisResponse.ok)
+        throw new Error(analysisResult.message || "Gagal menganalisis CV.");
+
+      if (analysisResult.isCv === false) {
+        toast.warning("File yang diunggah bukan CV.", {
+          id: toastId,
+          description: "Silakan coba dengan file CV yang valid.",
+        });
+      } else {
+        setScoringResult({ ...analysisResult, fileName: file.name });
+        setIsFromRepository(false); // Tandai ini hasil upload baru
+        toast.success("Analisis CV selesai!", { id: toastId });
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Terjadi kesalahan.", { id: toastId });
     } finally {
       setIsProcessing(false);
     }
   };
 
-  const handleViewResult = (cv: CVData) => {
-    const mockResult: CVScoringData = {
-      isCv: true, // <-- TAMBAHKAN BARIS INI
-      fileName: cv.name,
-      overallScore: cv.score,
-      atsCompatibility: Math.min(cv.score + 5, 100),
-      keywordMatch: Math.max(cv.score - 3, 0),
-      readabilityScore: Math.min(cv.score + 2, 100),
-      sections: [
-        {
-          name: "Pengalaman Kerja",
-          score: cv.score + 10 > 100 ? 95 : cv.score + 10,
-          status: "excellent",
-          feedback: "Pengalaman kerja Anda sangat relevan.",
-        },
-        {
-          name: "Pendidikan",
-          score: cv.score - 5 < 0 ? 60 : cv.score - 5,
-          status: "good",
-          feedback: "Latar belakang pendidikan Anda baik.",
-        },
-      ],
-      suggestions: [
-        "Tambahkan lebih banyak kata kunci yang relevan dari deskripsi pekerjaan.",
-        "Kuantifikasi pencapaian Anda dengan angka untuk dampak yang lebih besar.",
-      ],
-    };
-    setScoringResult(mockResult);
+  const handleSaveToRepository = async () => {
+    if (!scoringResult || !user || !uploadedFileUrl) {
+      toast.error("Tidak ada hasil analisis valid untuk disimpan.");
+      return;
+    }
+    const toastId = toast.loading("Menyimpan ke repositori...");
+    try {
+      const docData = {
+        ownerId: user.id,
+        createdAt: serverTimestamp(),
+        fileUrl: uploadedFileUrl,
+        ...scoringResult,
+      };
+      await addDoc(collection(db, "scoredCVs"), docData);
+      toast.success("Hasil analisis berhasil disimpan!", { id: toastId });
+      setScoringResult(null);
+      fetchScoredCVs();
+    } catch (error) {
+      toast.error("Gagal menyimpan hasil analisis.", { id: toastId });
+    }
   };
 
-  const handleBackToList = () => {
-    setScoringResult(null);
+  const handleViewResult = async (cv: CVData) => {
+    if (!user) return;
+    const toastId = toast.loading("Memuat hasil analisis...");
+    try {
+      const docRef = doc(db, "scoredCVs", cv.id);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        const data = docSnap.data() as CVScoringData;
+        if (!data.fileName) data.fileName = cv.name;
+        setScoringResult(data);
+        setIsFromRepository(true); // Tandai ini dari riwayat
+        toast.success("Hasil analisis berhasil dimuat.", { id: toastId });
+      } else {
+        throw new Error("Data analisis untuk CV ini tidak ditemukan.");
+      }
+    } catch (error: any) {
+      toast.error(error.message, { id: toastId });
+    }
   };
 
-  const handleDelete = (cv: CVData) => {
-    toast.success(`CV "${cv.name}" telah dihapus.`);
-    setCvs((prev) => prev.filter((item) => item.id !== cv.id));
+  const handleDeleteConfirm = async () => {
+    if (deleteModal.cv) {
+      const toastId = toast.loading("Menghapus hasil analisis...");
+      try {
+        await deleteDoc(doc(db, "scoredCVs", deleteModal.cv.id));
+        setCvs((prev) => prev.filter((cv) => cv.id !== deleteModal.cv!.id));
+        toast.success("Hasil skor CV telah dihapus.", { id: toastId });
+      } catch (error) {
+        toast.error("Gagal menghapus data.", { id: toastId });
+      } finally {
+        setDeleteModal({ isOpen: false, cv: null });
+      }
+    }
+  };
+
+  const handleDownload = (cv: CVData) => {
+    if (cv.fileUrl) {
+      window.open(cv.fileUrl, "_blank");
+    } else {
+      toast.error("URL file tidak ditemukan untuk CV ini.");
+    }
   };
 
   const filteredCVs = cvs.filter((cv) => {
@@ -172,10 +219,10 @@ export function CVScoringPage() {
       .toLowerCase()
       .includes(searchQuery.toLowerCase());
     const matchesYear =
-      filters.year === "Semua Tahun" || cv.year.toString() === filters.year;
+      filters.year === "Semua Tahun" ||
+      (cv.year && cv.year.toString() === filters.year);
     const matchesScore =
       cv.score >= filters.scoreRange[0] && cv.score <= filters.scoreRange[1];
-
     return matchesSearch && matchesYear && matchesScore;
   });
 
@@ -183,32 +230,33 @@ export function CVScoringPage() {
     return (
       <CVScoringResult
         data={scoringResult}
-        cvBuilderData={mockBuilderData}
-        onBack={handleBackToList}
-        onSaveToRepository={() => {
-          toast.success(
-            "Hasil analisis CV berhasil disimpan ke repositori Anda."
-          );
-          handleBackToList();
-        }}
+        onBack={() => setScoringResult(null)}
+        onSaveToRepository={handleSaveToRepository}
+        isFromRepository={isFromRepository} // Kirim status ke komponen hasil
       />
     );
   }
 
   return (
     <div className="p-4 sm:p-6 min-h-screen">
+      <DeleteConfirmModal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, cv: null })}
+        onConfirm={handleDeleteConfirm}
+        cv={deleteModal.cv}
+        title="Hapus Hasil Skor CV"
+        description="Apakah Anda yakin ingin menghapus hasil analisis CV ini? Tindakan ini tidak dapat dibatalkan."
+      />
       <div className="mb-6 sm:mb-8">
         <div className="flex items-center space-x-2 text-sm text-gray-500 mb-2">
-          <span>Pages</span>
-          <span>/</span>
+          <span>Pages</span> <span>/</span>{" "}
           <span className="text-[var(--neutral-ink)]">Scoring CV Anda</span>
         </div>
         <h1 className="text-2xl sm:text-3xl font-poppins font-bold text-[var(--neutral-ink)]">
           Scoring CV Anda
         </h1>
         <p className="text-gray-600 mt-1">
-          Upload CV baru untuk dianalisis atau lihat kembali hasil skor dari CV
-          yang sudah ada di repositori Anda.
+          Unggah CV baru untuk dianalisis atau lihat kembali hasil skor.
         </p>
       </div>
 
@@ -220,36 +268,36 @@ export function CVScoringPage() {
       </div>
 
       <h2 className="text-xl font-poppins font-semibold text-[var(--neutral-ink)] mb-4">
-        Repositori CV Anda
+        Repositori Hasil Analisis
       </h2>
-
       <CVFilters
         filters={filters}
         onFiltersChange={setFilters}
         onReset={() =>
           setFilters({
-            status: "Semua Status",
+            status: "Semua Tahun",
             year: "Semua Tahun",
             scoreRange: [1, 100],
           })
         }
         hideStatusFilter={true}
       />
+
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mb-6">
         <div className="relative flex-1 max-w-full sm:max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
           <Input
             placeholder="Cari nama file CV..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 sm:pl-10 text-sm sm:text-base"
+            className="pl-9"
           />
         </div>
       </div>
 
       <div className="flex items-center justify-between mb-6">
-        <span className="text-xs sm:text-sm text-gray-600">
-          Menampilkan {filteredCVs.length} dari {cvs.length} CV
+        <span className="text-sm text-gray-600">
+          Menampilkan {filteredCVs.length} dari {cvs.length} hasil
         </span>
         <div className="flex items-center space-x-2">
           <Button
@@ -275,25 +323,23 @@ export function CVScoringPage() {
         </div>
       </div>
 
-      {filteredCVs.length === 0 ? (
+      {isLoading ? (
+        <p className="text-center py-10">Memuat riwayat...</p>
+      ) : filteredCVs.length === 0 ? (
         <EmptyState
           title="Repositori Kosong"
-          description="Anda belum memiliki CV di repositori. Upload CV pertama Anda untuk memulai analisis."
+          description="Anda belum pernah melakukan analisis CV."
         />
       ) : viewMode === "cards" ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
           {filteredCVs.map((cv) => (
             <CVCard
               key={cv.id}
               cv={cv}
               actionType="scoring"
               onPreview={handleViewResult}
-              onDelete={handleDelete}
-              onScore={handleViewResult}
-              onDownload={() => {}}
-              onUpdate={() => {}}
-              onShare={() => {}}
-              onVisibilityChange={() => {}}
+              onDelete={() => setDeleteModal({ isOpen: true, cv })}
+              onDownload={handleDownload}
             />
           ))}
         </div>
@@ -302,12 +348,8 @@ export function CVScoringPage() {
           cvs={filteredCVs}
           actionType="scoring"
           onPreview={handleViewResult}
-          onDelete={handleDelete}
-          onScore={handleViewResult}
-          onDownload={() => {}}
-          onUpdate={() => {}}
-          onShare={() => {}}
-          onVisibilityChange={() => {}}
+          onDelete={(cv) => setDeleteModal({ isOpen: true, cv })}
+          onDownload={handleDownload}
         />
       )}
     </div>

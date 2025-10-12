@@ -1,3 +1,4 @@
+// src/components/dashboard/CVTable.tsx
 import {
   Table,
   TableBody,
@@ -38,12 +39,11 @@ interface CVTableProps {
   cvs: CVData[];
   onPreview: (cv: CVData) => void;
   onDownload: (cv: CVData) => void;
-  onUpdate: (cv: CVData) => void;
+  onUpdate?: (cv: CVData) => void;
   onDelete: (cv: CVData) => void;
-  onShare: (cv: CVData) => void;
-  onVisibilityChange: (cvId: string, visibility: "public" | "private") => void;
-  actionType?: "builder" | "scoring";
-  onScore?: (cv: CVData) => void;
+  onShare?: (cv: CVData) => void;
+  onVisibilityChange?: (cvId: string, visibility: "public" | "private") => void;
+  actionType: "builder" | "scoring";
 }
 
 export function CVTable({
@@ -54,8 +54,7 @@ export function CVTable({
   onDelete,
   onShare,
   onVisibilityChange,
-  actionType = "builder",
-  onScore,
+  actionType,
 }: CVTableProps) {
   const getStatusColor = (status: CVData["status"]) => {
     if (status === "Completed") return "bg-[var(--success)] text-white";
@@ -65,18 +64,18 @@ export function CVTable({
 
   return (
     <div className="bg-white rounded-lg border border-[var(--border-color)] overflow-hidden">
-      <div className="w-full overflow-x-auto horizontal-scroll-hidden">
+      <div className="w-full overflow-x-auto">
         <table className="w-full caption-bottom text-sm min-w-[700px]">
           <TableHeader>
             <TableRow className="bg-[var(--surface)]">
               <TableHead>
-                {actionType === "builder" ? "Posisi yang Dilamar" : "Nama File"}
+                {actionType === "builder" ? "Posisi" : "Nama File"}
               </TableHead>
               <TableHead>Tahun</TableHead>
               {actionType === "builder" && <TableHead>Bahasa</TableHead>}
               {actionType === "builder" && <TableHead>Privasi</TableHead>}
               <TableHead>
-                {actionType === "builder" ? "Dibuat" : "Tanggal Upload"}
+                {actionType === "builder" ? "Dibuat" : "Tgl Upload"}
               </TableHead>
               {actionType === "builder" && <TableHead>Diperbarui</TableHead>}
               <TableHead>Status</TableHead>
@@ -122,7 +121,7 @@ export function CVTable({
                       ? "Selesai"
                       : cv.status === "Uploaded"
                       ? "Di-upload"
-                      : cv.status}
+                      : "Draf"}
                   </Badge>
                 </TableCell>
                 <TableCell>
@@ -136,59 +135,60 @@ export function CVTable({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      {actionType === "builder" ? (
-                        <>
-                          <DropdownMenuItem onClick={() => onPreview(cv)}>
-                            <BarChart3 className="w-4 h-4 mr-2" />
-                            Lihat Analisis
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => onUpdate(cv)}>
-                            <Edit className="w-4 h-4 mr-2" />
-                            Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => onDownload(cv)}>
-                            <Download className="w-4 h-4 mr-2" />
-                            Download
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => onShare(cv)}>
-                            <Share2 className="w-4 h-4 mr-2" />
-                            Bagikan Link
-                          </DropdownMenuItem>
-                          <DropdownMenuSub>
-                            <DropdownMenuSubTrigger>
-                              {cv.visibility === "public" ? (
-                                <Globe className="w-4 h-4 mr-2" />
-                              ) : (
-                                <Lock className="w-4 h-4 mr-2" />
-                              )}
-                              Atur Privasi
-                            </DropdownMenuSubTrigger>
-                            <DropdownMenuSubContent>
-                              <DropdownMenuRadioGroup
-                                value={cv.visibility}
-                                onValueChange={(value) =>
-                                  onVisibilityChange(
-                                    cv.id,
-                                    value as "public" | "private"
-                                  )
-                                }
-                              >
-                                <DropdownMenuRadioItem value="public">
-                                  <Globe className="w-4 h-4 mr-2" />
-                                  Publik
-                                </DropdownMenuRadioItem>
-                                <DropdownMenuRadioItem value="private">
-                                  <Lock className="w-4 h-4 mr-2" />
-                                  Privat
-                                </DropdownMenuRadioItem>
-                              </DropdownMenuRadioGroup>
-                            </DropdownMenuSubContent>
-                          </DropdownMenuSub>
-                        </>
-                      ) : (
+                      {actionType === "scoring" && (
                         <DropdownMenuItem onClick={() => onPreview(cv)}>
-                          <Eye className="w-4 h-4 mr-2" />
-                          Lihat Analisis CV
+                          <BarChart3 className="w-4 h-4 mr-2" />
+                          Lihat Analisis
+                        </DropdownMenuItem>
+                      )}
+                      {actionType === "builder" && onUpdate && (
+                        <DropdownMenuItem onClick={() => onUpdate(cv)}>
+                          <Edit className="w-4 h-4 mr-2" />
+                          Edit
+                        </DropdownMenuItem>
+                      )}
+                      {actionType === "builder" && onShare && (
+                        <DropdownMenuItem onClick={() => onShare(cv)}>
+                          <Share2 className="w-4 h-4 mr-2" />
+                          Bagikan Link
+                        </DropdownMenuItem>
+                      )}
+                      {actionType === "builder" && onVisibilityChange && (
+                        <DropdownMenuSub>
+                          <DropdownMenuSubTrigger>
+                            {cv.visibility === "public" ? (
+                              <Globe className="w-4 h-4 mr-2" />
+                            ) : (
+                              <Lock className="w-4 h-4 mr-2" />
+                            )}
+                            Atur Privasi
+                          </DropdownMenuSubTrigger>
+                          <DropdownMenuSubContent>
+                            <DropdownMenuRadioGroup
+                              value={cv.visibility}
+                              onValueChange={(value) =>
+                                onVisibilityChange(
+                                  cv.id,
+                                  value as "public" | "private"
+                                )
+                              }
+                            >
+                              <DropdownMenuRadioItem value="public">
+                                <Globe className="w-4 h-4 mr-2" />
+                                Publik
+                              </DropdownMenuRadioItem>
+                              <DropdownMenuRadioItem value="private">
+                                <Lock className="w-4 h-4 mr-2" />
+                                Privat
+                              </DropdownMenuRadioItem>
+                            </DropdownMenuRadioGroup>
+                          </DropdownMenuSubContent>
+                        </DropdownMenuSub>
+                      )}
+                      {onDownload && (
+                        <DropdownMenuItem onClick={() => onDownload(cv)}>
+                          <Download className="w-4 h-4 mr-2" />
+                          Download
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuSeparator />

@@ -21,7 +21,7 @@ interface FileUploadZoneProps {
   maxSize?: number; // in MB
   scoringData?: CVScoringData | null;
   onResetScoring?: () => void;
-  onAuthAction?: () => void; // Menggantikan onSaveToRepository
+  onAuthAction?: () => void;
   hasTriedScoring?: boolean;
   isAuthenticated?: boolean;
   isHighlighted?: boolean;
@@ -111,7 +111,6 @@ export function FileUploadZone({
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
-  // <<< Tampilan Baru Setelah Analisis Selesai >>>
   if (scoringData && scoringData.isCv) {
     return (
       <div className="space-y-6 text-center">
@@ -123,7 +122,8 @@ export function FileUploadZone({
         </div>
 
         <RadialScore
-          score={scoringData.overallScore}
+          // **PERBAIKAN DI SINI**
+          score={scoringData.overallScore || 0}
           size="lg"
           showLabel={true}
         />

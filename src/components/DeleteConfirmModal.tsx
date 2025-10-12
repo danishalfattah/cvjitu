@@ -1,3 +1,4 @@
+// src/components/DeleteConfirmModal.tsx
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,6 +17,8 @@ interface DeleteConfirmModalProps {
   onClose: () => void;
   onConfirm: () => void;
   cv: CVData | null;
+  title?: string; // **PERBAIKAN ERROR 2 DI SINI**
+  description?: string; // **DAN DI SINI**
 }
 
 export function DeleteConfirmModal({
@@ -23,6 +26,8 @@ export function DeleteConfirmModal({
   onClose,
   onConfirm,
   cv,
+  title, // Terima prop title
+  description, // Terima prop description
 }: DeleteConfirmModalProps) {
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
@@ -32,11 +37,17 @@ export function DeleteConfirmModal({
             <Trash2 className="h-6 w-6 text-red-600" />
           </div>
           <AlertDialogTitle className="text-center">
-            Anda yakin ingin menghapus CV ini?
+            {/* Gunakan title dari prop, atau teks default jika tidak ada */}
+            {title || `Anda yakin ingin menghapus CV ini?`}
           </AlertDialogTitle>
           <AlertDialogDescription className="text-center">
-            CV "<b>{cv?.name}</b>" akan dihapus secara permanen. Tindakan ini
-            tidak dapat dibatalkan.
+            {/* Gunakan description dari prop, atau teks default jika tidak ada */}
+            {description || (
+              <>
+                CV "<b>{cv?.name}</b>" akan dihapus secara permanen. Tindakan
+                ini tidak dapat dibatalkan.
+              </>
+            )}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="sm:justify-center">

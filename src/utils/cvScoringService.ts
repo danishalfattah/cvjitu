@@ -1,20 +1,24 @@
-// Dummy CV Scoring Service
+// src/utils/cvScoringService.ts
+
+// Properti selain 'isCv' sekarang opsional
 export interface CVScoringData {
   isCv: boolean;
   message?: string;
-  fileName: string;
-  overallScore: number;
-  sections: {
+  fileName?: string;
+  overallScore?: number;
+  sections?: {
     name: string;
     score: number;
     status: 'excellent' | 'good' | 'needs_improvement' | 'poor';
     feedback: string;
   }[];
-  suggestions: string[];
-  atsCompatibility: number;
-  keywordMatch: number;
-  readabilityScore: number;
+  suggestions?: string[];
+  atsCompatibility?: number;
+  keywordMatch?: number;
+  readabilityScore?: number;
 }
+
+// ... Sisa kode di file ini tidak perlu diubah, biarkan seperti semula ...
 
 const getRandomScore = (min: number, max: number): number => {
   return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -134,7 +138,7 @@ export const analyzeCVFile = async (file: File): Promise<CVScoringData> => {
     .sort(() => 0.5 - Math.random())
     .slice(0, numSuggestions);
 
-   return {
+  return {
     isCv: true,
     fileName: file.name,
     overallScore,

@@ -1,3 +1,4 @@
+// src/app/dashboard/page.tsx
 "use client";
 
 import { useEffect } from "react";
@@ -8,27 +9,44 @@ import { toast } from "sonner";
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, isLoading, logout } = useAuth(); // Ambil isLoading
 
   useEffect(() => {
     document.title = "Dashboard - CVJitu";
   }, []);
 
+  // **PERBAIKAN DIMULAI DI SINI**
   useEffect(() => {
-    if (!isAuthenticated) router.replace("/login");
-  }, [isAuthenticated, router]);
+    // Hanya redirect jika proses loading selesai DAN user tidak terautentikasi
+    if (!isLoading && !isAuthenticated) {
+      router.replace("/login");
+    }
+  }, [isAuthenticated, isLoading, router]);
 
-  if (!isAuthenticated) return null;
+  // Tampilkan state loading selagi Firebase memeriksa sesi
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-[var(--surface)]">
+        <p className="text-[var(--neutral-ink)]">Memuat sesi Anda...</p>
+      </div>
+    );
+  }
 
-  return (
-    <DashboardLayout
-      user={user}
-      onLogout={() => {
-        logout();
-        toast.success("Berhasil keluar.");
-        router.replace("/");
-      }}
-      onCreateCV={(lang) => router.push(`/cv-builder?lang=${lang}`)}
-    />
-  );
+  // Jika sudah tidak loading dan user ada, tampilkan dashboard
+  if (isAuthenticated && user) {
+    return (
+      <DashboardLayout
+        user={user}
+        onLogout={() => {
+          logout();
+          toast.success("Berhasil keluar.");
+          router.replace("/");
+        }}
+        onCreateCV={(lang) => router.push(`/cv-builder?lang=${lang}`)}
+      />
+    );
+  }
+
+  // Fallback jika terjadi kondisi yang tidak terduga (seperti saat redirect)
+  return null;
 }

@@ -26,6 +26,7 @@ export interface CVBuilderData {
   // General Info
   jobTitle: string;
   description: string;
+  lang?: "id" | "en";
   
   // Personal Info
   firstName: string;
