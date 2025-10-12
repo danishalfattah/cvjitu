@@ -1,14 +1,14 @@
-
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
+// Ambil API key dari environment variable
 const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
 
 if (!apiKey) {
-  throw new Error("Missing NEXT_PUBLIC_GEMINI_API_KEY environment variable");
+  throw new Error("Gemini API key is not defined in environment variables.");
 }
 
-// Inisialisasi GoogleGenerativeAI
 const genAI = new GoogleGenerativeAI(apiKey);
 
-// Model untuk text-only input
-export const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+
+export { model };

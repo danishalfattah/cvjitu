@@ -1,11 +1,9 @@
-// File: src/utils/cvScoringService.ts
+// src/utils/cvScoringService.ts
 
-import { model } from "@/src/lib/gemini";
-import mammoth from 'mammoth';
-import { CVBuilderData } from "@/src/components/cvbuilder/types";
-
+// Dummy CV Scoring Service
 export interface CVScoringData {
   fileName: string;
+  isCV: boolean; // <-- TAMBAHKAN BARIS INI
   overallScore: number;
   sections: {
     name: string;
@@ -17,163 +15,134 @@ export interface CVScoringData {
   atsCompatibility: number;
   keywordMatch: number;
   readabilityScore: number;
-  isNotACV?: boolean;
-  notACVMessage?: string;
 }
 
-export const extractCVDataFromContent = async (content: string): Promise<CVBuilderData> => {
-  try {
-    const prompt = `
-      Parse the following CV content into a structured JSON object.
-      The JSON object should conform to the following TypeScript interface:
-
-      interface WorkExperience {
-        id: string;
-        jobTitle: string;
-        company: string;
-        location: string;
-        startDate: string;
-        endDate: string;
-        current: boolean;
-        description: string;
-        achievements: string[];
-      }
-
-      interface Education {
-        id: string;
-        degree: string;
-        institution: string;
-        location: string;
-        startDate: string;
-        endDate: string;
-        current: boolean;
-        gpa?: string;
-        description?: string;
-      }
-
-      interface CVBuilderData {
-        jobTitle: string;
-        description: string;
-        firstName: string;
-        lastName: string;
-        email: string;
-        phone: string;
-        location: string;
-        linkedin: string;
-        website: string;
-        workExperiences: WorkExperience[];
-        educations: Education[];
-        skills: string[];
-        summary: string;
-      }
-
-      Please fill in the fields based on the content provided. Use "unknown" or empty string if information is not available.
-      
-      CV Content:
-      ${content}
-    `;
-
-    const result = await model.generateContent(prompt);
-    const textResult = result.response.text();
-    const jsonString = textResult.replace(/```json\n|```/g, "").trim();
-    return JSON.parse(jsonString) as CVBuilderData;
-
-  } catch (error) {
-    console.error("Error extracting CV data from content:", error);
-    throw new Error("Failed to extract CV data from file content.");
-  }
+const getRandomScore = (min: number, max: number): number => {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 };
 
+const getStatusFromScore = (score: number): 'excellent' | 'good' | 'needs_improvement' | 'poor' => {
+  if (score >= 90) return 'excellent';
+  if (score >= 75) return 'good';
+  if (score >= 60) return 'needs_improvement';
+  return 'poor';
+};
 
-export const analyzeCVFile = async (file: File): Promise<{ results: CVScoringData, content: string }> => {
-  let fileContent = '';
-
-  if (file.type === 'application/pdf') {
-    // Perbaikan: Ganti teks dummy dengan instruksi yang lebih baik untuk AI
-    // untuk mensimulasikan konten dari PDF.
-    fileContent = 'Konten file ini adalah CV seorang Software Engineer bernama Nugraha Billy Viandy, dengan email billy.bpm03@gmail.com dan LinkedIn linkedin.com/in/ahargunyllib. Dia adalah mahasiswa ilmu komputer di Brawijaya University. Pengalamannya mencakup Mobile App Developer Intern di Posgym dan Frontend Developer di TEDxUniversitas Brawijaya. Keahliannya termasuk TypeScript, Go, Node.js, React.js, dan Next.js. Dia juga memiliki pengalaman di kompetisi seperti Finalist Startup Social Games x Hackfest 2024 dan Coding Challenge Finalist di Airofest 2023. Silakan analisis CV ini.';
-  } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
-    try {
-      const arrayBuffer = await file.arrayBuffer();
-      const result = await mammoth.extractRawText({ arrayBuffer });
-      fileContent = result.value;
-    } catch (error) {
-      const errorData = {
-        fileName: file.name,
-        overallScore: 0,
-        atsCompatibility: 0,
-        keywordMatch: 0,
-        readabilityScore: 0,
-        sections: [],
-        suggestions: [],
-        isNotACV: true,
-        notACVMessage: "File ini tidak dapat dibaca. Mohon pastikan format file benar."
-      };
-      return { results: errorData, content: "" };
+const sections = [
+  {
+    name: "Informasi Kontak",
+    feedbacks: {
+      excellent: "Informasi kontak lengkap dan profesional dengan format yang jelas dan mudah dibaca.",
+      good: "Informasi kontak sudah baik, hanya perlu sedikit penyesuaian format untuk meningkatkan keterbacaan.",
+      needs_improvement: "Informasi kontak kurang lengkap, tambahkan nomor telepon profesional dan LinkedIn profile.",
+      poor: "Informasi kontak tidak lengkap atau tidak profesional, perlu revisi menyeluruh."
     }
-  } else {
-    const errorData = {
-      fileName: file.name,
-      overallScore: 0,
-      atsCompatibility: 0,
-      keywordMatch: 0,
-      readabilityScore: 0,
-      sections: [],
-      suggestions: [],
-      isNotACV: true,
-      notACVMessage: "Tipe file tidak didukung. Mohon unggah file PDF atau DOCX."
+  },
+  {
+    name: "Ringkasan Profesional",
+    feedbacks: {
+      excellent: "Ringkasan profesional yang kuat dan menarik, menjelaskan value proposition dengan jelas.",
+      good: "Ringkasan profesional cukup baik, namun bisa lebih spesifik tentang pencapaian dan keahlian unik.",
+      needs_improvement: "Ringkasan terlalu umum, perlu lebih fokus pada keahlian spesifik dan nilai yang bisa diberikan.",
+      poor: "Tidak ada ringkasan profesional atau terlalu singkat, perlu menambahkan overview yang menarik."
+    }
+  },
+  {
+    name: "Pengalaman Kerja",
+    feedbacks: {
+      excellent: "Pengalaman kerja ditulis dengan sangat baik menggunakan action words dan quantifiable achievements.",
+      good: "Pengalaman kerja sudah baik, namun bisa ditingkatkan dengan menambahkan lebih banyak metrics dan hasil.",
+      needs_improvement: "Deskripsi pengalaman kerja terlalu umum, perlu lebih spesifik tentang tanggung jawab dan pencapaian.",
+      poor: "Pengalaman kerja kurang detail atau tidak relevan, perlu restructuring dan penambahan konten."
+    }
+  },
+  {
+    name: "Keahlian & Kompetensi",
+    feedbacks: {
+      excellent: "Keahlian yang relevan dan terkini, dengan pembagian yang baik antara technical dan soft skills.",
+      good: "Daftar keahlian cukup baik, namun perlu disesuaikan lebih spesifik dengan posisi yang dilamar.",
+      needs_improvement: "Keahlian kurang spesifik atau tidak relevan dengan industri target, perlu penyesuaian.",
+      poor: "Bagian keahlian tidak ada atau terlalu umum, perlu menambahkan skills yang relevan dan in-demand."
+    }
+  },
+  {
+    name: "Pendidikan",
+    feedbacks: {
+      excellent: "Informasi pendidikan lengkap dengan format yang konsisten dan relevan dengan karir target.",
+      good: "Bagian pendidikan sudah baik, hanya perlu sedikit penyesuaian format untuk konsistensi.",
+      needs_improvement: "Informasi pendidikan kurang lengkap, tambahkan tahun lulus dan prestasi yang relevan.",
+      poor: "Bagian pendidikan tidak lengkap atau format tidak konsisten, perlu diperbaiki."
+    }
+  },
+  {
+    name: "Format & Layout",
+    feedbacks: {
+      excellent: "Format CV sangat professional dan ATS-friendly dengan layout yang clean dan mudah dibaca.",
+      good: "Format sudah baik namun bisa ditingkatkan dengan penyesuaian spacing dan konsistensi font.",
+      needs_improvement: "Format CV perlu perbaikan untuk meningkatkan readability dan kompatibilitas ATS.",
+      poor: "Format CV tidak professional atau tidak ATS-friendly, perlu redesign menyeluruh."
+    }
+  }
+];
+
+const suggestions = [
+  "Gunakan action words yang kuat seperti 'Achieved', 'Implemented', 'Led', 'Optimized' untuk mendeskripsikan pengalaman.",
+  "Tambahkan metrics dan angka konkret untuk menunjukkan impact dari pekerjaan Anda (contoh: 'Meningkatkan penjualan 25%').",
+  "Sesuaikan keywords dengan job description untuk meningkatkan ATS compatibility.",
+  "Gunakan format yang konsisten untuk tanggal, bullets, dan spacing.",
+  "Batasi CV maksimal 2 halaman untuk posisi mid-level, 1 halaman untuk fresh graduate.",
+  "Tambahkan section 'Projects' atau 'Achievements' untuk menampilkan portfolio kerja yang relevan.",
+  "Gunakan font professional seperti Arial, Calibri, atau Times New Roman dengan ukuran 10-12pt.",
+  "Pastikan contact information mudah ditemukan di bagian atas CV.",
+  "Hindari penggunaan template yang terlalu kreatif jika melamar di industri konservatif.",
+  "Proofread untuk memastikan tidak ada typo atau grammatical errors.",
+  "Tambahkan LinkedIn profile dan portfolio website jika relevan.",
+  "Gunakan reverse chronological order untuk pengalaman kerja (yang terbaru di atas)."
+];
+
+export const analyzeCVFile = async (file: File): Promise<CVScoringData> => {
+  // Simulate API call delay
+  await new Promise(resolve => setTimeout(resolve, 3000 + Math.random() * 2000));
+
+  // Generate random but realistic scores
+  const sectionScores = sections.map(section => {
+    const score = getRandomScore(55, 95);
+    const status = getStatusFromScore(score);
+    return {
+      name: section.name,
+      score,
+      status,
+      feedback: section.feedbacks[status]
     };
-    return { results: errorData, content: "" };
-  }
+  });
 
-  try {
-    const prompt = `
-      Sebagai seorang ahli analisis CV, tugas utama Anda adalah mengevaluasi apakah teks yang diberikan adalah Curriculum Vitae (CV) atau Resume yang valid. Sebuah CV yang valid biasanya memiliki struktur yang jelas dengan bagian-bagian seperti 'Informasi Kontak', 'Ringkasan Profesional', 'Pengalaman Kerja', 'Pendidikan', dan 'Keahlian'.
+  // Calculate overall score (weighted average)
+  const weights = [0.1, 0.2, 0.3, 0.15, 0.1, 0.15]; // Experience and Skills have higher weight
+  const overallScore = Math.round(
+    sectionScores.reduce((acc, section, index) => 
+      acc + (section.score * weights[index]), 0
+    )
+  );
 
-      Langkah pertama, periksa teks di bawah ini dan tentukan apakah itu adalah CV yang valid.
-      
-      Jika teks tersebut BUKAN CV yang valid (misalnya, modul kuliah, dokumen umum, atau teks acak), segera kembalikan objek JSON berikut tanpa mencoba melakukan penilaian.
-      
-      {
-        "overallScore": 0,
-        "atsCompatibility": 0,
-        "keywordMatch": 0,
-        "readabilityScore": 0,
-        "sections": [],
-        "suggestions": [],
-        "isNotACV": true,
-        "notACVMessage": "Konten file tidak menyerupai CV. Mohon unggah file CV yang valid."
-      }
+  // Generate related metrics
+  const atsCompatibility = Math.max(60, overallScore + getRandomScore(-10, 10));
+  const keywordMatch = Math.max(40, overallScore + getRandomScore(-20, 5));
+  const readabilityScore = Math.max(70, overallScore + getRandomScore(-5, 15));
 
-      Jika teks tersebut ADALAH CV yang valid, lanjutkan dengan analisis dan penilaian komprehensif. Output harus berupa objek JSON dengan struktur berikut:
-      
-      {
-        "overallScore": number (1-100),
-        "atsCompatibility": number (1-100),
-        "keywordMatch": number (1-100),
-        "readabilityScore": number (1-100),
-        "sections": [
-          { "name": "Informasi Kontak", "score": number (1-100), "status": "excellent" | "good" | "needs_improvement" | "poor", "feedback": "string" },
-          { "name": "Ringkasan Profesional", "score": number (1-100), "status": "excellent" | "good" | "needs_improvement" | "poor", "feedback": "string" },
-          { "name": "Pengalaman Kerja", "score": number (1-100), "status": "excellent" | "good" | "needs_improvement" | "poor", "feedback": "string" },
-          { "name": "Keahlian & Kompetensi", "score": number (1-100), "status": "excellent" | "good" | "needs_improvement" | "poor", "feedback": "string" },
-          { "name": "Pendidikan", "score": number (1-100), "status": "excellent" | "good" | "needs_improvement" | "poor", "feedback": "string" }
-        ],
-        "suggestions": ["string", "string", "string", "string", "string"]
-      }
+  // Select random suggestions based on score
+  const numSuggestions = overallScore > 80 ? 3 : overallScore > 65 ? 5 : 7;
+  const selectedSuggestions = suggestions
+    .sort(() => 0.5 - Math.random())
+    .slice(0, numSuggestions);
 
-      Konten CV:
-      ${fileContent}
-    `;
-
-    const result = await model.generateContent(prompt);
-    const textResult = result.response.text();
-    const jsonString = textResult.replace(/```json\n|```/g, "").trim();
-    const jsonResult = JSON.parse(jsonString);
-
-    return { results: { ...jsonResult, fileName: file.name }, content: fileContent };
-  } catch (error) {
-    console.error("Error analyzing CV with Gemini:", error);
-    throw new Error("Failed to analyze CV with AI. Please try again.");
-  }
+  return {
+    fileName: file.name,
+    isCV: true, // Tambahkan nilai default
+    overallScore,
+    sections: sectionScores,
+    suggestions: selectedSuggestions,
+    atsCompatibility,
+    keywordMatch,
+    readabilityScore
+  };
 };

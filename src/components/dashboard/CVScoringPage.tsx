@@ -1,9 +1,6 @@
-// File: src/components/dashboard/CVScoringPage.tsx
-
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -13,22 +10,54 @@ import { CVTable } from "./CVTable";
 import { EmptyState } from "../EmptyState";
 import { FileUploadZone } from "../FileUploadZone";
 import { CVScoringResult } from "./CVScoringResult";
-import {
-  analyzeCVFile,
-  type CVScoringData,
-  extractCVDataFromContent,
-} from "@/src/utils/cvScoringService";
 import { CVBuilderData } from "../cvbuilder/types";
 import { Search, Grid, List } from "lucide-react";
 import { useAuth } from "@/src/context/AuthContext";
+import { db } from "@/src/lib/firebase";
+import {
+  collection,
+  addDoc,
+  serverTimestamp,
+  query,
+  where,
+  getDocs,
+  orderBy,
+  Timestamp,
+  deleteDoc,
+  doc,
+} from "firebase/firestore";
+import { CVScoringData } from "@/src/utils/cvScoringService";
+import pdfParse from "pdf-parse/lib/pdf-parse";
+import { model as geminiModel } from "@/src/lib/gemini";
+import { DeleteConfirmModal } from "../DeleteConfirmModal";
+
+// Menambahkan worker-loader untuk pdf.js agar kompatibel dengan Next.js
+if (typeof window !== "undefined") {
+  (window as any).pdfjsWorker = require("pdfjs-dist/build/pdf.worker.entry");
+}
+
+const mockBuilderData: CVBuilderData = {
+  jobTitle: "Software Engineer",
+  description: "CV for the position of Software Engineer",
+  firstName: "John",
+  lastName: "Doe",
+  email: "john.doe@example.com",
+  phone: "+1234567890",
+  location: "San Francisco, CA",
+  linkedin: "linkedin.com/in/johndoe",
+  website: "johndoe.com",
+  workExperiences: [],
+  educations: [],
+  skills: [],
+  summary: `A passionate Software Engineer.`,
+};
 
 export function CVScoringPage() {
-  const router = useRouter();
-  const { fetchCVs, saveCV } = useAuth();
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
   const [cvs, setCvs] = useState<CVData[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [filters, setFilters] = useState({
     status: "Semua Status",
     year: "Semua Tahun",
@@ -39,107 +68,221 @@ export function CVScoringPage() {
   const [scoringResult, setScoringResult] = useState<CVScoringData | null>(
     null
   );
-  const [processedCVData, setProcessedCVData] = useState<CVBuilderData | null>(
-    null
-  );
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    cv: CVData | null;
+  }>({ isOpen: false, cv: null });
 
   useEffect(() => {
-    const loadCVs = async () => {
-      setLoading(true);
-      try {
-        const fetchedCVs = await fetchCVs();
-        setCvs(fetchedCVs);
-      } catch (error) {
-        toast.error("Gagal memuat data CV.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadCVs();
-  }, [fetchCVs]);
-
-  const handleFileUpload = async (file: File) => {
-    setIsProcessing(true);
-    setScoringResult(null);
-    setProcessedCVData(null);
-    try {
-      const { results, content } = await analyzeCVFile(file);
-      setScoringResult(results);
-
-      // Pastikan hasil analisis bukan error
-      if (results.isNotACV) {
-        setIsProcessing(false);
+    const fetchScoredCVs = async () => {
+      if (!user) {
+        setIsLoading(false);
         return;
       }
+      setIsLoading(true);
+      try {
+        const q = query(
+          collection(db, "scoredCVs"),
+          where("ownerId", "==", user.id),
+          orderBy("createdAt", "desc")
+        );
+        const querySnapshot = await getDocs(q);
+        const userCVs = querySnapshot.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            name: data.fileName,
+            year: new Date(data.createdAt.toDate()).getFullYear(),
+            created: data.createdAt.toDate().toLocaleString("id-ID"),
+            updated: data.createdAt.toDate().toLocaleString("id-ID"),
+            status: "Uploaded",
+            score: data.overallScore,
+            lang: "unknown",
+            visibility: "private",
+          } as CVData;
+        });
+        setCvs(userCVs);
+      } catch (error) {
+        console.error("Error fetching scored CVs:", error);
+        toast.error("Gagal memuat riwayat CV.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-      // Gunakan konten teks untuk mengisi CVBuilderData
-      const extractedData = await extractCVDataFromContent(content);
-      setProcessedCVData(extractedData);
+    if (user) {
+      fetchScoredCVs();
+    }
+  }, [user]);
 
-      const newCV: Omit<CVData, "id"> = {
+  const extractTextFromPdf = async (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsArrayBuffer(file);
+      reader.onload = async () => {
+        try {
+          const data = await pdfParse(
+            new Uint8Array(reader.result as ArrayBuffer)
+          );
+          resolve(data.text);
+        } catch (error) {
+          console.error("Error parsing PDF:", error);
+          reject("Gagal memproses file PDF.");
+        }
+      };
+      reader.onerror = () => {
+        reject("Gagal membaca file.");
+      };
+    });
+  };
+
+  const handleFileUpload = async (file: File) => {
+    if (!user) {
+      toast.error("Anda harus login untuk mengunggah CV.");
+      return;
+    }
+
+    if (file.type !== "application/pdf") {
+      toast.error("Saat ini hanya file PDF yang didukung untuk analisis.");
+      return;
+    }
+
+    setIsProcessing(true);
+    setScoringResult(null);
+    try {
+      // 1. Dapatkan Pre-signed URL dari API Route Anda
+      toast.info("Menyiapkan unggahan aman...");
+      const presignResponse = await fetch("/api/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fileName: file.name, fileType: file.type }),
+      });
+
+      if (!presignResponse.ok) {
+        throw new Error("Gagal mendapatkan izin unggah dari server.");
+      }
+      const { signedUrl, key } = await presignResponse.json();
+
+      // 2. Unggah file langsung ke Cloudflare R2
+      toast.info("Mengunggah file...");
+      const uploadResponse = await fetch(signedUrl, {
+        method: "PUT",
+        body: file,
+        headers: { "Content-Type": file.type },
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error("Gagal mengunggah file ke cloud storage.");
+      }
+
+      const publicUrl = `https://${process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_DOMAIN}/${key}`;
+
+      // 3. Ekstrak teks dan panggil Gemini API
+      toast.info("AI sedang menganalisis CV Anda...");
+      const cvText = await extractTextFromPdf(file);
+      if (!cvText.trim()) {
+        throw new Error("File PDF tidak berisi teks atau gagal dibaca.");
+      }
+
+      const prompt = `
+        Anda adalah sistem AI perekrutan yang sangat cerdas. Analisis teks CV berikut: "${cvText}"
+        Berikan output HANYA dalam format JSON yang valid tanpa markdown, dengan struktur:
+        {
+          "isCV": <true atau false>,
+          "overallScore": <angka 0-100>,
+          "atsCompatibility": <angka 0-100>,
+          "keywordMatch": <angka 0-100>,
+          "readabilityScore": <angka 0-100>,
+          "sections": [
+            { "name": "Analisis Konten", "score": <angka>, "status": "<'excellent'|'good'|'needs_improvement'|'poor'>", "feedback": "<feedback>" },
+            { "name": "Struktur & Format", "score": <angka>, "status": "<'excellent'|'good'|'needs_improvement'|'poor'>", "feedback": "<feedback>" }
+          ],
+          "suggestions": ["<saran 1>", "<saran 2>"]
+        }
+        Jika bukan CV, "isCV" harus false dan semua skor harus 0.
+      `;
+
+      const result = await geminiModel.generateContent(prompt);
+      const response = await result.response;
+      const analysisResult = JSON.parse(
+        response
+          .text()
+          .replace(/```json/g, "")
+          .replace(/```/g, "")
+      );
+
+      // 4. Simpan hasil ke Firestore
+      const docData = {
+        ownerId: user.id,
+        fileName: file.name,
+        fileURL: publicUrl,
+        createdAt: serverTimestamp(),
+        ...analysisResult,
+      };
+      const docRef = await addDoc(collection(db, "scoredCVs"), docData);
+
+      // 5. Perbarui UI
+      setScoringResult({ ...analysisResult, fileName: file.name });
+      const newCVEntry: CVData = {
+        id: docRef.id,
         name: file.name,
         year: new Date().getFullYear(),
-        created: new Date().toLocaleString(),
-        updated: new Date().toLocaleString(),
+        created: new Date().toLocaleString("id-ID"),
+        updated: new Date().toLocaleString("id-ID"),
         status: "Uploaded",
-        score: results.overallScore,
+        score: analysisResult.overallScore,
         lang: "unknown",
         visibility: "private",
-        owner: "dummy-owner-id", // Ganti dengan user.id sesungguhnya
-        cvBuilderData: extractedData,
       };
+      setCvs((prev) => [newCVEntry, ...prev]);
 
-      // Simpan CV ke database
-      const cvId = await saveCV(newCV.cvBuilderData);
-      setCvs((prev) => [{ ...newCV, id: cvId }, ...prev]);
-
-      toast.success("CV berhasil di-upload dan dianalisis!");
-    } catch (error) {
-      toast.error("Gagal menganalisis CV. Silakan coba lagi.");
+      if (!analysisResult.isCV) {
+        toast.warning("File yang diunggah terdeteksi bukan CV.", {
+          description: "Skor diatur ke 0.",
+        });
+      } else {
+        toast.success("Analisis CV berhasil!");
+      }
+    } catch (error: any) {
+      console.error("Error pada proses upload dan analisis:", error);
+      toast.error(error.message || "Terjadi kesalahan.");
     } finally {
       setIsProcessing(false);
     }
   };
 
   const handleViewResult = (cv: CVData) => {
-    // Memastikan cvBuilderData dari CV yang dipilih digunakan
+    // Di aplikasi nyata, Anda akan mengambil data lengkap dari Firestore
+    // Untuk saat ini, kita hanya membuat mock untuk tampilan
     const mockResult: CVScoringData = {
       fileName: cv.name,
+      isCV: true,
       overallScore: cv.score,
       atsCompatibility: Math.min(cv.score + 5, 100),
       keywordMatch: Math.max(cv.score - 3, 0),
       readabilityScore: Math.min(cv.score + 2, 100),
-      sections: [
-        {
-          name: "Pengalaman Kerja",
-          score: cv.score + 10,
-          status: "excellent",
-          feedback: "Pengalaman kerja Anda sangat relevan.",
-        },
-        {
-          name: "Pendidikan",
-          score: cv.score - 5,
-          status: "good",
-          feedback: "Latar belakang pendidikan Anda baik.",
-        },
-      ],
-      suggestions: [
-        "Tambahkan lebih banyak kata kunci yang relevan dari deskripsi pekerjaan.",
-        "Kuantifikasi pencapaian Anda dengan angka untuk dampak yang lebih besar.",
-      ],
+      sections: [],
+      suggestions: [],
     };
     setScoringResult(mockResult);
-    setProcessedCVData(cv.cvBuilderData); // Mengatur data CV untuk pratinjau
   };
 
   const handleBackToList = () => {
     setScoringResult(null);
-    setProcessedCVData(null);
   };
 
-  const handleDelete = (cv: CVData) => {
-    toast.success(`CV "${cv.name}" telah dihapus.`);
-    setCvs((prev) => prev.filter((item) => item.id !== cv.id));
+  const handleDeleteConfirm = async () => {
+    if (deleteModal.cv) {
+      try {
+        await deleteDoc(doc(db, "scoredCVs", deleteModal.cv.id));
+        setCvs((prev) => prev.filter((cv) => cv.id !== deleteModal.cv!.id));
+        toast.success("Hasil skor CV telah dihapus.");
+      } catch (error) {
+        toast.error("Gagal menghapus data.");
+      } finally {
+        setDeleteModal({ isOpen: false, cv: null });
+      }
+    }
   };
 
   const filteredCVs = cvs.filter((cv) => {
@@ -154,34 +297,19 @@ export function CVScoringPage() {
     return matchesSearch && matchesYear && matchesScore;
   });
 
-  if (scoringResult && processedCVData) {
+  if (isLoading) {
+    return <div className="p-6">Memuat riwayat scoring...</div>;
+  }
+
+  if (scoringResult) {
     return (
       <CVScoringResult
         data={scoringResult}
-        cvBuilderData={processedCVData}
+        cvBuilderData={mockBuilderData}
         onBack={handleBackToList}
-        onSaveToRepository={async () => {
-          const lastScoredCV = {
-            cvBuilderData: processedCVData,
-            name: scoringResult.fileName,
-            score: scoringResult.overallScore,
-            status: "Completed",
-            year: new Date().getFullYear(),
-            created: new Date().toLocaleString(),
-            updated: new Date().toLocaleString(),
-            lang: "id",
-            visibility: "private",
-          } as any;
-
-          try {
-            await saveCV(lastScoredCV.cvBuilderData);
-            toast.success(
-              "Hasil analisis CV berhasil disimpan ke repositori Anda."
-            );
-            handleBackToList();
-          } catch (error) {
-            toast.error("Gagal menyimpan hasil analisis. Silakan coba lagi.");
-          }
+        onSaveToRepository={() => {
+          toast.info("Hasil analisis sudah otomatis tersimpan.");
+          handleBackToList();
         }}
       />
     );
@@ -189,6 +317,14 @@ export function CVScoringPage() {
 
   return (
     <div className="p-4 sm:p-6 min-h-screen">
+      <DeleteConfirmModal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, cv: null })}
+        onConfirm={handleDeleteConfirm}
+        cv={deleteModal.cv}
+        title="Hapus Hasil Skor CV"
+        description="Apakah Anda yakin ingin menghapus hasil analisis CV ini? File asli tidak akan dihapus dari storage."
+      />
       <div className="mb-6 sm:mb-8">
         <div className="flex items-center space-x-2 text-sm text-gray-500 mb-2">
           <span>Pages</span>
@@ -212,7 +348,7 @@ export function CVScoringPage() {
       </div>
 
       <h2 className="text-xl font-poppins font-semibold text-[var(--neutral-ink)] mb-4">
-        Repositori CV Anda
+        Repositori Hasil Analisis
       </h2>
 
       <CVFilters
@@ -241,7 +377,7 @@ export function CVScoringPage() {
 
       <div className="flex items-center justify-between mb-6">
         <span className="text-xs sm:text-sm text-gray-600">
-          Menampilkan {filteredCVs.length} dari {cvs.length} CV
+          Menampilkan {filteredCVs.length} dari {cvs.length} hasil
         </span>
         <div className="flex items-center space-x-2">
           <Button
@@ -267,12 +403,10 @@ export function CVScoringPage() {
         </div>
       </div>
 
-      {loading ? (
-        <p>Memuat CVs...</p>
-      ) : filteredCVs.length === 0 ? (
+      {filteredCVs.length === 0 && !isLoading ? (
         <EmptyState
           title="Repositori Kosong"
-          description="Anda belum memiliki CV di repositori. Upload CV pertama Anda untuk memulai analisis."
+          description="Anda belum pernah melakukan analisis CV. Upload CV pertama Anda untuk memulai."
         />
       ) : viewMode === "cards" ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-6">
@@ -282,7 +416,7 @@ export function CVScoringPage() {
               cv={cv}
               actionType="scoring"
               onPreview={handleViewResult}
-              onDelete={handleDelete}
+              onDelete={() => setDeleteModal({ isOpen: true, cv })}
               onScore={handleViewResult}
               onDownload={() => {}}
               onUpdate={() => {}}
@@ -296,7 +430,7 @@ export function CVScoringPage() {
           cvs={filteredCVs}
           actionType="scoring"
           onPreview={handleViewResult}
-          onDelete={handleDelete}
+          onDelete={(cv) => setDeleteModal({ isOpen: true, cv })}
           onScore={handleViewResult}
           onDownload={() => {}}
           onUpdate={() => {}}

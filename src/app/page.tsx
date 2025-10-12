@@ -1,5 +1,3 @@
-// File: src/app/page.tsx
-
 "use client";
 
 import { useState } from "react";
@@ -14,10 +12,9 @@ import { PricingSection } from "@/src/components/landing-page/PricingSection";
 import { FAQSection } from "@/src/components/landing-page/FAQSection";
 import { Footer } from "@/src/components/Footer";
 import { useAuth } from "@/src/context/AuthContext";
-import {
-  analyzeCVFile,
-  type CVScoringData,
-} from "@/src/utils/cvScoringService";
+import { type CVScoringData } from "@/src/utils/cvScoringService";
+import { model as geminiModel } from "@/src/lib/gemini"; // Import model Gemini
+import pdfParse from "pdf-parse";
 
 export default function Page() {
   const router = useRouter();
@@ -26,35 +23,114 @@ export default function Page() {
   const [scoringData, setScoringData] = useState<CVScoringData | null>(null);
   const [hasTriedScoring, setHasTriedScoring] = useState(false);
 
+  // Fungsi untuk mengekstrak teks dari file PDF di browser
+  const extractTextFromPdf = async (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsArrayBuffer(file);
+      reader.onload = async () => {
+        try {
+          const data = await pdfParse(
+            new Uint8Array(reader.result as ArrayBuffer)
+          );
+          resolve(data.text);
+        } catch (error) {
+          console.error("Gagal mem-parsing PDF:", error);
+          reject("Gagal memproses file PDF. Pastikan file tidak rusak.");
+        }
+      };
+      reader.onerror = () => {
+        reject("Gagal membaca file.");
+      };
+    });
+  };
+
   const handleCVUpload = async (file: File) => {
-    // Logic: Jika sudah pernah mencoba dan tidak login, jangan izinkan lagi
-    if (hasTriedScoring && !isAuthenticated) {
-      toast.error(
-        "Silakan login terlebih dahulu untuk melakukan analisis CV lagi"
-      );
+    if (file.type !== "application/pdf") {
+      toast.error("Fitur analisis saat ini hanya mendukung file format PDF.");
       return;
     }
+
     setIsProcessingCV(true);
+    setScoringData(null);
     try {
-      const results = await analyzeCVFile(file);
-      setScoringData(results.results);
+      // 1. Ekstrak teks dari file PDF
+      const cvText = await extractTextFromPdf(file);
+      if (!cvText || cvText.trim().length < 50) {
+        // Cek apakah ada cukup teks
+        throw new Error(
+          "File PDF tidak berisi teks yang cukup untuk dianalisis."
+        );
+      }
+
+      // 2. Buat Prompt untuk Gemini API
+      const prompt = `
+        Anda adalah sistem AI perekrutan yang sangat cerdas. Tugas Anda adalah menganalisis teks berikut dan menentukan apakah itu adalah sebuah Curriculum Vitae (CV) atau bukan.
+
+        Teks untuk dianalisis: "${cvText}"
+
+        Lakukan tugas berikut:
+        1. Tentukan apakah teks tersebut adalah sebuah CV. Jawab dalam properti "isCV" (true jika ya, false jika tidak).
+        2. Jika teks tersebut BUKAN sebuah CV, kembalikan nilai 0 untuk semua properti skor ("overallScore", "atsCompatibility", "keywordMatch", "readabilityScore"), berikan array kosong untuk "sections", dan berikan satu pesan di "suggestions" yang menyatakan 'File yang diunggah sepertinya bukan CV. Mohon unggah file CV yang valid.'.
+        3. Jika teks tersebut ADALAH sebuah CV, lakukan analisis mendalam dan berikan penilaian objektif sesuai parameter yang benar.
+
+        Berikan output HANYA dalam format JSON yang valid tanpa markdown formatting (tanpa \`\`\`json ... \`\`\`). Strukturnya harus sebagai berikut:
+        {
+          "isCV": <true atau false>,
+          "overallScore": <angka 0-100>,
+          "atsCompatibility": <angka 0-100>,
+          "keywordMatch": <angka 0-100>,
+          "readabilityScore": <angka 0-100>,
+          "sections": [
+            { "name": "Analisis Konten", "score": <angka 0-100>, "status": "<'excellent'|'good'|'needs_improvement'|'poor'>", "feedback": "<satu kalimat feedback>" },
+            { "name": "Struktur & Format", "score": <angka 0-100>, "status": "<'excellent'|'good'|'needs_improvement'|'poor'>", "feedback": "<satu kalimat feedback>" }
+          ],
+          "suggestions": [
+            "<saran perbaikan pertama>",
+            "<saran perbaikan kedua>"
+          ]
+        }
+      `;
+
+      // 3. Panggil Gemini API langsung dari frontend
+      toast.info("AI sedang menganalisis CV Anda, mohon tunggu...");
+      const result = await geminiModel.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text();
+      const analysisResult = JSON.parse(
+        text.replace(/```json/g, "").replace(/```/g, "")
+      );
+
+      const finalResult: CVScoringData = {
+        ...analysisResult,
+        fileName: file.name,
+      };
+
+      // 4. Tampilkan hasil
+      setScoringData(finalResult);
       setHasTriedScoring(true);
-    } catch (error) {
-      console.error("[v0] Error analyzing CV:", error);
-      toast.error("Terjadi kesalahan saat menganalisis CV. Silakan coba lagi.");
+
+      if (!finalResult.isCV) {
+        toast.warning("File yang diunggah terdeteksi bukan CV.", {
+          description:
+            "Skor diatur ke 0. Silakan coba dengan file CV yang valid.",
+        });
+      } else {
+        toast.success("Analisis CV berhasil!");
+      }
+    } catch (error: any) {
+      console.error("[CVJitu] Error saat analisis:", error);
+      toast.error(
+        error.message ||
+          "Terjadi kesalahan saat menganalisis CV. Pastikan API Key Anda valid."
+      );
     } finally {
       setIsProcessingCV(false);
     }
   };
 
   const handleResetScoring = () => setScoringData(null);
-  const handleSaveToRepository = () => {
-    if (isAuthenticated) {
-      router.push("/dashboard");
-    } else {
-      router.push("/login"); // Arahkan ke halaman login
-    }
-  };
+  const handleSaveToRepository = () => router.push("/dashboard");
   const handleDownloadOptimized = () => {
     console.log("Downloading optimized CV...");
   };
@@ -95,7 +171,6 @@ export default function Page() {
           onDownloadOptimized={handleDownloadOptimized}
           hasTriedScoring={hasTriedScoring}
           isAuthenticated={isAuthenticated}
-          onAuthAction={handleStartNow}
         />
         <FeaturesSection />
         <HowItWorksSection />
