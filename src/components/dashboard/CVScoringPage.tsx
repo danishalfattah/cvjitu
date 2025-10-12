@@ -16,6 +16,7 @@ import { CVScoringResult } from "./CVScoringResult";
 import {
   analyzeCVFile,
   type CVScoringData,
+  extractCVDataFromContent,
 } from "@/src/utils/cvScoringService";
 import { CVBuilderData } from "../cvbuilder/types";
 import { Search, Grid, List } from "lucide-react";
@@ -38,6 +39,9 @@ export function CVScoringPage() {
   const [scoringResult, setScoringResult] = useState<CVScoringData | null>(
     null
   );
+  const [processedCVData, setProcessedCVData] = useState<CVBuilderData | null>(
+    null
+  );
 
   useEffect(() => {
     const loadCVs = async () => {
@@ -57,9 +61,20 @@ export function CVScoringPage() {
   const handleFileUpload = async (file: File) => {
     setIsProcessing(true);
     setScoringResult(null);
+    setProcessedCVData(null);
     try {
-      const results = await analyzeCVFile(file);
+      const { results, content } = await analyzeCVFile(file);
       setScoringResult(results);
+
+      // Pastikan hasil analisis bukan error
+      if (results.isNotACV) {
+        setIsProcessing(false);
+        return;
+      }
+
+      // Gunakan konten teks untuk mengisi CVBuilderData
+      const extractedData = await extractCVDataFromContent(content);
+      setProcessedCVData(extractedData);
 
       const newCV: Omit<CVData, "id"> = {
         name: file.name,
@@ -70,7 +85,8 @@ export function CVScoringPage() {
         score: results.overallScore,
         lang: "unknown",
         visibility: "private",
-        cvBuilderData: mockBuilderData, // Sesuaikan dengan tipe yang benar
+        owner: "dummy-owner-id", // Ganti dengan user.id sesungguhnya
+        cvBuilderData: extractedData,
       };
 
       // Simpan CV ke database
@@ -85,48 +101,8 @@ export function CVScoringPage() {
     }
   };
 
-  const mockBuilderData: CVBuilderData = {
-    jobTitle: "Software Engineer",
-    description: "CV for the position of Software Engineer",
-    firstName: "John",
-    lastName: "Doe",
-    email: "john.doe@example.com",
-    phone: "+1234567890",
-    location: "San Francisco, CA",
-    linkedin: "linkedin.com/in/johndoe",
-    website: "johndoe.com",
-    workExperiences: [
-      {
-        id: "1",
-        jobTitle: "Software Engineer",
-        company: "Tech Company",
-        location: "San Francisco, CA",
-        startDate: "2022-01",
-        endDate: "2024-01",
-        current: false,
-        description: `Worked as a Software Engineer on various projects.`,
-        achievements: [
-          "Developed and maintained web applications.",
-          "Collaborated with cross-functional teams.",
-        ],
-      },
-    ],
-    educations: [
-      {
-        id: "1",
-        degree: "Bachelor of Science in Computer Science",
-        institution: "University of Example",
-        location: "Example City",
-        startDate: "2018-09",
-        endDate: "2022-05",
-        current: false,
-      },
-    ],
-    skills: ["React", "Node.js", "TypeScript", "Next.js"],
-    summary: `A passionate Software Engineer with experience in building web applications.`,
-  };
-
   const handleViewResult = (cv: CVData) => {
+    // Memastikan cvBuilderData dari CV yang dipilih digunakan
     const mockResult: CVScoringData = {
       fileName: cv.name,
       overallScore: cv.score,
@@ -153,10 +129,12 @@ export function CVScoringPage() {
       ],
     };
     setScoringResult(mockResult);
+    setProcessedCVData(cv.cvBuilderData); // Mengatur data CV untuk pratinjau
   };
 
   const handleBackToList = () => {
     setScoringResult(null);
+    setProcessedCVData(null);
   };
 
   const handleDelete = (cv: CVData) => {
@@ -176,17 +154,15 @@ export function CVScoringPage() {
     return matchesSearch && matchesYear && matchesScore;
   });
 
-  if (scoringResult) {
+  if (scoringResult && processedCVData) {
     return (
       <CVScoringResult
         data={scoringResult}
-        cvBuilderData={mockBuilderData}
+        cvBuilderData={processedCVData}
         onBack={handleBackToList}
         onSaveToRepository={async () => {
-          // You need to decide which CV to save. For this example, let's assume
-          // the last scored CV is the one to save.
           const lastScoredCV = {
-            cvBuilderData: mockBuilderData, // Assuming this is the data from the analyzed CV
+            cvBuilderData: processedCVData,
             name: scoringResult.fileName,
             score: scoringResult.overallScore,
             status: "Completed",

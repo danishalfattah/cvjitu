@@ -37,7 +37,7 @@ export default function Page() {
     setIsProcessingCV(true);
     try {
       const results = await analyzeCVFile(file);
-      setScoringData(results);
+      setScoringData(results.results);
       setHasTriedScoring(true);
     } catch (error) {
       console.error("[v0] Error analyzing CV:", error);

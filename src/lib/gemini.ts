@@ -11,4 +11,4 @@ if (!apiKey) {
 const genAI = new GoogleGenerativeAI(apiKey);
 
 // Model untuk text-only input
-export const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+export const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
