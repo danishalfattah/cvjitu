@@ -14,12 +14,11 @@ import { Footer } from "@/src/components/Footer";
 import { useAuth } from "@/src/context/AuthContext";
 import { type CVScoringData } from "@/src/utils/cvScoringService";
 import { model as geminiModel } from "@/src/lib/gemini";
-import pdfParse from "pdf-parse";
+import pdfParse from "pdf-parse/lib/pdf-parse";
+import * as pdfjs from "pdfjs-dist"; // Import pdfjs-dist
 
-// Menambahkan worker-loader untuk pdf.js
-if (typeof window !== "undefined") {
-  (window as any).pdfjsWorker = require("pdfjs-dist/build/pdf.worker.entry");
-}
+// Arahkan worker ke file yang benar dari node_modules
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 export default function Page() {
   const router = useRouter();
@@ -35,8 +34,13 @@ export default function Page() {
       reader.readAsArrayBuffer(file);
       reader.onload = async () => {
         try {
+          // Berikan opsi worker ke pdfParse
           const data = await pdfParse(
-            new Uint8Array(reader.result as ArrayBuffer)
+            new Uint8Array(reader.result as ArrayBuffer),
+            {
+              // @ts-ignore
+              worker: pdfjs.GlobalWorkerOptions.workerSrc,
+            }
           );
           resolve(data.text);
         } catch (error) {
@@ -59,7 +63,6 @@ export default function Page() {
     setIsProcessingCV(true);
     setScoringData(null);
     try {
-      // 1. Ekstrak teks dari file PDF
       const cvText = await extractTextFromPdf(file);
       if (!cvText || cvText.trim().length < 50) {
         throw new Error(
@@ -67,7 +70,6 @@ export default function Page() {
         );
       }
 
-      // 2. Buat Prompt untuk Gemini API
       const prompt = `
         Anda adalah sistem AI perekrutan yang sangat cerdas. Analisis teks CV berikut: "${cvText}"
         Berikan output HANYA dalam format JSON yang valid tanpa markdown, dengan struktur:
@@ -86,7 +88,6 @@ export default function Page() {
         Jika bukan CV, "isCV" harus false dan semua skor harus 0.
       `;
 
-      // 3. Panggil Gemini API langsung dari frontend
       toast.info("AI sedang menganalisis CV Anda, mohon tunggu...");
       const result = await geminiModel.generateContent(prompt);
       const response = await result.response;
@@ -100,7 +101,6 @@ export default function Page() {
         fileName: file.name,
       };
 
-      // 4. Tampilkan hasil
       setScoringData(finalResult);
       setHasTriedScoring(true);
 

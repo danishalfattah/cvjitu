@@ -1,30 +1,39 @@
-import { Card, CardContent } from "../ui/card";
+"use client";
+
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/src/components/ui/card";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
-import { RadialScore } from "../RadialScore";
-import {
-  MoreHorizontal,
-  Download,
-  Edit,
-  Trash2,
-  Eye,
-  Share2,
-  Globe,
-  Lock,
-  BarChart3,
-} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
   DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubTrigger,
-  DropdownMenuSubContent,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/src/components/ui/tooltip";
+import {
+  MoreVertical,
+  Download,
+  Share2,
+  Trash2,
+  Pencil,
+  Eye,
+  TrendingUp,
+  Globe,
+  Lock,
+} from "lucide-react";
 import { CVBuilderData } from "../cvbuilder/types";
 
 export interface CVData {
@@ -38,8 +47,7 @@ export interface CVData {
   lang: "id" | "en" | "unknown";
   visibility: "public" | "private";
   owner?: string;
-  // Tambahkan properti cvBuilderData di sini
-  cvBuilderData: CVBuilderData;
+  cvBuilderData?: CVBuilderData | null; // <-- UBAH BARIS INI (tambahkan tanda tanya)
 }
 
 interface CVCardProps {
@@ -49,9 +57,9 @@ interface CVCardProps {
   onUpdate: (cv: CVData) => void;
   onDelete: (cv: CVData) => void;
   onShare: (cv: CVData) => void;
-  onVisibilityChange: (cvId: string, visibility: "public" | "private") => void;
-  actionType?: "builder" | "scoring";
   onScore?: (cv: CVData) => void;
+  onVisibilityChange: (id: string, visibility: "public" | "private") => void;
+  actionType?: "builder" | "scoring";
 }
 
 export function CVCard({
@@ -61,143 +69,124 @@ export function CVCard({
   onUpdate,
   onDelete,
   onShare,
+  onScore,
   onVisibilityChange,
   actionType = "builder",
-  onScore,
 }: CVCardProps) {
-  const getStatusColor = (status: CVData["status"]) => {
-    if (status === "Completed") return "bg-[var(--success)] text-white";
-    if (status === "Uploaded") return "bg-blue-500 text-white";
-    return "bg-[var(--warn)] text-white";
+  const getStatusBadge = (status: "Draft" | "Completed" | "Uploaded") => {
+    switch (status) {
+      case "Completed":
+        return <Badge variant="success">Selesai</Badge>;
+      case "Draft":
+        return <Badge variant="warning">Draf</Badge>;
+      case "Uploaded":
+        return <Badge variant="info">Terunggah</Badge>;
+      default:
+        return <Badge variant="secondary">{status}</Badge>;
+    }
+  };
+
+  const handleVisibilityToggle = () => {
+    onVisibilityChange(
+      cv.id,
+      cv.visibility === "public" ? "private" : "public"
+    );
   };
 
   return (
-    <Card className="border border-[var(--border-color)] hover:shadow-md transition-shadow">
-      <CardContent>
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex-1 min-w-0">
-            <h3
-              className="font-poppins font-semibold text-[var(--neutral-ink)] mb-3 truncate text-sm sm:text-base"
-              title={cv.name}
-            >
+    <Card className="flex flex-col h-full hover:shadow-lg transition-shadow duration-200">
+      <CardHeader>
+        <div className="flex justify-between items-start">
+          <div className="space-y-1">
+            <CardTitle className="text-lg leading-tight pr-4">
               {cv.name}
-            </h3>
-            <div className="flex flex-wrap items-center gap-2 mb-4">
-              <Badge className={`${getStatusColor(cv.status)} text-xs`}>
-                {cv.status === "Completed"
-                  ? "Selesai"
-                  : cv.status === "Uploaded"
-                  ? "Di-upload"
-                  : "Draf"}
-              </Badge>
-              {cv.lang !== "unknown" && actionType === "builder" && (
-                <Badge variant="outline" className="text-xs">
-                  {cv.lang === "id" ? "ID" : "EN"}
-                </Badge>
-              )}
-              {actionType === "builder" && (
-                <Badge variant="outline" className="text-xs">
-                  {cv.visibility === "public" ? (
-                    <Globe className="w-3 h-3 mr-1" />
-                  ) : (
-                    <Lock className="w-3 h-3 mr-1" />
-                  )}
-                  {cv.visibility === "public" ? "Publik" : "Privat"}
-                </Badge>
-              )}
-            </div>
+            </CardTitle>
+            <CardDescription className="text-xs">
+              Diperbarui: {cv.updated}
+            </CardDescription>
           </div>
-          <div className="flex items-center space-x-2 sm:space-x-3 ml-2 sm:ml-4">
-            <RadialScore score={cv.score} size="sm" showLabel={false} />
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm">
-                  <MoreHorizontal className="w-4 h-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                {actionType === "builder" ? (
-                  <>
-                    <DropdownMenuItem onClick={() => onPreview(cv)}>
-                      <BarChart3 className="w-4 h-4 mr-2" />
-                      Lihat Analisis CV
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => onUpdate(cv)}>
-                      <Edit className="w-4 h-4 mr-2" />
-                      Edit CV
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => onDownload(cv)}>
-                      <Download className="w-4 h-4 mr-2" />
-                      Download PDF
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => onShare(cv)}>
-                      <Share2 className="w-4 h-4 mr-2" />
-                      Bagikan Link Publik
-                    </DropdownMenuItem>
-                    <DropdownMenuSub>
-                      <DropdownMenuSubTrigger>
-                        {cv.visibility === "public" ? (
-                          <Globe className="w-4 h-4 mr-2" />
-                        ) : (
-                          <Lock className="w-4 h-4 mr-2" />
-                        )}
-                        Atur Privasi
-                      </DropdownMenuSubTrigger>
-                      <DropdownMenuSubContent>
-                        <DropdownMenuRadioGroup
-                          value={cv.visibility}
-                          onValueChange={(value) =>
-                            onVisibilityChange(
-                              cv.id,
-                              value as "public" | "private"
-                            )
-                          }
-                        >
-                          <DropdownMenuRadioItem value="public">
-                            <Globe className="w-4 h-4 mr-2" />
-                            Publik
-                          </DropdownMenuRadioItem>
-                          <DropdownMenuRadioItem value="private">
-                            <Lock className="w-4 h-4 mr-2" />
-                            Privat
-                          </DropdownMenuRadioItem>
-                        </DropdownMenuRadioGroup>
-                      </DropdownMenuSubContent>
-                    </DropdownMenuSub>
-                  </>
-                ) : (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="flex-shrink-0">
+                <MoreVertical className="w-4 h-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {actionType === "builder" ? (
+                <>
+                  <DropdownMenuItem onClick={() => onUpdate(cv)}>
+                    <Pencil className="w-4 h-4 mr-2" />
+                    <span>Perbarui</span>
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => onPreview(cv)}>
                     <Eye className="w-4 h-4 mr-2" />
-                    Lihat Analisis CV
+                    <span>Pratinjau</span>
                   </DropdownMenuItem>
-                )}
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={() => onDelete(cv)}
-                  className="text-[var(--error)] focus:text-[var(--error)]"
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Hapus CV
+                </>
+              ) : (
+                <DropdownMenuItem onClick={() => onScore && onScore(cv)}>
+                  <TrendingUp className="w-4 h-4 mr-2" />
+                  <span>Lihat Hasil</span>
                 </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+              )}
+
+              <DropdownMenuItem onClick={() => onDownload(cv)}>
+                <Download className="w-4 h-4 mr-2" />
+                <span>Unduh</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onShare(cv)}>
+                <Share2 className="w-4 h-4 mr-2" />
+                <span>Bagikan</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => onDelete(cv)}
+                className="text-red-600 focus:text-red-600"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                <span>Hapus</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </CardHeader>
+      <CardContent className="flex-grow">
+        <div className="flex items-center space-x-4">
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-gray-800">{cv.score}</p>
+            <p className="text-xs text-gray-500">Skor</p>
+          </div>
+          <div className="w-px h-8 bg-gray-200" />
+          <div className="flex-1">
+            {getStatusBadge(cv.status)}
+            <p className="text-xs text-gray-500 mt-1">Status</p>
           </div>
         </div>
-        <div className="space-y-1 sm:space-y-2 text-xs sm:text-sm text-gray-500 mb-4 sm:mb-6">
-          <p>
-            {actionType === "scoring" ? "Tanggal Upload" : "Dibuat"}:{" "}
-            {cv.created}
-          </p>
-          {actionType === "builder" && <p>Diperbarui: {cv.updated}</p>}
-        </div>
-        <Button
-          onClick={() => onPreview(cv)}
-          className="w-full bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white text-sm sm:text-base py-2 sm:py-2.5"
-        >
-          <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
-          <span>Lihat Analisis CV</span>
-        </Button>
       </CardContent>
+      <CardFooter className="flex justify-between items-center">
+        <div className="text-xs text-gray-500">ID: ...{cv.id.slice(-6)}</div>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={handleVisibilityToggle}
+                className="h-8 w-8"
+              >
+                {cv.visibility === "public" ? (
+                  <Globe className="w-4 h-4 text-blue-600" />
+                ) : (
+                  <Lock className="w-4 h-4 text-gray-500" />
+                )}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Ubah ke {cv.visibility === "public" ? "Privat" : "Publik"}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </CardFooter>
     </Card>
   );
 }

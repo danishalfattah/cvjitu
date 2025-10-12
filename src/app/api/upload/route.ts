@@ -36,13 +36,12 @@ export async function POST(request: Request) {
 
     // Buat pre-signed URL yang hanya berlaku selama 10 menit
     const signedUrl = await getSignedUrl(s3Client, command, {
-      expiresIn: 600, // 10 menit
+      expiresIn: 600, 
     });
 
-    // Kembalikan URL tersebut ke frontend
     return NextResponse.json({ 
         signedUrl, 
-        key: uniqueFileName // Kirim juga key uniknya
+        key: uniqueFileName 
     });
 
   } catch (error) {

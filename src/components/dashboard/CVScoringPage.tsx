@@ -27,11 +27,10 @@ import {
   doc,
 } from "firebase/firestore";
 import { CVScoringData } from "@/src/utils/cvScoringService";
-import pdfParse from "pdf-parse";
+import pdfParse from "pdf-parse/lib/pdf-parse";
 import { model as geminiModel } from "@/src/lib/gemini";
 import { DeleteConfirmModal } from "../DeleteConfirmModal";
 
-// Menambahkan worker-loader untuk pdf.js agar kompatibel dengan Next.js
 if (typeof window !== "undefined") {
   (window as any).pdfjsWorker = require("pdfjs-dist/build/pdf.worker.entry");
 }
@@ -150,7 +149,6 @@ export function CVScoringPage() {
     setIsProcessing(true);
     setScoringResult(null);
     try {
-      // 1. Dapatkan Pre-signed URL dari API Route Anda (untuk Cloudflare)
       toast.info("Menyiapkan unggahan aman...");
       const presignResponse = await fetch("/api/upload", {
         method: "POST",
@@ -163,7 +161,6 @@ export function CVScoringPage() {
       }
       const { signedUrl, key } = await presignResponse.json();
 
-      // 2. Unggah file langsung ke Cloudflare R2
       toast.info("Mengunggah file...");
       const uploadResponse = await fetch(signedUrl, {
         method: "PUT",
@@ -177,7 +174,6 @@ export function CVScoringPage() {
 
       const publicUrl = `https://${process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_DOMAIN}/${key}`;
 
-      // 3. Ekstrak teks dan panggil Gemini API dari Frontend
       toast.info("AI sedang menganalisis CV Anda...");
       const cvText = await extractTextFromPdf(file);
       if (!cvText.trim()) {
@@ -209,7 +205,6 @@ export function CVScoringPage() {
         analysisResultText.replace(/```json/g, "").replace(/```/g, "")
       );
 
-      // 4. Simpan hasil ke Firestore
       const docData = {
         ownerId: user.id,
         fileName: file.name,
@@ -219,7 +214,6 @@ export function CVScoringPage() {
       };
       const docRef = await addDoc(collection(db, "scoredCVs"), docData);
 
-      // 5. Perbarui UI
       setScoringResult({ ...analysisResult, fileName: file.name });
       const newCVEntry: CVData = {
         id: docRef.id,
@@ -231,7 +225,6 @@ export function CVScoringPage() {
         score: analysisResult.overallScore,
         lang: "unknown",
         visibility: "private",
-        cvBuilderData: mockBuilderData,
       };
       setCvs((prev) => [newCVEntry, ...prev]);
 

@@ -7,15 +7,16 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "./ui/alert-dialog";
+} from "@/src/components/ui/alert-dialog";
 import { CVData } from "./dashboard/CVCard";
-import { Trash2 } from "lucide-react";
 
-interface DeleteConfirmModalProps {
+export interface DeleteConfirmModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
   cv: CVData | null;
+  title?: string; // Tambahkan prop title (opsional)
+  description?: string; // Tambahkan prop description (opsional)
 }
 
 export function DeleteConfirmModal({
@@ -23,29 +24,37 @@ export function DeleteConfirmModal({
   onClose,
   onConfirm,
   cv,
+  title, // Terima prop title
+  description, // Terima prop description
 }: DeleteConfirmModalProps) {
+  if (!isOpen) return null;
+
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-4">
-            <Trash2 className="h-6 w-6 text-red-600" />
-          </div>
-          <AlertDialogTitle className="text-center">
-            Anda yakin ingin menghapus CV ini?
+          <AlertDialogTitle>
+            {/* Gunakan title dari prop, atau teks default jika tidak ada */}
+            {title || "Apakah Anda Yakin?"}
           </AlertDialogTitle>
-          <AlertDialogDescription className="text-center">
-            CV "<b>{cv?.name}</b>" akan dihapus secara permanen. Tindakan ini
-            tidak dapat dibatalkan.
+          <AlertDialogDescription>
+            {/* Gunakan description dari prop, atau teks default jika tidak ada */}
+            {description || (
+              <>
+                Tindakan ini tidak dapat dibatalkan. Ini akan menghapus CV{" "}
+                <span className="font-semibold text-red-600">{cv?.name}</span>{" "}
+                secara permanen.
+              </>
+            )}
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter className="sm:justify-center">
+        <AlertDialogFooter>
           <AlertDialogCancel onClick={onClose}>Batal</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
-            className="bg-[var(--error)] text-white hover:bg-red-700"
+            className="bg-red-600 hover:bg-red-700"
           >
-            Ya, Hapus
+            Hapus
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
