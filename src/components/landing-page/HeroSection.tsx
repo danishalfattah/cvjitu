@@ -1,12 +1,9 @@
-// components/landing-page/HeroSection.tsx
+// src/components/landing-page/HeroSection.tsx
 
 import { useState } from "react";
 import { Button } from "../ui/button";
 import { FileUploadZone } from "../FileUploadZone";
 import { CVScoringData } from "../../utils/cvScoringService";
-import { Upload, FileText } from "lucide-react";
-import { RadialScore } from "../RadialScore";
-import { ImageWithFallback } from "../figma/ImageWithFallback";
 import Image from "next/image";
 
 interface HeroSectionProps {
@@ -15,8 +12,7 @@ interface HeroSectionProps {
   onStartNow?: () => void;
   scoringData?: CVScoringData | null;
   onResetScoring?: () => void;
-  onSaveToRepository?: () => void;
-  onDownloadOptimized?: () => void;
+  // onSaveToRepository TIDAK DIPERLUKAN LAGI DI SINI
   hasTriedScoring?: boolean;
   isAuthenticated?: boolean;
 }
@@ -27,8 +23,6 @@ export function HeroSection({
   onStartNow,
   scoringData,
   onResetScoring,
-  onSaveToRepository,
-  onDownloadOptimized,
   hasTriedScoring = false,
   isAuthenticated = false,
 }: HeroSectionProps) {
@@ -86,12 +80,10 @@ export function HeroSection({
                 maxSize={10}
                 scoringData={scoringData}
                 onResetScoring={onResetScoring}
-                onSaveToRepository={onSaveToRepository}
-                onDownloadOptimized={onDownloadOptimized}
                 hasTriedScoring={hasTriedScoring}
                 isAuthenticated={isAuthenticated}
                 isHighlighted={isHighlighting}
-                onAuthAction={onStartNow}
+                onAuthAction={onStartNow} // Prop ini menangani navigasi ke login/dashboard
               />
             </div>
           </div>

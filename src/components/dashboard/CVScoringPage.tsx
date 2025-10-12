@@ -1,3 +1,4 @@
+// src/components/dashboard/CVScoringPage.tsx
 "use client";
 
 import { useState } from "react";
@@ -115,7 +116,7 @@ export function CVScoringPage() {
         created: new Date().toLocaleString(),
         updated: new Date().toLocaleString(),
         status: "Uploaded",
-        score: results.overallScore,
+        score: results.overallScore || 0, // Fallback to 0 if overallScore is undefined
         lang: "unknown",
         visibility: "private",
       };
@@ -129,6 +130,7 @@ export function CVScoringPage() {
 
   const handleViewResult = (cv: CVData) => {
     const mockResult: CVScoringData = {
+      isCv: true, // <-- TAMBAHKAN BARIS INI
       fileName: cv.name,
       overallScore: cv.score,
       atsCompatibility: Math.min(cv.score + 5, 100),
@@ -137,13 +139,13 @@ export function CVScoringPage() {
       sections: [
         {
           name: "Pengalaman Kerja",
-          score: cv.score + 10,
+          score: cv.score + 10 > 100 ? 95 : cv.score + 10,
           status: "excellent",
           feedback: "Pengalaman kerja Anda sangat relevan.",
         },
         {
           name: "Pendidikan",
-          score: cv.score - 5,
+          score: cv.score - 5 < 0 ? 60 : cv.score - 5,
           status: "good",
           feedback: "Latar belakang pendidikan Anda baik.",
         },

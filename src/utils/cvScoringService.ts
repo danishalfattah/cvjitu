@@ -1,5 +1,7 @@
 // Dummy CV Scoring Service
 export interface CVScoringData {
+  isCv: boolean;
+  message?: string;
   fileName: string;
   overallScore: number;
   sections: {
@@ -132,7 +134,8 @@ export const analyzeCVFile = async (file: File): Promise<CVScoringData> => {
     .sort(() => 0.5 - Math.random())
     .slice(0, numSuggestions);
 
-  return {
+   return {
+    isCv: true,
     fileName: file.name,
     overallScore,
     sections: sectionScores,

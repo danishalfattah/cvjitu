@@ -1,4 +1,4 @@
-// app/page.tsx
+// src/app/page.tsx
 
 "use client";
 
@@ -15,7 +15,7 @@ import { FAQSection } from "@/src/components/landing-page/FAQSection";
 import { Footer } from "@/src/components/Footer";
 import { useAuth } from "@/src/context/AuthContext";
 import {
-  analyzeCVFile,
+  analyzeCVFile, // Kita akan ganti ini dengan fetch
   type CVScoringData,
 } from "@/src/utils/cvScoringService";
 
@@ -34,24 +34,45 @@ export default function Page() {
       return;
     }
     setIsProcessingCV(true);
+    setScoringData(null);
+
+    const formData = new FormData();
+    formData.append("file", file);
+
     try {
-      const results = await analyzeCVFile(file);
-      setScoringData(results);
-      setHasTriedScoring(true);
+      const response = await fetch("/api/cv/analyze", {
+        method: "POST",
+        body: formData,
+      });
+
+      const results = await response.json();
+
+      if (!response.ok) {
+        throw new Error(results.message || "Gagal menganalisis CV");
+      }
+
+      if (results.isCv === false) {
+        toast.error(results.message || "File ini bukan CV yang valid.");
+        setHasTriedScoring(true);
+      } else {
+        setScoringData(results);
+        setHasTriedScoring(true);
+      }
     } catch (error) {
       console.error("[v0] Error analyzing CV:", error);
-      toast.error("Terjadi kesalahan saat menganalisis CV. Silakan coba lagi.");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Terjadi kesalahan saat menganalisis CV. Silakan coba lagi."
+      );
     } finally {
       setIsProcessingCV(false);
     }
   };
 
   const handleResetScoring = () => setScoringData(null);
-  const handleSaveToRepository = () => router.push("/dashboard");
-  const handleDownloadOptimized = () => {
-    console.log("Downloading optimized CV...");
-  };
 
+  // Fungsi ini menangani semua aksi navigasi (login/dashboard)
   const handleStartNow = () => {
     if (isAuthenticated) {
       router.push("/dashboard");
@@ -84,8 +105,6 @@ export default function Page() {
           onStartNow={handleStartNow}
           scoringData={scoringData}
           onResetScoring={handleResetScoring}
-          onSaveToRepository={handleSaveToRepository}
-          onDownloadOptimized={handleDownloadOptimized}
           hasTriedScoring={hasTriedScoring}
           isAuthenticated={isAuthenticated}
         />
