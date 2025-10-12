@@ -25,6 +25,7 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
 } from "../ui/dropdown-menu";
+import { CVBuilderData } from "../cvbuilder/types";
 
 export interface CVData {
   id: string;
@@ -37,6 +38,8 @@ export interface CVData {
   lang: "id" | "en" | "unknown";
   visibility: "public" | "private";
   owner?: string;
+  // Tambahkan properti cvBuilderData di sini
+  cvBuilderData: CVBuilderData;
 }
 
 interface CVCardProps {

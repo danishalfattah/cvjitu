@@ -17,7 +17,9 @@ export default function Register() {
   const handleRegister = async (data: any) => {
     try {
       await register(data);
-      toast.success("Akun berhasil dibuat! Selamat datang di CVJitu.");
+      toast.success(
+        "Akun berhasil dibuat! Silahkan Verifikasi Email Terlebih Dahulu."
+      );
       router.replace("/dashboard");
     } catch (error) {
       toast.error(

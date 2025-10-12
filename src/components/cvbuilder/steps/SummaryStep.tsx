@@ -1,3 +1,5 @@
+// File: src/components/cvbuilder/steps/SummaryStep.tsx
+
 import { useState } from "react";
 import { Label } from "../../ui/label";
 import { Textarea } from "../../ui/textarea";
@@ -5,6 +7,7 @@ import { Button } from "../../ui/button";
 import { Sparkles } from "lucide-react";
 import { CVBuilderData } from "../types";
 import { t, type Language } from "@/src/lib/translations";
+import { model } from "@/src/lib/gemini"; // Import model Gemini
 
 interface SummaryStepProps {
   data: CVBuilderData;
@@ -17,20 +20,55 @@ export function SummaryStep({ data, onUpdate, lang }: SummaryStepProps) {
 
   const generateSummary = async () => {
     setIsGenerating(true);
+    try {
+      const workExperienceText = data.workExperiences
+        .map(
+          (exp) =>
+            `${exp.jobTitle} di ${exp.company} (${exp.startDate} - ${t(
+              "previewNow",
+              lang
+            )})`
+        )
+        .join(", ");
+      const skillsText = data.skills.join(", ");
 
-    setTimeout(() => {
-      const jobTitle = data.jobTitle || "Professional";
-      const yearsOfExperience = data.workExperiences.length;
-      const topSkills = data.skills.slice(0, 3).join(", ");
+      const prompt =
+        lang === "id"
+          ? `Buatkan ringkasan profesional singkat (sekitar 50-100 kata) untuk posisi "${data.jobTitle}".
+             Berdasarkan pengalaman kerja berikut: ${workExperienceText} dan keahlian berikut: ${skillsText}.
+             Ringkasan harus menarik dan menyoroti kekuatan utama.
+            `
+          : `Generate a brief professional summary (around 50-100 words) for the position of "${data.jobTitle}".
+             Based on the following work experience: ${workExperienceText} and skills: ${skillsText}.
+             The summary should be compelling and highlight key strengths.
+            `;
 
+      const result = await model.generateContent(prompt);
+      const generatedSummary = result.response.text();
+      onUpdate({ summary: generatedSummary });
+    } catch (error) {
+      console.error("Error generating summary:", error);
+      // Fallback ke logika dummy jika API gagal
       const generatedSummary =
         lang === "id"
-          ? `Berpengalaman sebagai ${jobTitle} dengan rekam jejak ${yearsOfExperience}+ tahun dalam memberikan solusi berkualitas tinggi. Terampil dalam ${topSkills} dengan semangat untuk inovasi dan pembelajaran berkelanjutan.`
-          : `Experienced ${jobTitle} with ${yearsOfExperience}+ years of proven track record in delivering high-quality solutions. Skilled in ${topSkills} with a passion for innovation and continuous learning.`;
-
+          ? `Berpengalaman sebagai ${
+              data.jobTitle
+            } dengan rekam jejak yang kuat dalam memberikan solusi berkualitas tinggi. Terampil dalam ${data.skills
+              .slice(0, 3)
+              .join(
+                ", "
+              )} dengan semangat untuk inovasi dan pembelajaran berkelanjutan.`
+          : `Experienced ${
+              data.jobTitle
+            } with a proven track record in delivering high-quality solutions. Skilled in ${data.skills
+              .slice(0, 3)
+              .join(
+                ", "
+              )} with a passion for innovation and continuous learning.`;
       onUpdate({ summary: generatedSummary });
+    } finally {
       setIsGenerating(false);
-    }, 2000);
+    }
   };
 
   const wordCount = data.summary

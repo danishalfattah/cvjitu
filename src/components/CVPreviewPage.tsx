@@ -1,3 +1,5 @@
+// File: src/components/CVPreviewPage.tsx
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -7,7 +9,12 @@ import Link from "next/link";
 import { useAuth } from "@/src/context/AuthContext";
 import { CVPreview } from "@/src/components/cvbuilder/preview/CVPreview";
 import { Button } from "@/src/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/src/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/src/components/ui/card";
 import { Switch } from "@/src/components/ui/switch";
 import { Label } from "@/src/components/ui/label";
 import {
@@ -19,16 +26,14 @@ import {
   Home,
 } from "lucide-react";
 import { CVData } from "@/src/components/dashboard/CVCard";
-import { dummyCVs } from "@/src/components/dashboard/Dashboard";
 import { CVBuilderData } from "./cvbuilder/types";
 import { t } from "@/src/lib/translations";
 import { Footer } from "@/src/components/Footer";
-import { User } from "@/src/context/AuthContext";
 
 export function CVPreviewPage() {
   const router = useRouter();
   const params = useParams();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, fetchCVById, updateCV } = useAuth();
   const [cvData, setCvData] = useState<CVData | null>(null);
   const [cvBuilderData, setCvBuilderData] = useState<CVBuilderData | null>(
     null
@@ -40,74 +45,47 @@ export function CVPreviewPage() {
   const cvId = params.id as string;
 
   useEffect(() => {
-    // Simulate fetching CV data
-    const fetchedCV = dummyCVs.find((cv) => cv.id === cvId);
-
-    if (fetchedCV) {
-      document.title = `${fetchedCV.name} by ${fetchedCV.owner} | CVJitu`;
-      setCvData(fetchedCV);
-      setIsPublic(fetchedCV.visibility === "public");
-
-      // Mock CVBuilderData from CVData for preview
-      const mockBuilderData: CVBuilderData = {
-        jobTitle: fetchedCV.name, // name is now jobTitle
-        description: `CV for the position of ${fetchedCV.name}`,
-        firstName: "John",
-        lastName: "Doe",
-        email: "john.doe@example.com",
-        phone: "+1234567890",
-        location: "San Francisco, CA",
-        linkedin: "linkedin.com/in/johndoe",
-        website: "johndoe.com",
-        workExperiences: [
-          {
-            id: "1",
-            jobTitle: fetchedCV.name,
-            company: "Tech Company",
-            location: "San Francisco, CA",
-            startDate: "2022-01",
-            endDate: "2024-01",
-            current: false,
-            description: `Worked as a ${fetchedCV.name} on various projects.`,
-            achievements: [
-              "Developed and maintained web applications.",
-              "Collaborated with cross-functional teams.",
-            ],
-          },
-        ],
-        educations: [
-          {
-            id: "1",
-            degree: "Bachelor of Science in Computer Science",
-            institution: "University of Example",
-            location: "Example City",
-            startDate: "2018-09",
-            endDate: "2022-05",
-            current: false,
-          },
-        ],
-        skills: ["React", "Node.js", "TypeScript", "Next.js"],
-        summary: `A passionate ${fetchedCV.name} with experience in building web applications.`,
-      };
-      setCvBuilderData(mockBuilderData);
-
-      if (
-        fetchedCV.visibility === "private" &&
-        user?.id !== (fetchedCV.owner as any)
-      ) {
-        setError("This CV is private and cannot be viewed.");
+    const loadCV = async () => {
+      setIsLoading(true);
+      try {
+        const fetchedCV = await fetchCVById(cvId);
+        if (fetchedCV) {
+          document.title = `${fetchedCV.name} | CVJitu`;
+          setCvData(fetchedCV);
+          setCvBuilderData(fetchedCV.cvBuilderData);
+          setIsPublic(fetchedCV.visibility === "public");
+          if (
+            fetchedCV.visibility === "private" &&
+            user?.id !== fetchedCV.owner
+          ) {
+            setError("This CV is private and cannot be viewed.");
+          }
+        } else {
+          document.title = "CV Tidak Ditemukan | CVJitu";
+          setError("CV not found.");
+        }
+      } catch (err) {
+        console.error("Failed to fetch CV:", err);
+        setError("Failed to load CV. Please try again later.");
+      } finally {
+        setIsLoading(false);
       }
-    } else {
-      document.title = "CV Tidak Ditemukan | CVJitu";
-      setError("CV not found.");
-    }
-    setIsLoading(false);
-  }, [cvId, user]);
+    };
+    loadCV();
+  }, [cvId, user, fetchCVById]);
 
-  const handleVisibilityChange = (checked: boolean) => {
-    setIsPublic(checked);
-    // Here you would typically make an API call to update the CV's visibility
-    console.log(`CV visibility changed to: ${checked ? "Public" : "Private"}`);
+  const handleVisibilityChange = async (checked: boolean) => {
+    try {
+      await updateCV(cvId, { visibility: checked ? "public" : "private" });
+      setIsPublic(checked);
+      console.log(
+        `CV visibility changed to: ${checked ? "Public" : "Private"}`
+      );
+    } catch (error) {
+      console.error("Failed to update visibility:", error);
+      // Revert the switch state on error
+      setIsPublic(!checked);
+    }
   };
 
   if (isLoading) {
@@ -118,7 +96,7 @@ export function CVPreviewPage() {
     );
   }
 
-  const isOwner = isAuthenticated && user?.id === (cvData?.owner as any);
+  const isOwner = isAuthenticated && user?.id === cvData?.owner;
 
   if (error && !isOwner) {
     return (

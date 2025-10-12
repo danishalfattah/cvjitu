@@ -1,3 +1,5 @@
+// File: src/components/dashboard/CVBuilderPage.tsx
+
 "use client";
 
 import { useState } from "react";
@@ -19,12 +21,14 @@ import type {
   Education,
 } from "../cvbuilder/types";
 import { t, type Language } from "@/src/lib/translations";
+import { useAuth } from "@/src/context/AuthContext";
 
 interface CVBuilderPageProps {
   onBack: () => void;
   onSave: (data: CVBuilderData) => void;
   onSaveDraft: (data: CVBuilderData) => void;
   lang: Language;
+  initialData?: CVBuilderData;
 }
 
 const steps = [
@@ -42,23 +46,26 @@ export function CVBuilderPage({
   onSave,
   onSaveDraft,
   lang,
+  initialData,
 }: CVBuilderPageProps) {
   const [currentStep, setCurrentStep] = useState(0);
-  const [cvData, setCvData] = useState<CVBuilderData>({
-    jobTitle: "",
-    description: "",
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    location: "",
-    linkedin: "",
-    website: "",
-    workExperiences: [],
-    educations: [],
-    skills: [],
-    summary: "",
-  });
+  const [cvData, setCvData] = useState<CVBuilderData>(
+    initialData || {
+      jobTitle: "",
+      description: "",
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "",
+      location: "",
+      linkedin: "",
+      website: "",
+      workExperiences: [],
+      educations: [],
+      skills: [],
+      summary: "",
+    }
+  );
 
   const updateCvData = (updates: Partial<CVBuilderData>) => {
     setCvData((prev) => ({ ...prev, ...updates }));

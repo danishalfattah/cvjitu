@@ -1,4 +1,4 @@
-// components/FileUploadZone.tsx
+// File: src/components/FileUploadZone.tsx
 
 import { useState, useCallback } from "react";
 import {
@@ -14,12 +14,14 @@ import {
   ArrowLeft,
   LogIn,
   LayoutDashboard,
+  FileWarning,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { Progress } from "./ui/progress";
 import { RadialScore } from "./RadialScore";
 import { CVScoringData } from "../utils/cvScoringService";
+import { cn } from "@/src/lib/utils";
 
 interface FileUploadZoneProps {
   onFileUpload: (file: File) => void;
@@ -57,13 +59,11 @@ export function FileUploadZone({
   const [error, setError] = useState<string | null>(null);
 
   const validateFile = (file: File): string | null => {
-    // Check file type
     const fileExtension = "." + file.name.split(".").pop()?.toLowerCase();
     if (!acceptedTypes.includes(fileExtension)) {
       return `Tipe file tidak didukung. Gunakan: ${acceptedTypes.join(", ")}`;
     }
 
-    // Check file size
     const fileSizeMB = file.size / (1024 * 1024);
     if (fileSizeMB > maxSize) {
       return `Ukuran file terlalu besar. Maksimal ${maxSize}MB`;
@@ -181,11 +181,81 @@ export function FileUploadZone({
     }
   };
 
-  // If scoring data exists, show results
+  // Logic for displaying scoring results
   if (scoringData) {
+    // New logic: display error if file is not a CV
+    if (scoringData.isNotACV) {
+      return (
+        <div className="space-y-6 text-center">
+          <div className="flex items-center justify-center space-x-4 mb-4">
+            <FileWarning className="w-12 h-12 text-[var(--error)]" />
+          </div>
+          <h3 className="text-xl font-poppins font-semibold text-[var(--neutral-ink)]">
+            {scoringData.notACVMessage}
+          </h3>
+          <p className="text-gray-600 mb-4">
+            Mohon unggah file CV yang valid (PDF atau DOCX) untuk dianalisis.
+          </p>
+          <Button
+            onClick={onResetScoring}
+            className="w-full sm:w-auto"
+            variant="outline"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Kembali ke Upload
+          </Button>
+        </div>
+      );
+    }
+
+    if (!isAuthenticated) {
+      // Tampilan untuk guest (non-login)
+      return (
+        <div className="space-y-6">
+          <div className="text-center py-6 border-b border-gray-200">
+            <RadialScore
+              score={scoringData.overallScore}
+              size="lg"
+              showLabel={true}
+            />
+            <p className="text-sm text-gray-600 mt-2">
+              <FileText className="w-4 h-4 inline mr-1" />
+              {scoringData.fileName}
+            </p>
+          </div>
+          <div className="bg-[var(--red-light)] rounded-lg p-6 text-center">
+            <div className="flex items-center justify-center space-x-3 mb-4">
+              <LogIn className="w-5 h-5 text-[var(--red-normal)]" />
+              <h3 className="text-lg font-poppins font-semibold text-[var(--neutral-ink)]">
+                Lihat Hasil Lengkap
+              </h3>
+            </div>
+            <p className="text-gray-600 mb-4">
+              Dapatkan analisis yang lebih dalam, saran perbaikan detail, dan
+              simpan riwayat CV Anda.
+            </p>
+            <Button
+              onClick={onAuthAction}
+              className="w-full bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white"
+            >
+              Login untuk Melihat Detail
+            </Button>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onResetScoring}
+            className="w-full text-gray-500 hover:text-[var(--red-normal)]"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Upload CV Lain
+          </Button>
+        </div>
+      );
+    }
+    // Tampilan lengkap untuk user yang login
     return (
       <div className="space-y-6">
-        {/* Header with back button */}
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <BarChart3 className="w-5 h-5 text-[var(--red-normal)]" />
@@ -203,8 +273,6 @@ export function FileUploadZone({
             Upload Ulang
           </Button>
         </div>
-
-        {/* Overall Score */}
         <div className="text-center py-6 border-b border-gray-200">
           <RadialScore
             score={scoringData.overallScore}
@@ -216,8 +284,6 @@ export function FileUploadZone({
             {scoringData.fileName}
           </p>
         </div>
-
-        {/* Quick Metrics */}
         <div className="grid grid-cols-3 gap-4">
           <div className="text-center">
             <div className="text-lg font-bold text-[var(--neutral-ink)]">
@@ -238,8 +304,6 @@ export function FileUploadZone({
             <div className="text-xs text-gray-600">Readability</div>
           </div>
         </div>
-
-        {/* Top Sections (show only top 3) */}
         <div className="space-y-3">
           <h4 className="text-sm font-medium text-gray-700">
             Analisis Bagian CV:
@@ -256,7 +320,9 @@ export function FileUploadZone({
                 </span>
               </div>
               <div className="flex items-center space-x-2">
-                <Badge className={getStatusColor(section.status)}>
+                <Badge
+                  className={cn(getStatusColor(section.status), "text-xs")}
+                >
                   {getStatusText(section.status)}
                 </Badge>
                 <span className="text-sm font-bold text-[var(--neutral-ink)]">
@@ -271,8 +337,6 @@ export function FileUploadZone({
             </p>
           )}
         </div>
-
-        {/* Top Suggestions */}
         <div className="space-y-3">
           <h4 className="text-sm font-medium text-gray-700">Saran Utama:</h4>
           {scoringData.suggestions.slice(0, 2).map((suggestion, index) => (
@@ -285,33 +349,20 @@ export function FileUploadZone({
             </div>
           ))}
         </div>
-
-        {/* Action Buttons based on Auth State */}
         <div className="pt-4 border-t border-gray-200">
-          {isAuthenticated ? (
-            <Button
-              onClick={onSaveToRepository}
-              className="w-full bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white"
-            >
-              <LayoutDashboard className="w-4 h-4 mr-2" />
-              Lihat Dashboard
-            </Button>
-          ) : (
-            <Button
-              onClick={onAuthAction}
-              variant="outline"
-              className="w-full border-[var(--red-normal)] text-[var(--red-normal)] hover:bg-[var(--red-light)]"
-            >
-              <LogIn className="w-4 h-4 mr-2" />
-              Login untuk hasil lebih optimal
-            </Button>
-          )}
+          <Button
+            onClick={onSaveToRepository}
+            className="w-full bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white"
+          >
+            <LayoutDashboard className="w-4 h-4 mr-2" />
+            Lihat Dashboard
+          </Button>
         </div>
       </div>
     );
   }
 
-  // Show login requirement if user has tried scoring and is not authenticated
+  // Tampilan untuk guest yang sudah pernah mencoba scoring (hasTriedScoring)
   if (hasTriedScoring && !isAuthenticated && !scoringData) {
     return (
       <div className="space-y-6 text-center">
@@ -338,7 +389,7 @@ export function FileUploadZone({
           </div>
 
           <Button
-            onClick={onTryScoring}
+            onClick={onAuthAction}
             className="bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white"
           >
             Login untuk Analisis Lagi
@@ -363,13 +414,14 @@ export function FileUploadZone({
       </div>
 
       <div
-        className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-colors duration-300 cursor-pointer ${
+        className={cn(
+          "relative border-2 border-dashed rounded-lg p-8 text-center transition-colors duration-300 cursor-pointer",
           dragActive || isHighlighted
             ? "border-[var(--red-normal)] bg-[var(--red-light)]"
             : error
             ? "border-red-300 bg-red-50"
             : "border-gray-300 hover:border-[var(--red-normal)]"
-        }`}
+        )}
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
         onDragOver={handleDrag}
@@ -447,8 +499,9 @@ export function FileUploadZone({
       </div>
 
       {error && (
-        <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3">
-          {error}
+        <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3 flex items-center space-x-2">
+          <FileWarning className="w-4 h-4 flex-shrink-0" />
+          <span>{error}</span>
         </div>
       )}
     </div>

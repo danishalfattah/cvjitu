@@ -1,3 +1,5 @@
+// File: src/components/cvbuilder/steps/WorkExperienceStep.tsx
+
 import { useState } from "react";
 import { Input } from "../../ui/input";
 import { Label } from "../../ui/label";
@@ -9,6 +11,7 @@ import { Badge } from "../../ui/badge";
 import { Plus, Trash2, Sparkles, Calendar } from "lucide-react";
 import { CVBuilderData, WorkExperience } from "../types";
 import { t, type Language } from "@/src/lib/translations";
+import { model } from "@/src/lib/gemini"; // Import model Gemini
 
 interface WorkExperienceStepProps {
   data: CVBuilderData;
@@ -29,24 +32,52 @@ export function WorkExperienceStep({
 
   const generateKeyAchievements = async (experienceId: string) => {
     setGeneratingAI(experienceId);
+    const experience = data.workExperiences.find(
+      (exp) => exp.id === experienceId
+    );
 
-    setTimeout(() => {
-      const sampleAchievements = [
-        "Led cross-functional team of 8 developers to deliver project 2 weeks ahead of schedule",
-        "Improved application performance by 35% through code optimization and database tuning",
-        "Implemented automated testing framework resulting in 50% reduction in bugs",
-      ];
+    if (experience && experience.description) {
+      try {
+        const prompt =
+          lang === "id"
+            ? `Berdasarkan deskripsi pekerjaan berikut: "${experience.description}", buatkan 3 poin pencapaian utama yang menggunakan kata kerja kuat dan diukur dengan angka jika memungkinkan. Format sebagai list.`
+            : `Based on the following job description: "${experience.description}", generate 3 key achievement bullet points that use strong action verbs and are quantified with metrics where possible. Format as a list.`;
 
-      const experience = data.workExperiences.find(
-        (exp) => exp.id === experienceId
-      );
-      if (experience) {
+        const result = await model.generateContent(prompt);
+        const generatedText = result.response.text();
+        const generatedAchievements = generatedText
+          .split("\n")
+          .filter((line) => line.trim().length > 0)
+          .map((line) => line.replace(/^- /, "").replace(/^\d+\.\s/, ""));
+
+        onUpdateExperience(experienceId, {
+          achievements: [...experience.achievements, ...generatedAchievements],
+        });
+      } catch (error) {
+        console.error("Error generating achievements:", error);
+        // Fallback ke logika dummy jika API gagal
+        const sampleAchievements =
+          lang === "id"
+            ? [
+                "Memimpin tim multi-fungsi untuk menyelesaikan proyek tepat waktu",
+                "Meningkatkan performa aplikasi sebesar 20% melalui optimisasi kode",
+                "Mengimplementasikan framework pengujian otomatis",
+              ]
+            : [
+                "Led cross-functional team to deliver project on time",
+                "Improved application performance by 20% through code optimization",
+                "Implemented automated testing framework",
+              ];
         onUpdateExperience(experienceId, {
           achievements: [...experience.achievements, ...sampleAchievements],
         });
+      } finally {
+        setGeneratingAI(null);
       }
+    } else {
+      addAchievement(experienceId);
       setGeneratingAI(null);
-    }, 2000);
+    }
   };
 
   const addAchievement = (experienceId: string) => {

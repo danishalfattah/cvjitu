@@ -1,5 +1,4 @@
-// src/context/AuthContext.tsx
-"use client";
+// File: src/context/AuthContext.tsx
 
 import {
   createContext,
@@ -17,10 +16,22 @@ import {
   GoogleAuthProvider,
   signOut,
   updateProfile,
-  sendEmailVerification, // Impor fungsi verifikasi email
+  sendEmailVerification,
 } from "firebase/auth";
-import { doc, getDoc, setDoc } from "firebase/firestore";
-import { auth, db } from "@/src/lib/firebase"; // Import dari konfigurasi Firebase
+import {
+  doc,
+  getDoc,
+  setDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+  deleteDoc,
+  updateDoc,
+} from "firebase/firestore";
+import { auth, db } from "@/src/lib/firebase";
+import { CVBuilderData } from "../components/cvbuilder/types";
+import { CVData } from "../components/dashboard/CVCard";
 
 export interface User {
   id: string;
@@ -44,13 +55,18 @@ interface RegisterData {
 
 interface AuthContextType {
   user: User | null;
-  firebaseUser: FirebaseUser | null; // Tambahkan untuk akses user firebase asli
+  firebaseUser: FirebaseUser | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
+  saveCV: (cvData: CVBuilderData, cvId?: string) => Promise<string>;
+  fetchCVs: () => Promise<CVData[]>;
+  fetchCVById: (cvId: string) => Promise<CVData | null>;
+  deleteCV: (cvId: string) => Promise<void>;
+  updateCV: (cvId: string, updates: Partial<CVData>) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -103,7 +119,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
       setFirebaseUser(fbUser);
       if (fbUser) {
-        // Hanya set user jika email sudah terverifikasi (kecuali untuk provider non-password)
         if (
           fbUser.emailVerified ||
           fbUser.providerData[0]?.providerId !== "password"
@@ -111,7 +126,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           const userProfile = await getUserProfile(fbUser);
           setUser(userProfile);
         } else {
-          setUser(null); // Anggap belum login jika email belum diverifikasi
+          setUser(null);
         }
       } else {
         setUser(null);
@@ -152,7 +167,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const fbUser = userCredential.user;
 
       await updateProfile(fbUser, { displayName: data.fullName });
-      await sendEmailVerification(fbUser); // Kirim email verifikasi
+      await sendEmailVerification(fbUser);
 
       const newUserProfile: User = {
         id: fbUser.uid,
@@ -167,7 +182,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
         scoringCreditsTotal: 10,
       };
       await setDoc(doc(db, "users", fbUser.uid), newUserProfile);
-      // Jangan set user di sini, biarkan onAuthStateChanged yang menangani setelah verifikasi
     } finally {
       setIsLoading(false);
     }
@@ -188,6 +202,69 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setUser(null);
   };
 
+  // --- CRUD Functions for CVs ---
+  const saveCV = async (
+    cvData: CVBuilderData,
+    cvId?: string
+  ): Promise<string> => {
+    if (!firebaseUser) throw new Error("User not authenticated.");
+
+    const newCv: CVData = {
+      id: cvId || doc(collection(db, "cvs")).id,
+      name: cvData.jobTitle || `CV dari ${cvData.firstName} ${cvData.lastName}`,
+      year: new Date().getFullYear(),
+      created: new Date().toLocaleString(),
+      updated: new Date().toLocaleString(),
+      status: "Completed",
+      score: 0,
+      lang: "id",
+      visibility: "private",
+      owner: firebaseUser.uid,
+      cvBuilderData: cvData, // Properti ini sekarang valid
+    };
+
+    const docRef = doc(db, "cvs", newCv.id);
+    await setDoc(docRef, newCv, { merge: true });
+    return newCv.id;
+  };
+
+  const fetchCVs = async (): Promise<CVData[]> => {
+    if (!firebaseUser) return [];
+
+    const q = query(
+      collection(db, "cvs"),
+      where("owner", "==", firebaseUser.uid)
+    );
+    const querySnapshot = await getDocs(q);
+    const cvs: CVData[] = [];
+    querySnapshot.forEach((doc) => {
+      cvs.push({ id: doc.id, ...doc.data() } as CVData);
+    });
+    return cvs;
+  };
+
+  const fetchCVById = async (cvId: string): Promise<CVData | null> => {
+    const docRef = doc(db, "cvs", cvId);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      return { id: docSnap.id, ...docSnap.data() } as CVData;
+    }
+    return null;
+  };
+
+  const deleteCV = async (cvId: string): Promise<void> => {
+    if (!firebaseUser) throw new Error("User not authenticated.");
+    await deleteDoc(doc(db, "cvs", cvId));
+  };
+
+  const updateCV = async (
+    cvId: string,
+    updates: Partial<CVData>
+  ): Promise<void> => {
+    if (!firebaseUser) throw new Error("User not authenticated.");
+    await updateDoc(doc(db, "cvs", cvId), updates);
+  };
+
   const value: AuthContextType = {
     user,
     firebaseUser,
@@ -197,6 +274,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     loginWithGoogle,
     logout,
     isAuthenticated: !!user,
+    saveCV,
+    fetchCVs,
+    fetchCVById,
+    deleteCV,
+    updateCV,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -1,3 +1,5 @@
+// File: src/components/dashboard/Dashboard.tsx
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -43,225 +45,7 @@ import {
   X,
 } from "lucide-react";
 import Image from "next/image";
-
-export const dummyCVs: CVData[] = [
-  {
-    id: "1",
-    name: "CV Frontend Developer",
-    year: 2025,
-    created: "15 Agu 2024, 14:30",
-    updated: "17 Agu 2024, 09:15",
-    status: "Completed",
-    score: 81,
-    lang: "id",
-    visibility: "public",
-    owner: "1",
-  },
-  {
-    id: "2",
-    name: "Resume Backend Engineer",
-    year: 2024,
-    created: "10 Agu 2024, 16:45",
-    updated: "10 Agu 2024, 16:45",
-    status: "Completed",
-    score: 72,
-    lang: "en",
-    visibility: "private",
-    owner: "1",
-  },
-  {
-    id: "3",
-    name: "Portfolio Data Scientist",
-    year: 2023,
-    created: "12 Agu 2024, 11:20",
-    updated: "14 Agu 2024, 13:50",
-    status: "Completed",
-    score: 90,
-    lang: "en",
-    visibility: "public",
-    owner: "1",
-  },
-  {
-    id: "4",
-    name: "CV UI/UX Designer",
-    year: 2025,
-    created: "08 Agu 2024, 10:15",
-    updated: "12 Agu 2024, 15:30",
-    status: "Draft",
-    score: 65,
-    lang: "id",
-    visibility: "private",
-    owner: "1",
-  },
-  {
-    id: "5",
-    name: "Resume Product Manager",
-    year: 2022,
-    created: "20 Jul 2024, 09:00",
-    updated: "20 Jul 2024, 09:00",
-    status: "Draft",
-    score: 58,
-    lang: "id",
-    visibility: "private",
-    owner: "1",
-  },
-  {
-    id: "6",
-    name: "CV Fresh Graduate",
-    year: 2025,
-    created: "16 Agu 2024, 08:45",
-    updated: "16 Agu 2024, 18:20",
-    status: "Completed",
-    score: 84,
-    lang: "en",
-    visibility: "public",
-    owner: "1",
-  },
-  {
-    id: "7",
-    name: "CV React Developer",
-    year: 2024,
-    created: "28 Jul 2024, 15:20",
-    updated: "03 Agu 2024, 11:30",
-    status: "Completed",
-    score: 85,
-    lang: "en",
-    visibility: "public",
-    owner: "1",
-  },
-  {
-    id: "8",
-    name: "Portfolio Machine Learning Engineer",
-    year: 2025,
-    created: "20 Jul 2024, 10:15",
-    updated: "20 Jul 2024, 10:15",
-    status: "Draft",
-    score: 78,
-    lang: "id",
-    visibility: "private",
-    owner: "1",
-  },
-  {
-    id: "9",
-    name: "Resume DevOps Engineer",
-    year: 2024,
-    created: "18 Jul 2024, 14:45",
-    updated: "22 Jul 2024, 16:20",
-    status: "Completed",
-    score: 92,
-    lang: "en",
-    visibility: "public",
-    owner: "1",
-  },
-  {
-    id: "10",
-    name: "CV Senior Frontend",
-    year: 2023,
-    created: "15 Jul 2024, 09:30",
-    updated: "15 Jul 2024, 09:30",
-    status: "Draft",
-    score: 88,
-    lang: "id",
-    visibility: "private",
-    owner: "1",
-  },
-  {
-    id: "11",
-    name: "Portfolio UX Researcher",
-    year: 2025,
-    created: "12 Jul 2024, 13:15",
-    updated: "18 Jul 2024, 10:45",
-    status: "Completed",
-    score: 76,
-    lang: "en",
-    visibility: "public",
-    owner: "1",
-  },
-  {
-    id: "12",
-    name: "Resume Full Stack Developer",
-    year: 2024,
-    created: "10 Jul 2024, 16:30",
-    updated: "10 Jul 2024, 16:30",
-    status: "Draft",
-    score: 82,
-    lang: "id",
-    visibility: "private",
-    owner: "1",
-  },
-  {
-    id: "13",
-    name: "CV Data Analyst",
-    year: 2025,
-    created: "08 Jul 2024, 11:20",
-    updated: "14 Jul 2024, 15:30",
-    status: "Completed",
-    score: 74,
-    lang: "id",
-    visibility: "public",
-    owner: "1",
-  },
-  {
-    id: "14",
-    name: "Portfolio Mobile Developer",
-    year: 2024,
-    created: "05 Jul 2024, 14:45",
-    updated: "05 Jul 2024, 14:45",
-    status: "Draft",
-    score: 79,
-    lang: "en",
-    visibility: "private",
-    owner: "1",
-  },
-  {
-    id: "15",
-    name: "Resume Software Architect",
-    year: 2023,
-    created: "03 Jul 2024, 09:15",
-    updated: "07 Jul 2024, 12:20",
-    status: "Completed",
-    score: 95,
-    lang: "en",
-    visibility: "public",
-    owner: "1",
-  },
-  {
-    id: "16",
-    name: "CV Technical Product Manager",
-    year: 2025,
-    created: "01 Jul 2024, 17:30",
-    updated: "01 Jul 2024, 17:30",
-    status: "Draft",
-    score: 83,
-    lang: "id",
-    visibility: "private",
-    owner: "1",
-  },
-  {
-    id: "17",
-    name: "Portfolio AI Engineer",
-    year: 2024,
-    created: "28 Jun 2024, 10:45",
-    updated: "30 Jun 2024, 14:15",
-    status: "Completed",
-    score: 91,
-    lang: "en",
-    visibility: "public",
-    owner: "1",
-  },
-  {
-    id: "18",
-    name: "Resume QA Engineer",
-    year: 2025,
-    created: "25 Jun 2024, 16:20",
-    updated: "25 Jun 2024, 16:20",
-    status: "Draft",
-    score: 67,
-    lang: "id",
-    visibility: "private",
-    owner: "1",
-  },
-];
+import { useAuth } from "@/src/context/AuthContext";
 
 const mockBuilderData: CVBuilderData = {
   jobTitle: "Software Engineer",
@@ -308,9 +92,11 @@ interface DashboardProps {
 
 export function Dashboard({ onCreateCV }: DashboardProps) {
   const router = useRouter();
+  const { fetchCVs, deleteCV, updateCV, user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
-  const [cvs, setCvs] = useState(dummyCVs);
+  const [cvs, setCvs] = useState<CVData[]>([]);
+  const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
     status: "Semua Status",
     year: "Semua Tahun",
@@ -326,6 +112,21 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
   const [scoringResult, setScoringResult] = useState<CVScoringData | null>(
     null
   );
+
+  useEffect(() => {
+    const loadCVs = async () => {
+      setLoading(true);
+      try {
+        const fetchedCVs = await fetchCVs();
+        setCvs(fetchedCVs);
+      } catch (error) {
+        toast.error("Gagal memuat data CV.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadCVs();
+  }, [fetchCVs]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -389,25 +190,35 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
     });
   };
 
-  const handleVisibilityChange = (
+  const handleVisibilityChange = async (
     cvId: string,
     visibility: "public" | "private"
   ) => {
-    setCvs((prevCvs) =>
-      prevCvs.map((cv) => (cv.id === cvId ? { ...cv, visibility } : cv))
-    );
-    toast.success("Visibilitas CV berhasil diubah!", {
-      description: `CV kini diatur sebagai ${
-        visibility === "public" ? "Publik" : "Privat"
-      }.`,
-    });
+    try {
+      await updateCV(cvId, { visibility });
+      setCvs((prevCvs) =>
+        prevCvs.map((cv) => (cv.id === cvId ? { ...cv, visibility } : cv))
+      );
+      toast.success("Visibilitas CV berhasil diubah!", {
+        description: `CV kini diatur sebagai ${
+          visibility === "public" ? "Publik" : "Privat"
+        }.`,
+      });
+    } catch (error) {
+      toast.error("Gagal mengubah visibilitas CV.");
+    }
   };
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = async () => {
     if (deleteModal.cv) {
-      setCvs((prev) => prev.filter((cv) => cv.id !== deleteModal.cv!.id));
-      toast.success(`CV "${deleteModal.cv.name}" telah dihapus.`);
-      setDeleteModal({ isOpen: false, cv: null });
+      try {
+        await deleteCV(deleteModal.cv.id);
+        setCvs((prev) => prev.filter((cv) => cv.id !== deleteModal.cv!.id));
+        toast.success(`CV "${deleteModal.cv.name}" telah dihapus.`);
+        setDeleteModal({ isOpen: false, cv: null });
+      } catch (error) {
+        toast.error("Gagal menghapus CV.");
+      }
     }
   };
 
@@ -456,7 +267,7 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
   const stats = {
     total: cvs.length,
     avgScore: Math.round(
-      cvs.reduce((sum, cv) => sum + cv.score, 0) / (cvs.length || 1)
+      cvs.reduce((sum, cv) => sum + (cv.score || 0), 0) / (cvs.length || 1)
     ),
     completed: cvs.filter((cv) => cv.status === "Completed").length,
     drafted: cvs.filter((cv) => cv.status === "Draft").length,
@@ -578,7 +389,9 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
         </div>
       </div>
 
-      {paginatedCVs.length === 0 ? (
+      {loading ? (
+        <p>Memuat CVs...</p>
+      ) : paginatedCVs.length === 0 ? (
         <EmptyState
           title="CV Tidak Ditemukan"
           description="Tidak ada CV yang sesuai dengan filter Anda. Coba sesuaikan kriteria pencarian atau buat CV baru untuk memulai."

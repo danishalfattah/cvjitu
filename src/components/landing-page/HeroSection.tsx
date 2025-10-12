@@ -1,4 +1,4 @@
-// components/landing-page/HeroSection.tsx
+// File: src/components/landing-page/HeroSection.tsx
 
 import { useState } from "react";
 import { Button } from "../ui/button";
@@ -19,6 +19,8 @@ interface HeroSectionProps {
   onDownloadOptimized?: () => void;
   hasTriedScoring?: boolean;
   isAuthenticated?: boolean;
+  onAuthAction?: () => void;
+  isHighlighted?: boolean; // Tambahkan properti ini
 }
 
 export function HeroSection({
@@ -31,6 +33,8 @@ export function HeroSection({
   onDownloadOptimized,
   hasTriedScoring = false,
   isAuthenticated = false,
+  isHighlighted = false,
+  onAuthAction,
 }: HeroSectionProps) {
   const [isHighlighting, setIsHighlighting] = useState(false);
 
@@ -91,7 +95,7 @@ export function HeroSection({
                 hasTriedScoring={hasTriedScoring}
                 isAuthenticated={isAuthenticated}
                 isHighlighted={isHighlighting}
-                onAuthAction={onStartNow}
+                onAuthAction={onAuthAction}
               />
             </div>
           </div>

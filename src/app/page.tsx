@@ -1,4 +1,4 @@
-// app/page.tsx
+// File: src/app/page.tsx
 
 "use client";
 
@@ -27,6 +27,7 @@ export default function Page() {
   const [hasTriedScoring, setHasTriedScoring] = useState(false);
 
   const handleCVUpload = async (file: File) => {
+    // Logic: Jika sudah pernah mencoba dan tidak login, jangan izinkan lagi
     if (hasTriedScoring && !isAuthenticated) {
       toast.error(
         "Silakan login terlebih dahulu untuk melakukan analisis CV lagi"
@@ -47,7 +48,13 @@ export default function Page() {
   };
 
   const handleResetScoring = () => setScoringData(null);
-  const handleSaveToRepository = () => router.push("/dashboard");
+  const handleSaveToRepository = () => {
+    if (isAuthenticated) {
+      router.push("/dashboard");
+    } else {
+      router.push("/login"); // Arahkan ke halaman login
+    }
+  };
   const handleDownloadOptimized = () => {
     console.log("Downloading optimized CV...");
   };
@@ -88,6 +95,7 @@ export default function Page() {
           onDownloadOptimized={handleDownloadOptimized}
           hasTriedScoring={hasTriedScoring}
           isAuthenticated={isAuthenticated}
+          onAuthAction={handleStartNow}
         />
         <FeaturesSection />
         <HowItWorksSection />

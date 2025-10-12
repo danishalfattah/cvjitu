@@ -1,6 +1,8 @@
+// File: src/components/dashboard/CVScoringPage.tsx
+
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
@@ -17,80 +19,15 @@ import {
 } from "@/src/utils/cvScoringService";
 import { CVBuilderData } from "../cvbuilder/types";
 import { Search, Grid, List } from "lucide-react";
-
-const dummyScoredCVs: CVData[] = [
-  {
-    id: "sc-1",
-    name: "CV_Budi_Santoso_2024.pdf",
-    year: 2024,
-    created: "15 Agu 2024, 10:00",
-    updated: "15 Agu 2024, 10:05",
-    status: "Uploaded",
-    score: 88,
-    lang: "unknown",
-    visibility: "private",
-    owner: "Demo User",
-  },
-  {
-    id: "sc-2",
-    name: "Resume_Siti_Aminah.docx",
-    year: 2024,
-    created: "14 Agu 2024, 11:30",
-    updated: "14 Agu 2024, 11:32",
-    status: "Uploaded",
-    score: 75,
-    lang: "unknown",
-    visibility: "private",
-    owner: "Demo User",
-  },
-];
-
-const mockBuilderData: CVBuilderData = {
-  jobTitle: "Software Engineer",
-  description: "CV for the position of Software Engineer",
-  firstName: "John",
-  lastName: "Doe",
-  email: "john.doe@example.com",
-  phone: "+1234567890",
-  location: "San Francisco, CA",
-  linkedin: "linkedin.com/in/johndoe",
-  website: "johndoe.com",
-  workExperiences: [
-    {
-      id: "1",
-      jobTitle: "Software Engineer",
-      company: "Tech Company",
-      location: "San Francisco, CA",
-      startDate: "2022-01",
-      endDate: "2024-01",
-      current: false,
-      description: `Worked as a Software Engineer on various projects.`,
-      achievements: [
-        "Developed and maintained web applications.",
-        "Collaborated with cross-functional teams.",
-      ],
-    },
-  ],
-  educations: [
-    {
-      id: "1",
-      degree: "Bachelor of Science in Computer Science",
-      institution: "University of Example",
-      location: "Example City",
-      startDate: "2018-09",
-      endDate: "2022-05",
-      current: false,
-    },
-  ],
-  skills: ["React", "Node.js", "TypeScript", "Next.js"],
-  summary: `A passionate Software Engineer with experience in building web applications.`,
-};
+import { useAuth } from "@/src/context/AuthContext";
 
 export function CVScoringPage() {
   const router = useRouter();
+  const { fetchCVs, saveCV } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
-  const [cvs, setCvs] = useState(dummyScoredCVs);
+  const [cvs, setCvs] = useState<CVData[]>([]);
+  const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
     status: "Semua Status",
     year: "Semua Tahun",
@@ -102,14 +39,29 @@ export function CVScoringPage() {
     null
   );
 
+  useEffect(() => {
+    const loadCVs = async () => {
+      setLoading(true);
+      try {
+        const fetchedCVs = await fetchCVs();
+        setCvs(fetchedCVs);
+      } catch (error) {
+        toast.error("Gagal memuat data CV.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadCVs();
+  }, [fetchCVs]);
+
   const handleFileUpload = async (file: File) => {
     setIsProcessing(true);
     setScoringResult(null);
     try {
       const results = await analyzeCVFile(file);
       setScoringResult(results);
-      const newCV: CVData = {
-        id: `sc-${Date.now()}`,
+
+      const newCV: Omit<CVData, "id"> = {
         name: file.name,
         year: new Date().getFullYear(),
         created: new Date().toLocaleString(),
@@ -118,13 +70,60 @@ export function CVScoringPage() {
         score: results.overallScore,
         lang: "unknown",
         visibility: "private",
+        cvBuilderData: mockBuilderData, // Sesuaikan dengan tipe yang benar
       };
-      setCvs((prev) => [newCV, ...prev]);
+
+      // Simpan CV ke database
+      const cvId = await saveCV(newCV.cvBuilderData);
+      setCvs((prev) => [{ ...newCV, id: cvId }, ...prev]);
+
+      toast.success("CV berhasil di-upload dan dianalisis!");
     } catch (error) {
       toast.error("Gagal menganalisis CV. Silakan coba lagi.");
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  const mockBuilderData: CVBuilderData = {
+    jobTitle: "Software Engineer",
+    description: "CV for the position of Software Engineer",
+    firstName: "John",
+    lastName: "Doe",
+    email: "john.doe@example.com",
+    phone: "+1234567890",
+    location: "San Francisco, CA",
+    linkedin: "linkedin.com/in/johndoe",
+    website: "johndoe.com",
+    workExperiences: [
+      {
+        id: "1",
+        jobTitle: "Software Engineer",
+        company: "Tech Company",
+        location: "San Francisco, CA",
+        startDate: "2022-01",
+        endDate: "2024-01",
+        current: false,
+        description: `Worked as a Software Engineer on various projects.`,
+        achievements: [
+          "Developed and maintained web applications.",
+          "Collaborated with cross-functional teams.",
+        ],
+      },
+    ],
+    educations: [
+      {
+        id: "1",
+        degree: "Bachelor of Science in Computer Science",
+        institution: "University of Example",
+        location: "Example City",
+        startDate: "2018-09",
+        endDate: "2022-05",
+        current: false,
+      },
+    ],
+    skills: ["React", "Node.js", "TypeScript", "Next.js"],
+    summary: `A passionate Software Engineer with experience in building web applications.`,
   };
 
   const handleViewResult = (cv: CVData) => {
@@ -183,11 +182,30 @@ export function CVScoringPage() {
         data={scoringResult}
         cvBuilderData={mockBuilderData}
         onBack={handleBackToList}
-        onSaveToRepository={() => {
-          toast.success(
-            "Hasil analisis CV berhasil disimpan ke repositori Anda."
-          );
-          handleBackToList();
+        onSaveToRepository={async () => {
+          // You need to decide which CV to save. For this example, let's assume
+          // the last scored CV is the one to save.
+          const lastScoredCV = {
+            cvBuilderData: mockBuilderData, // Assuming this is the data from the analyzed CV
+            name: scoringResult.fileName,
+            score: scoringResult.overallScore,
+            status: "Completed",
+            year: new Date().getFullYear(),
+            created: new Date().toLocaleString(),
+            updated: new Date().toLocaleString(),
+            lang: "id",
+            visibility: "private",
+          } as any;
+
+          try {
+            await saveCV(lastScoredCV.cvBuilderData);
+            toast.success(
+              "Hasil analisis CV berhasil disimpan ke repositori Anda."
+            );
+            handleBackToList();
+          } catch (error) {
+            toast.error("Gagal menyimpan hasil analisis. Silakan coba lagi.");
+          }
         }}
       />
     );
@@ -273,7 +291,9 @@ export function CVScoringPage() {
         </div>
       </div>
 
-      {filteredCVs.length === 0 ? (
+      {loading ? (
+        <p>Memuat CVs...</p>
+      ) : filteredCVs.length === 0 ? (
         <EmptyState
           title="Repositori Kosong"
           description="Anda belum memiliki CV di repositori. Upload CV pertama Anda untuk memulai analisis."
