@@ -1,3 +1,5 @@
+// src/components/dashboard/CVCard.tsx (UPDATED)
+
 import { Card, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
@@ -25,19 +27,33 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
 } from "../ui/dropdown-menu";
+import { Education, WorkExperience } from "../cvbuilder/types"; // Import tipe detail
 
+// --- PERUBAHAN UTAMA DI SINI ---
 export interface CVData {
   id: string;
   name: string;
   year: number;
-  created: string;
-  updated: string;
+  createdAt: string;
+  updatedAt: string;
   status: "Draft" | "Completed" | "Uploaded";
   score: number;
   lang: "id" | "en" | "unknown";
   visibility: "public" | "private";
   owner?: string;
+
+  // Tambahkan properti opsional dari CVBuilderData
+  workExperiences?: WorkExperience[];
+  educations?: Education[];
+  skills?: string[];
+  summary?: string;
+  // Anda juga bisa menambahkan properti lain jika diperlukan
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  description?: string;
 }
+// --- AKHIR PERUBAHAN ---
 
 interface CVCardProps {
   cv: CVData;
@@ -66,6 +82,17 @@ export function CVCard({
     if (status === "Completed") return "bg-[var(--success)] text-white";
     if (status === "Uploaded") return "bg-blue-500 text-white";
     return "bg-[var(--warn)] text-white";
+  };
+
+  const formatDate = (dateString: string) => {
+    if (!dateString) return "-";
+    return new Date(dateString).toLocaleString("id-ID", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   };
 
   return (
@@ -183,9 +210,11 @@ export function CVCard({
         <div className="space-y-1 sm:space-y-2 text-xs sm:text-sm text-gray-500 mb-4 sm:mb-6">
           <p>
             {actionType === "scoring" ? "Tanggal Upload" : "Dibuat"}:{" "}
-            {cv.created}
+            {formatDate(cv.createdAt)}
           </p>
-          {actionType === "builder" && <p>Diperbarui: {cv.updated}</p>}
+          {actionType === "builder" && (
+            <p>Diperbarui: {formatDate(cv.updatedAt)}</p>
+          )}
         </div>
         <Button
           onClick={() => onPreview(cv)}

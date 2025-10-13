@@ -1,3 +1,5 @@
+// src/components/dashboard/CVTable.tsx (UPDATED)
+
 import {
   Table,
   TableBody,
@@ -63,6 +65,17 @@ export function CVTable({
     return "bg-[var(--warn)] text-white";
   };
 
+  // --- TAMBAHAN: Fungsi untuk format tanggal ---
+  const formatDate = (dateString: string) => {
+    if (!dateString) return "-";
+    return new Date(dateString).toLocaleString("id-ID", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  };
+  // --- AKHIR TAMBAHAN ---
+
   return (
     <div className="bg-white rounded-lg border border-[var(--border-color)] overflow-hidden">
       <div className="w-full overflow-x-auto horizontal-scroll-hidden">
@@ -112,10 +125,16 @@ export function CVTable({
                     </TableCell>
                   </>
                 )}
-                <TableCell className="text-gray-600">{cv.created}</TableCell>
+                {/* --- PERUBAHAN DI SINI --- */}
+                <TableCell className="text-gray-600">
+                  {formatDate(cv.createdAt)}
+                </TableCell>
                 {actionType === "builder" && (
-                  <TableCell className="text-gray-600">{cv.updated}</TableCell>
+                  <TableCell className="text-gray-600">
+                    {formatDate(cv.updatedAt)}
+                  </TableCell>
                 )}
+                {/* --- AKHIR PERUBAHAN --- */}
                 <TableCell>
                   <Badge className={getStatusColor(cv.status)}>
                     {cv.status === "Completed"
@@ -129,6 +148,7 @@ export function CVTable({
                   <RadialScore score={cv.score} size="sm" showLabel={false} />
                 </TableCell>
                 <TableCell className="text-right">
+                  {/* ... (Dropdown menu tetap sama) ... */}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="sm">

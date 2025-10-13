@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react"; // Tambahkan useEffect
 import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
 import { Progress } from "../ui/progress";
-import { ArrowLeft, ArrowRight, Download, Save } from "lucide-react";
+import { ArrowLeft, ArrowRight, Download, Save, RefreshCw } from "lucide-react"; // Tambahkan RefreshCw
 import { GeneralInfoStep } from "../cvbuilder/steps/GeneralInfoStep";
 import { PersonalInfoStep } from "../cvbuilder/steps/PersonalInfoStep";
 import { WorkExperienceStep } from "../cvbuilder/steps/WorkExperienceStep";
@@ -21,6 +21,8 @@ import type {
 import { t, type Language } from "@/src/lib/translations";
 
 interface CVBuilderPageProps {
+  initialData?: CVBuilderData | null; // Buat opsional
+  cvId?: string | null; // Tambahkan prop cvId
   onBack: () => void;
   onSave: (data: CVBuilderData) => void;
   onSaveDraft: (data: CVBuilderData) => void;
@@ -38,12 +40,15 @@ const steps = [
 ];
 
 export function CVBuilderPage({
+  initialData,
+  cvId, // Terima prop cvId
   onBack,
   onSave,
   onSaveDraft,
   lang,
 }: CVBuilderPageProps) {
   const [currentStep, setCurrentStep] = useState(0);
+  // Inisialisasi state dengan struktur data kosong
   const [cvData, setCvData] = useState<CVBuilderData>({
     jobTitle: "",
     description: "",
@@ -59,6 +64,16 @@ export function CVBuilderPage({
     skills: [],
     summary: "",
   });
+
+  // --- PERUBAHAN UTAMA: Gunakan useEffect untuk mengisi form saat data tiba ---
+  useEffect(() => {
+    if (initialData) {
+      setCvData(initialData);
+    }
+  }, [initialData]);
+  // --- AKHIR PERUBAHAN ---
+
+  const isEditMode = !!cvId; // Tentukan mode edit berdasarkan keberadaan cvId
 
   const updateCvData = (updates: Partial<CVBuilderData>) => {
     setCvData((prev) => ({ ...prev, ...updates }));
@@ -212,6 +227,7 @@ export function CVBuilderPage({
 
   return (
     <div className="min-h-screen bg-[var(--surface)]">
+      {/* ... (Header dan Progress Bar tetap sama) ... */}
       <div className="bg-white border-b border-[var(--border-color)] px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-4">
@@ -234,7 +250,6 @@ export function CVBuilderPage({
           </div>
         </div>
       </div>
-
       <div className="bg-white border-b border-[var(--border-color)] px-6 py-4">
         <div className="max-w-7xl mx-auto">
           <div className="overflow-x-auto horizontal-scroll-hidden">
@@ -295,7 +310,6 @@ export function CVBuilderPage({
                     {t(`${steps[currentStep].id}Desc`, lang)}
                   </p>
                 </div>
-
                 {renderCurrentStep()}
               </CardContent>
             </Card>
@@ -305,14 +319,20 @@ export function CVBuilderPage({
                 <div className="text-sm text-gray-500">
                   {t("stepOf", lang)} {currentStep + 1} of {steps.length}
                 </div>
+                {/* --- PERUBAHAN DI SINI (TOMBOL SAVE DRAFT/UPDATE) --- */}
                 <Button
                   variant="outline"
                   onClick={handleSaveDraft}
                   className="border-gray-300 text-gray-600 hover:bg-gray-50"
                 >
-                  <Save className="w-4 h-4 mr-2" />
-                  {t("saveDraftButton", lang)}
+                  {isEditMode ? (
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                  ) : (
+                    <Save className="w-4 h-4 mr-2" />
+                  )}
+                  {isEditMode ? "Perbarui Draf" : t("saveDraftButton", lang)}
                 </Button>
+                {/* --- AKHIR PERUBAHAN --- */}
               </div>
               <div className="flex items-center space-x-3">
                 <Button
@@ -334,12 +354,14 @@ export function CVBuilderPage({
                       <Download className="w-4 h-4 mr-2" />
                       {t("exportPdfButton", lang)}
                     </Button>
+                    {/* --- PERUBAHAN DI SINI (TOMBOL SAVE/UPDATE) --- */}
                     <Button
                       onClick={handleSave}
                       className="bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white"
                     >
-                      {t("saveCvButton", lang)}
+                      {isEditMode ? "Perbarui CV" : t("saveCvButton", lang)}
                     </Button>
+                    {/* --- AKHIR PERUBAHAN --- */}
                   </div>
                 ) : (
                   <Button
@@ -353,7 +375,6 @@ export function CVBuilderPage({
               </div>
             </div>
           </div>
-
           <div className="lg:sticky lg:top-6 h-fit">
             <CVPreview data={cvData} lang={lang} />
           </div>
