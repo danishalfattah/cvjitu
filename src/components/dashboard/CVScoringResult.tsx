@@ -12,17 +12,17 @@ import {
   FileText,
   Edit,
   ArrowLeft,
-  Save, // Import ikon Save
+  Save,
 } from "lucide-react";
 import { CVScoringData } from "../../utils/cvScoringService";
-import { cn } from "@/src/lib/utils"; // Import cn utility
+import { cn } from "@/src/lib/utils";
 
 interface CVScoringResultProps {
   data: CVScoringData;
   cvBuilderData: CVBuilderData | null;
   onBack: () => void;
-  onSaveToRepository: () => void;
-  showPreview?: boolean; // Tambah prop showPreview
+  onSaveToRepository?: (() => void) | null; // <-- Dibuat opsional
+  showPreview?: boolean;
 }
 
 export function CVScoringResult({
@@ -30,7 +30,7 @@ export function CVScoringResult({
   cvBuilderData,
   onBack,
   onSaveToRepository,
-  showPreview = true, // Defaultnya true
+  showPreview = true,
 }: CVScoringResultProps) {
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -100,18 +100,18 @@ export function CVScoringResult({
               </p>
             </div>
           </div>
-          {/* --- PERUBAHAN UTAMA: TOMBOL SIMPAN --- */}
-          <Button
-            onClick={onSaveToRepository}
-            className="bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white"
-          >
-            <Save className="w-4 h-4 mr-2" />
-            Simpan ke Repositori
-          </Button>
-          {/* --- AKHIR PERUBAHAN --- */}
+          {/* Tombol hanya muncul jika fungsinya ada */}
+          {onSaveToRepository && (
+            <Button
+              onClick={onSaveToRepository}
+              className="bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white"
+            >
+              <Save className="w-4 h-4 mr-2" />
+              Simpan ke Repositori
+            </Button>
+          )}
         </div>
 
-        {/* --- PERUBAHAN UTAMA: LAYOUT KONDISIONAL --- */}
         <div className={cn("grid gap-8", showPreview && "lg:grid-cols-2")}>
           {showPreview && (
             <div className="lg:sticky lg:top-8 h-fit">
@@ -127,7 +127,6 @@ export function CVScoringResult({
               )}
             </div>
           )}
-          {/* --- AKHIR PERUBAHAN --- */}
 
           <div className="space-y-6">
             <Card className="border border-[var(--border-color)]">

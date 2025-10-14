@@ -1,5 +1,3 @@
-// src/components/dashboard/CVTable.tsx (UPDATED)
-
 import {
   Table,
   TableBody,
@@ -12,15 +10,15 @@ import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { RadialScore } from "../RadialScore";
 import {
+  Eye,
+  BarChart3,
   Download,
   Edit,
   Trash2,
-  Eye,
   Share2,
   MoreHorizontal,
   Globe,
   Lock,
-  BarChart3,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -38,14 +36,12 @@ import { CVData } from "./CVCard";
 
 interface CVTableProps {
   cvs: CVData[];
-  onPreview: (cv: CVData) => void;
-  onDownload: (cv: CVData) => void;
-  onUpdate: (cv: CVData) => void;
-  onDelete: (cv: CVData) => void;
-  onShare: (cv: CVData) => void;
+  onPreview: (action: "preview", cv: CVData) => void;
+  onDownload: (action: "download", cv: CVData) => void;
+  onUpdate: (action: "update", cv: CVData) => void;
+  onDelete: (action: "delete", cv: CVData) => void;
+  onShare: (action: "share", cv: CVData) => void;
   onVisibilityChange: (cvId: string, visibility: "public" | "private") => void;
-  actionType?: "builder" | "scoring";
-  onScore?: (cv: CVData) => void;
 }
 
 export function CVTable({
@@ -56,12 +52,9 @@ export function CVTable({
   onDelete,
   onShare,
   onVisibilityChange,
-  actionType = "builder",
-  onScore,
 }: CVTableProps) {
   const getStatusColor = (status: CVData["status"]) => {
     if (status === "Completed") return "bg-[var(--success)] text-white";
-    if (status === "Uploaded") return "bg-blue-500 text-white";
     return "bg-[var(--warn)] text-white";
   };
 
@@ -80,148 +73,144 @@ export function CVTable({
         <table className="w-full caption-bottom text-sm min-w-[700px]">
           <TableHeader>
             <TableRow className="bg-[var(--surface)]">
-              <TableHead>
-                {actionType === "builder" ? "Posisi yang Dilamar" : "Nama File"}
-              </TableHead>
+              <TableHead>Posisi yang Dilamar</TableHead>
               <TableHead>Tahun</TableHead>
-              {actionType === "builder" && <TableHead>Bahasa</TableHead>}
-              {actionType === "builder" && <TableHead>Privasi</TableHead>}
-              <TableHead>
-                {actionType === "builder" ? "Dibuat" : "Tanggal Upload"}
-              </TableHead>
-              {actionType === "builder" && <TableHead>Diperbarui</TableHead>}
+              <TableHead>Bahasa</TableHead>
+              <TableHead>Privasi</TableHead>
+              <TableHead>Dibuat</TableHead>
+              <TableHead>Diperbarui</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-center">Skor</TableHead>
               <TableHead className="text-right">Aksi</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {cvs.map((cv) => (
-              <TableRow
-                key={cv.id}
-                className="hover:bg-[var(--surface)] align-middle"
-              >
-                <TableCell className="font-medium">{cv.name}</TableCell>
-                <TableCell>{cv.year}</TableCell>
-                {actionType === "builder" && (
-                  <>
-                    <TableCell>
-                      {cv.lang !== "unknown" && (
-                        <Badge variant="outline">
-                          {cv.lang === "id" ? "ID" : "EN"}
-                        </Badge>
+            {cvs.map((cv) => {
+              const isDraft = cv.status === "Draft";
+              return (
+                <TableRow
+                  key={cv.id}
+                  className="hover:bg-[var(--surface)] align-middle"
+                >
+                  <TableCell className="font-medium">{cv.name}</TableCell>
+                  <TableCell>{cv.year}</TableCell>
+                  <TableCell>
+                    {cv.lang !== "unknown" && (
+                      <Badge variant="outline">
+                        {cv.lang === "id" ? "ID" : "EN"}
+                      </Badge>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1.5">
+                      {cv.visibility === "public" ? (
+                        <Globe className="w-4 h-4 text-gray-500" />
+                      ) : (
+                        <Lock className="w-4 h-4 text-gray-500" />
                       )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1.5">
-                        {cv.visibility === "public" ? (
-                          <Globe className="w-4 h-4 text-gray-500" />
-                        ) : (
-                          <Lock className="w-4 h-4 text-gray-500" />
-                        )}
-                        <span className="text-gray-600">
-                          {cv.visibility === "public" ? "Publik" : "Privat"}
-                        </span>
-                      </div>
-                    </TableCell>
-                  </>
-                )}
-                <TableCell className="text-gray-600">
-                  {formatDate(cv.createdAt)}
-                </TableCell>
-                {actionType === "builder" && (
+                      <span className="text-gray-600">
+                        {cv.visibility === "public" ? "Publik" : "Privat"}
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-gray-600">
+                    {formatDate(cv.createdAt)}
+                  </TableCell>
                   <TableCell className="text-gray-600">
                     {formatDate(cv.updatedAt)}
                   </TableCell>
-                )}
-                <TableCell>
-                  <Badge className={getStatusColor(cv.status)}>
-                    {cv.status === "Completed"
-                      ? "Selesai"
-                      : cv.status === "Uploaded"
-                      ? "Di-upload"
-                      : cv.status}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-center">
-                  <RadialScore score={cv.score} size="sm" showLabel={false} />
-                </TableCell>
-                <TableCell className="text-right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm">
-                        <MoreHorizontal className="w-4 h-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      {actionType === "builder" ? (
-                        <>
-                          <DropdownMenuItem onClick={() => onPreview(cv)}>
+                  <TableCell>
+                    <Badge className={getStatusColor(cv.status)}>
+                      {cv.status === "Completed" ? "Selesai" : "Draf"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    {!isDraft && (
+                      <RadialScore
+                        score={cv.score}
+                        size="sm"
+                        showLabel={false}
+                      />
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm">
+                          <MoreHorizontal className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          onClick={() => onPreview("preview", cv)}
+                        >
+                          {isDraft ? (
+                            <Eye className="w-4 h-4 mr-2" />
+                          ) : (
                             <BarChart3 className="w-4 h-4 mr-2" />
-                            Lihat Analisis
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => onUpdate(cv)}>
-                            <Edit className="w-4 h-4 mr-2" />
-                            Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => onDownload(cv)}>
-                            <Download className="w-4 h-4 mr-2" />
-                            Download
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => onShare(cv)}>
-                            <Share2 className="w-4 h-4 mr-2" />
-                            Bagikan Link
-                          </DropdownMenuItem>
-                          <DropdownMenuSub>
-                            <DropdownMenuSubTrigger>
-                              {cv.visibility === "public" ? (
-                                <Globe className="w-4 h-4 mr-2" />
-                              ) : (
-                                <Lock className="w-4 h-4 mr-2" />
-                              )}
-                              Atur Privasi
-                            </DropdownMenuSubTrigger>
-                            <DropdownMenuSubContent>
-                              <DropdownMenuRadioGroup
-                                value={cv.visibility}
-                                onValueChange={(value) =>
-                                  onVisibilityChange(
-                                    cv.id,
-                                    value as "public" | "private"
-                                  )
-                                }
-                              >
-                                <DropdownMenuRadioItem value="public">
-                                  <Globe className="w-4 h-4 mr-2" />
-                                  Publik
-                                </DropdownMenuRadioItem>
-                                <DropdownMenuRadioItem value="private">
-                                  <Lock className="w-4 h-4 mr-2" />
-                                  Privat
-                                </DropdownMenuRadioItem>
-                              </DropdownMenuRadioGroup>
-                            </DropdownMenuSubContent>
-                          </DropdownMenuSub>
-                        </>
-                      ) : (
-                        <DropdownMenuItem onClick={() => onPreview(cv)}>
-                          <Eye className="w-4 h-4 mr-2" />
-                          Lihat Analisis CV
+                          )}
+                          {isDraft ? "Lihat CV" : "Lihat Analisis"}
                         </DropdownMenuItem>
-                      )}
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onClick={() => onDelete(cv)}
-                        className="text-[var(--error)] focus:text-[var(--error)]"
-                      >
-                        <Trash2 className="w-4 h-4 mr-2" />
-                        Hapus
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            ))}
+                        <DropdownMenuItem
+                          onClick={() => onUpdate("update", cv)}
+                        >
+                          <Edit className="w-4 h-4 mr-2" />
+                          Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => onDownload("download", cv)}
+                        >
+                          <Download className="w-4 h-4 mr-2" />
+                          Download
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onShare("share", cv)}>
+                          <Share2 className="w-4 h-4 mr-2" />
+                          Bagikan Link
+                        </DropdownMenuItem>
+                        <DropdownMenuSub>
+                          <DropdownMenuSubTrigger>
+                            {cv.visibility === "public" ? (
+                              <Globe className="w-4 h-4 mr-2" />
+                            ) : (
+                              <Lock className="w-4 h-4 mr-2" />
+                            )}
+                            Atur Privasi
+                          </DropdownMenuSubTrigger>
+                          <DropdownMenuSubContent>
+                            <DropdownMenuRadioGroup
+                              value={cv.visibility}
+                              onValueChange={(value) =>
+                                onVisibilityChange(
+                                  cv.id,
+                                  value as "public" | "private"
+                                )
+                              }
+                            >
+                              <DropdownMenuRadioItem value="public">
+                                <Globe className="w-4 h-4 mr-2" />
+                                Publik
+                              </DropdownMenuRadioItem>
+                              <DropdownMenuRadioItem value="private">
+                                <Lock className="w-4 h-4 mr-2" />
+                                Privat
+                              </DropdownMenuRadioItem>
+                            </DropdownMenuRadioGroup>
+                          </DropdownMenuSubContent>
+                        </DropdownMenuSub>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() => onDelete("delete", cv)}
+                          className="text-[var(--error)] focus:text-[var(--error)]"
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Hapus
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </table>
       </div>

@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useEffect } from "react"; // Tambahkan useEffect
 import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";

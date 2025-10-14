@@ -1,5 +1,3 @@
-// src/components/dashboard/CVScoringPage.tsx (UPDATED)
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -29,7 +27,6 @@ export function CVScoringPage() {
     year: "Semua Tahun",
     scoreRange: [1, 100],
   });
-
   const [isProcessing, setIsProcessing] = useState(false);
   const [scoringResult, setScoringResult] = useState<CVScoringData | null>(
     null
@@ -72,7 +69,6 @@ export function CVScoringPage() {
       });
       const results = await analyzeCVFile(dummyFile);
       setScoringResult(results);
-
       const newCV: Partial<CVData> = {
         name: fileIdentifier.name,
         year: new Date().getFullYear(),
@@ -99,9 +95,7 @@ export function CVScoringPage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(dataToSave),
         });
-
         if (!response.ok) throw new Error("Gagal menyimpan CV ke database.");
-
         const savedCv = await response.json();
         setCvs((prev) => [savedCv, ...prev]);
         toast.success(`CV "${savedCv.name}" berhasil disimpan.`);
@@ -138,18 +132,14 @@ export function CVScoringPage() {
 
   const handleDeleteConfirm = async () => {
     if (!deleteModal.cv) return;
-
     const originalCvs = [...cvs];
     setCvs((prev) => prev.filter((cv) => cv.id !== deleteModal.cv!.id));
     setDeleteModal({ isOpen: false, cv: null });
-
     try {
       const response = await fetch(`/api/cv/${deleteModal.cv.id}`, {
         method: "DELETE",
       });
-      if (!response.ok) {
-        throw new Error("Gagal menghapus CV dari server.");
-      }
+      if (!response.ok) throw new Error("Gagal menghapus CV dari server.");
       toast.success(`CV "${deleteModal.cv.name}" telah dihapus.`);
     } catch (error: any) {
       toast.error(error.message);
@@ -192,39 +182,29 @@ export function CVScoringPage() {
 
   return (
     <div className="p-4 sm:p-6 min-h-screen">
-      {/* --- PERBAIKAN DI SINI --- */}
       <div className="mb-6 sm:mb-8">
-        <div className="flex items-center space-x-2 text-sm text-gray-500 mb-2">
-          <span>Pages</span>
-          <span>/</span>
-          <span className="text-[var(--neutral-ink)]">Scoring CV</span>
-        </div>
         <h1 className="text-2xl sm:text-3xl font-poppins font-bold text-[var(--neutral-ink)]">
-          Scoring CV
+          Scoring CV Anda
         </h1>
         <p className="text-gray-600 mt-1">
           Unggah CV baru untuk dianalisis atau lihat riwayat hasil skor Anda.
         </p>
       </div>
-      {/* --- AKHIR PERBAIKAN --- */}
-
       <div className="mb-8">
         <FileUploadZone
           onFileUpload={handleFileUpload}
           isProcessing={isProcessing}
         />
       </div>
-
       <h2 className="text-xl font-poppins font-semibold text-[var(--neutral-ink)] mb-4">
         Repositori Hasil Scoring
       </h2>
-
       <CVFilters
         filters={filters}
         onFiltersChange={setFilters}
         onReset={() =>
           setFilters({
-            status: "Semua Status",
+            status: "Semua Tahun",
             year: "Semua Tahun",
             scoreRange: [1, 100],
           })
@@ -242,7 +222,6 @@ export function CVScoringPage() {
           />
         </div>
       </div>
-
       <div className="flex items-center justify-between mb-6">
         <span className="text-xs sm:text-sm text-gray-600">
           Menampilkan {filteredCVs.length} dari {cvs.length} hasil
@@ -270,7 +249,6 @@ export function CVScoringPage() {
           </Button>
         </div>
       </div>
-
       {filteredCVs.length === 0 ? (
         <EmptyState
           title="Repositori Kosong"
@@ -283,9 +261,8 @@ export function CVScoringPage() {
               key={cv.id}
               cv={cv}
               actionType="scoring"
-              onPreview={handleViewResult}
-              onDelete={handleDelete}
-              onScore={handleViewResult}
+              onPreview={(_, cvData) => handleViewResult(cvData)}
+              onDelete={(_, cvData) => handleDelete(cvData)}
               onDownload={() => {}}
               onUpdate={() => {}}
               onShare={() => {}}
@@ -296,17 +273,14 @@ export function CVScoringPage() {
       ) : (
         <CVTable
           cvs={filteredCVs}
-          actionType="scoring"
-          onPreview={handleViewResult}
-          onDelete={handleDelete}
-          onScore={handleViewResult}
+          onPreview={(_, cvData) => handleViewResult(cvData)}
+          onDelete={(_, cvData) => handleDelete(cvData)}
           onDownload={() => {}}
           onUpdate={() => {}}
           onShare={() => {}}
           onVisibilityChange={() => {}}
         />
       )}
-
       <DeleteConfirmModal
         isOpen={deleteModal.isOpen}
         onClose={() => setDeleteModal({ isOpen: false, cv: null })}

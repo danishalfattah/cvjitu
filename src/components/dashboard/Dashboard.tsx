@@ -20,6 +20,7 @@ import { CVTable } from "./CVTable";
 import { EmptyState } from "../EmptyState";
 import { DeleteConfirmModal } from "../DeleteConfirmModal";
 import { CVScoringResult } from "./CVScoringResult";
+import { CVPreview } from "../cvbuilder/preview/CVPreview"; // Impor CVPreview
 import { type CVScoringData } from "@/src/utils/cvScoringService";
 import { CVBuilderData } from "../cvbuilder/types";
 import {
@@ -27,9 +28,9 @@ import {
   AlertDialogContent,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogCancel,
+  AlertDialogDescription,
 } from "../ui/alert-dialog";
 import {
   Search,
@@ -72,6 +73,9 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
   const [selectedCvForPreview, setSelectedCvForPreview] =
     useState<CVData | null>(null);
 
+  // State baru untuk preview draf
+  const [draftPreviewData, setDraftPreviewData] = useState<CVData | null>(null);
+
   useEffect(() => {
     const fetchCVs = async () => {
       setIsLoading(true);
@@ -96,21 +100,18 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
   const stats = useMemo(() => {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
     const cvsThisMonth = cvs.filter(
       (cv) => new Date(cv.createdAt) > thirtyDaysAgo
     );
     const completedThisMonth = cvsThisMonth.filter(
       (cv) => cv.status === "Completed"
     ).length;
-
     const total = cvs.length;
     const avgScore = Math.round(
       cvs.reduce((sum, cv) => sum + (cv.score || 0), 0) / (cvs.length || 1)
     );
     const completed = cvs.filter((cv) => cv.status === "Completed").length;
     const drafted = cvs.filter((cv) => cv.status === "Draft").length;
-
     return {
       total,
       avgScore,
@@ -121,36 +122,42 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
     };
   }, [cvs]);
 
+  // Logika handleCVAction diubah
   const handleCVAction = (action: string, cv: CVData) => {
     switch (action) {
       case "preview":
-        const mockResult: CVScoringData = {
-          fileName: cv.name,
-          overallScore: cv.score,
-          atsCompatibility: Math.min(cv.score + 5, 100),
-          keywordMatch: Math.max(cv.score - 3, 0),
-          readabilityScore: Math.min(cv.score + 2, 100),
-          sections: [
-            {
-              name: "Pengalaman Kerja",
-              score: cv.score + 10,
-              status: "excellent",
-              feedback: "Pengalaman kerja Anda sangat relevan.",
-            },
-            {
-              name: "Pendidikan",
-              score: cv.score - 5,
-              status: "good",
-              feedback: "Latar belakang pendidikan Anda baik.",
-            },
-          ],
-          suggestions: [
-            "Tambahkan lebih banyak kata kunci yang relevan.",
-            "Kuantifikasi pencapaian Anda.",
-          ],
-        };
-        setSelectedCvForPreview(cv);
-        setScoringResult(mockResult);
+        if (cv.status === "Draft") {
+          setDraftPreviewData(cv); // Jika draf, buka modal preview saja
+        } else {
+          // Jika sudah selesai, tampilkan analisis seperti biasa
+          const mockResult: CVScoringData = {
+            fileName: cv.name,
+            overallScore: cv.score,
+            atsCompatibility: Math.min(cv.score + 5, 100),
+            keywordMatch: Math.max(cv.score - 3, 0),
+            readabilityScore: Math.min(cv.score + 2, 100),
+            sections: [
+              {
+                name: "Pengalaman Kerja",
+                score: cv.score + 10,
+                status: "excellent",
+                feedback: "Pengalaman kerja Anda sangat relevan.",
+              },
+              {
+                name: "Pendidikan",
+                score: cv.score - 5,
+                status: "good",
+                feedback: "Latar belakang pendidikan Anda baik.",
+              },
+            ],
+            suggestions: [
+              "Tambahkan lebih banyak kata kunci yang relevan.",
+              "Kuantifikasi pencapaian Anda.",
+            ],
+          };
+          setSelectedCvForPreview(cv);
+          setScoringResult(mockResult);
+        }
         break;
       case "download":
         toast.info("Fitur download akan segera hadir!");
@@ -189,7 +196,6 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
       cv.id === cvId ? { ...cv, visibility } : cv
     );
     setCvs(updatedCvs);
-
     try {
       await fetch(`/api/cv/${cvId}`, {
         method: "PUT",
@@ -236,11 +242,7 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
 
   const handleLanguageSelect = (lang: "id" | "en") => {
     setIsLangModalOpen(false);
-    if (onCreateCV) {
-      onCreateCV(lang);
-    } else {
-      router.push(`/cv-builder?lang=${lang}`);
-    }
+    onCreateCV ? onCreateCV(lang) : router.push(`/cv-builder?lang=${lang}`);
   };
 
   const filteredCVs = cvs.filter((cv) => {
@@ -293,10 +295,7 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
         data={scoringResult}
         cvBuilderData={cvBuilderDataFromCv}
         onBack={handleBackToDashboard}
-        onSaveToRepository={() => {
-          toast.success("Hasil analisis CV sudah tersimpan.");
-          handleBackToDashboard();
-        }}
+        onSaveToRepository={null} // Tombol Simpan tidak relevan di sini
         showPreview={true}
       />
     );
@@ -424,11 +423,11 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
                 <CVCard
                   key={cv.id}
                   cv={cv}
-                  onPreview={(cv) => handleCVAction("preview", cv)}
-                  onDownload={(cv) => handleCVAction("download", cv)}
-                  onUpdate={(cv) => handleCVAction("update", cv)}
-                  onDelete={(cv) => handleCVAction("delete", cv)}
-                  onShare={(cv) => handleCVAction("share", cv)}
+                  onPreview={handleCVAction}
+                  onDownload={handleCVAction}
+                  onUpdate={handleCVAction}
+                  onDelete={handleCVAction}
+                  onShare={handleCVAction}
                   onVisibilityChange={handleVisibilityChange}
                 />
               ))}
@@ -436,11 +435,11 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
           ) : (
             <CVTable
               cvs={paginatedCVs}
-              onPreview={(cv) => handleCVAction("preview", cv)}
-              onDownload={(cv) => handleCVAction("download", cv)}
-              onUpdate={(cv) => handleCVAction("update", cv)}
-              onDelete={(cv) => handleCVAction("delete", cv)}
-              onShare={(cv) => handleCVAction("share", cv)}
+              onPreview={handleCVAction}
+              onDownload={handleCVAction}
+              onUpdate={handleCVAction}
+              onDelete={handleCVAction}
+              onShare={handleCVAction}
               onVisibilityChange={handleVisibilityChange}
             />
           )}
@@ -524,28 +523,47 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
             <AlertDialogTitle>Pilih Bahasa CV</AlertDialogTitle>
             <AlertDialogDescription>
               Silakan pilih bahasa yang ingin Anda gunakan untuk membuat CV
-              baru. Seluruh form dan template akan disesuaikan dengan pilihan
-              Anda.
+              baru.
             </AlertDialogDescription>
-            <AlertDialogCancel className="absolute top-4 right-4 p-2 rounded-full border-none hover:bg-gray-100">
-              <X className="w-4 h-4" />
-            </AlertDialogCancel>
           </AlertDialogHeader>
           <AlertDialogFooter className="sm:justify-center gap-4">
             <Button
               variant="outline"
               onClick={() => handleLanguageSelect("id")}
-              className="w-full sm:w-auto border-[var(--red-normal)] text-[var(--red-normal)] hover:bg-[var(--red-light)]"
             >
               Bahasa Indonesia
             </Button>
-            <Button
-              onClick={() => handleLanguageSelect("en")}
-              className="w-full sm:w-auto bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white"
-            >
-              English
-            </Button>
+            <Button onClick={() => handleLanguageSelect("en")}>English</Button>
           </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Tambahkan modal untuk preview draf */}
+      <AlertDialog
+        open={!!draftPreviewData}
+        onOpenChange={() => setDraftPreviewData(null)}
+      >
+        <AlertDialogContent className="max-w-4xl h-[90vh] p-0 flex flex-col">
+          <AlertDialogHeader className="p-4 border-b flex-shrink-0">
+            <AlertDialogTitle>
+              Pratinjau CV Draf: {draftPreviewData?.name}
+            </AlertDialogTitle>
+            <AlertDialogCancel className="absolute top-3 right-3 p-2 rounded-full border-none hover:bg-gray-100">
+              <X className="w-4 h-4" />
+            </AlertDialogCancel>
+          </AlertDialogHeader>
+          <div className="overflow-y-auto flex-grow p-2">
+            {draftPreviewData && (
+              <CVPreview
+                data={draftPreviewData as CVBuilderData}
+                lang={
+                  draftPreviewData.lang === "unknown" || !draftPreviewData.lang
+                    ? "id"
+                    : draftPreviewData.lang
+                }
+              />
+            )}
+          </div>
         </AlertDialogContent>
       </AlertDialog>
     </div>
