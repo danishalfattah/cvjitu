@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
@@ -66,20 +66,17 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
   const [isLangModalOpen, setIsLangModalOpen] = useState(false);
-
-  // --- PERUBAHAN DI SINI ---
   const [scoringResult, setScoringResult] = useState<CVScoringData | null>(
     null
   );
   const [selectedCvForPreview, setSelectedCvForPreview] =
     useState<CVData | null>(null);
-  // --- AKHIR PERUBAHAN ---
 
   useEffect(() => {
     const fetchCVs = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch("/api/cv?type=builder"); // Minta tipe 'builder'
+        const response = await fetch("/api/cv?type=builder");
         if (!response.ok) throw new Error("Gagal mengambil data CV");
         const data = await response.json();
         setCvs(data);
@@ -96,7 +93,34 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
     setCurrentPage(1);
   }, [searchQuery, filters]);
 
-  // --- PERUBAHAN DI SINI ---
+  const stats = useMemo(() => {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const cvsThisMonth = cvs.filter(
+      (cv) => new Date(cv.createdAt) > thirtyDaysAgo
+    );
+    const completedThisMonth = cvsThisMonth.filter(
+      (cv) => cv.status === "Completed"
+    ).length;
+
+    const total = cvs.length;
+    const avgScore = Math.round(
+      cvs.reduce((sum, cv) => sum + (cv.score || 0), 0) / (cvs.length || 1)
+    );
+    const completed = cvs.filter((cv) => cv.status === "Completed").length;
+    const drafted = cvs.filter((cv) => cv.status === "Draft").length;
+
+    return {
+      total,
+      avgScore,
+      completed,
+      drafted,
+      newThisMonth: cvsThisMonth.length,
+      completedThisMonth: completedThisMonth,
+    };
+  }, [cvs]);
+
   const handleCVAction = (action: string, cv: CVData) => {
     switch (action) {
       case "preview":
@@ -125,10 +149,9 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
             "Kuantifikasi pencapaian Anda.",
           ],
         };
-        setSelectedCvForPreview(cv); // Simpan data CV yang asli
-        setScoringResult(mockResult); // Tampilkan hasil skor
+        setSelectedCvForPreview(cv);
+        setScoringResult(mockResult);
         break;
-      // ... sisa case tetap sama
       case "download":
         toast.info("Fitur download akan segera hadir!");
         break;
@@ -143,7 +166,6 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
         break;
     }
   };
-  // --- AKHIR PERUBAHAN ---
 
   const handleShareCV = (cv: CVData) => {
     if (cv.visibility === "private") {
@@ -158,15 +180,27 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
     });
   };
 
-  const handleVisibilityChange = (
+  const handleVisibilityChange = async (
     cvId: string,
     visibility: "public" | "private"
   ) => {
-    // Implementasi PUT request ke backend untuk update visibility
-    setCvs((prevCvs) =>
-      prevCvs.map((cv) => (cv.id === cvId ? { ...cv, visibility } : cv))
+    const originalCvs = [...cvs];
+    const updatedCvs = cvs.map((cv) =>
+      cv.id === cvId ? { ...cv, visibility } : cv
     );
-    toast.success("Visibilitas CV berhasil diubah!");
+    setCvs(updatedCvs);
+
+    try {
+      await fetch(`/api/cv/${cvId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ visibility }),
+      });
+      toast.success("Visibilitas CV berhasil diubah!");
+    } catch (error) {
+      setCvs(originalCvs);
+      toast.error("Gagal mengubah visibilitas CV.");
+    }
   };
 
   const handleDeleteConfirm = async () => {
@@ -218,7 +252,8 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
       (filters.status === "Selesai" && cv.status === "Completed") ||
       (filters.status === "Draf" && cv.status === "Draft");
     const matchesYear =
-      filters.year === "Semua Tahun" || cv.year.toString() === filters.year;
+      filters.year === "Semua Tahun" ||
+      (cv.year ? cv.year.toString() === filters.year : false);
     const matchesScore =
       (cv.score || 0) >= filters.scoreRange[0] &&
       (cv.score || 0) <= filters.scoreRange[1];
@@ -229,15 +264,6 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedCVs = filteredCVs.slice(startIndex, startIndex + itemsPerPage);
 
-  const stats = {
-    total: cvs.length,
-    avgScore: Math.round(
-      cvs.reduce((sum, cv) => sum + (cv.score || 0), 0) / (cvs.length || 1)
-    ),
-    completed: cvs.filter((cv) => cv.status === "Completed").length,
-    drafted: cvs.filter((cv) => cv.status === "Draft").length,
-  };
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -246,11 +272,9 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
     );
   }
 
-  // --- PERUBAHAN DI SINI ---
   if (scoringResult && selectedCvForPreview) {
-    // --- PERBAIKAN DI SINI ---
     const cvBuilderDataFromCv: CVBuilderData = {
-      jobTitle: selectedCvForPreview.name,
+      jobTitle: selectedCvForPreview.jobTitle || selectedCvForPreview.name,
       description: selectedCvForPreview.description || "",
       firstName: selectedCvForPreview.firstName || "",
       lastName: selectedCvForPreview.lastName || "",
@@ -267,7 +291,7 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
     return (
       <CVScoringResult
         data={scoringResult}
-        cvBuilderData={cvBuilderDataFromCv} // Teruskan data yang sudah dikonversi
+        cvBuilderData={cvBuilderDataFromCv}
         onBack={handleBackToDashboard}
         onSaveToRepository={() => {
           toast.success("Hasil analisis CV sudah tersimpan.");
@@ -276,9 +300,7 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
         showPreview={true}
       />
     );
-    // --- AKHIR PERBAIKAN ---
   }
-  // --- AKHIR PERUBAHAN ---
 
   return (
     <div className="flex-1 p-4 sm:p-6 bg-[var(--surface)] min-h-screen min-w-0">
@@ -292,24 +314,31 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
           Dashboard
         </h1>
       </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
         <StatTile
           title="CV Dibuat"
           value={stats.total}
           icon={FileText}
-          change={{ value: "+2 bulan ini", type: "increase" }}
+          change={{
+            value: `+${stats.newThisMonth} bulan ini`,
+            type: "increase",
+          }}
         />
         <StatTile
           title="Skor Rata-rata"
           value={stats.avgScore}
           icon={TrendingUp}
-          change={{ value: "+5 poin", type: "increase" }}
+          change={{ value: "Dari semua CV", type: "neutral" }}
         />
         <StatTile
           title="Total Selesai"
           value={stats.completed}
           icon={CheckCircle}
-          change={{ value: "+2 selesai bulan ini", type: "increase" }}
+          change={{
+            value: `+${stats.completedThisMonth} selesai bulan ini`,
+            type: "increase",
+          }}
         />
         <StatTile
           title="Total Draf"
@@ -318,6 +347,7 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
           change={{ value: "Perlu diselesaikan", type: "warning" }}
         />
       </div>
+
       <div className="mb-8">
         <h2 className="text-xl font-poppins font-semibold text-[var(--neutral-ink)] mb-4">
           Repositori CV Anda

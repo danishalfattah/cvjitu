@@ -6,12 +6,14 @@ interface StatTileProps {
   icon: React.ComponentType<{ className?: string }>;
   change?: {
     value: string;
-    type: "increase" | "decrease" | "warning";
+    type: "increase" | "decrease" | "warning" | "neutral";
   };
 }
 
 export function StatTile({ title, value, icon: Icon, change }: StatTileProps) {
-  const getChangeColor = (type: "increase" | "decrease" | "warning") => {
+  const getChangeColor = (
+    type: "increase" | "decrease" | "warning" | "neutral"
+  ) => {
     switch (type) {
       case "increase":
         return "text-[var(--success)]"; // Hijau
@@ -19,6 +21,8 @@ export function StatTile({ title, value, icon: Icon, change }: StatTileProps) {
         return "text-[var(--warn)]"; // Kuning/Oranye
       case "decrease":
         return "text-[var(--error)]"; // Merah
+      case "neutral": // <-- Tambahan di sini
+        return "text-gray-500"; // Abu-abu untuk netral
       default:
         return "";
     }
