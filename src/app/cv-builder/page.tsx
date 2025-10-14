@@ -1,3 +1,5 @@
+// src/app/cv-builder/page.tsx (UPDATED)
+
 "use client";
 
 import { useSearchParams, useRouter } from "next/navigation";
@@ -48,36 +50,56 @@ export default function Page() {
     router.push("/dashboard");
   };
 
-  const handleSave = async (data: CVBuilderData) => {
+  // --- PERBAIKAN UTAMA DI SINI ---
+  // Buat fungsi generik untuk menyimpan dengan status yang berbeda
+  const executeSave = async (
+    data: CVBuilderData,
+    status: "Completed" | "Draft"
+  ) => {
     try {
       const url = cvId ? `/api/cv/${cvId}` : "/api/cv";
       const method = cvId ? "PUT" : "POST";
 
-      const dataToSave = { ...data, type: "builder" }; // Tambahkan tipe 'builder'
+      // Tambahkan `status` ke data yang akan dikirim
+      const dataToSave = { ...data, type: "builder", status: status };
 
       const response = await fetch(url, {
         method: method,
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(dataToSave),
       });
 
-      if (!response.ok) throw new Error("Gagal menyimpan CV");
+      if (!response.ok) {
+        throw new Error("Gagal menyimpan CV");
+      }
 
       toast.success(
-        cvId ? "CV berhasil diperbarui!" : "CV Anda berhasil disimpan!"
+        status === "Completed"
+          ? cvId
+            ? "CV berhasil diperbarui!"
+            : "CV Anda berhasil disimpan!"
+          : "CV Anda disimpan sebagai draf."
       );
       router.push("/dashboard");
       router.refresh();
     } catch (error) {
+      console.error(error);
       toast.error("Gagal menyimpan CV. Silakan coba lagi.");
     }
   };
-  const handleSaveDraft = (data: CVBuilderData) => {
-    handleSave(data);
-    toast.info(
-      cvId ? "Draf berhasil diperbarui." : "CV Anda disimpan sebagai draf."
-    );
+
+  // Panggil executeSave dengan status 'Completed'
+  const handleSave = (data: CVBuilderData) => {
+    executeSave(data, "Completed");
   };
+
+  // Panggil executeSave dengan status 'Draft'
+  const handleSaveDraft = (data: CVBuilderData) => {
+    executeSave(data, "Draft");
+  };
+  // --- AKHIR PERBAIKAN ---
 
   if (isLoading) {
     return (
@@ -90,7 +112,7 @@ export default function Page() {
   return (
     <CVBuilderPage
       initialData={initialData}
-      cvId={cvId} // <-- TAMBAHKAN INI
+      cvId={cvId}
       onBack={handleBack}
       onSave={handleSave}
       onSaveDraft={handleSaveDraft}

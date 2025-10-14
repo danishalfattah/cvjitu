@@ -87,7 +87,7 @@ const translations: { [key: string]: TranslationEntry } = {
   wordCount: { id: 'kata', en: 'words' },
 
   // GradeStep.tsx
-  gradeTitle: { id: 'Peringkat & Analisis', en: 'Grade & Analysis' },
+  gradeTitle: { id: 'Penilaian & Analisis', en: 'Grade & Analysis' },
   gradeDesc: { id: 'Dapatkan analisis dan saran perbaikan dari AI untuk meningkatkan skor CV Anda.', en: 'Get AI-powered analysis and improvement suggestions to boost your CV score.' },
 
   // CVPreview
