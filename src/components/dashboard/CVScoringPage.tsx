@@ -260,7 +260,6 @@ export function CVScoringPage() {
             <CVCard
               key={cv.id}
               cv={cv}
-              actionType="scoring"
               onPreview={(_, cvData) => handleViewResult(cvData)}
               onDelete={(_, cvData) => handleDelete(cvData)}
               onDownload={() => {}}
