@@ -6,12 +6,14 @@ interface StatTileProps {
   icon: React.ComponentType<{ className?: string }>;
   change?: {
     value: string;
-    type: "increase" | "decrease" | "warning";
+    type: "increase" | "decrease" | "warning" | "neutral";
   };
 }
 
 export function StatTile({ title, value, icon: Icon, change }: StatTileProps) {
-  const getChangeColor = (type: "increase" | "decrease" | "warning") => {
+  const getChangeColor = (
+    type: "increase" | "decrease" | "warning" | "neutral"
+  ) => {
     switch (type) {
       case "increase":
         return "text-[var(--success)]"; // Hijau
@@ -19,6 +21,8 @@ export function StatTile({ title, value, icon: Icon, change }: StatTileProps) {
         return "text-[var(--warn)]"; // Kuning/Oranye
       case "decrease":
         return "text-[var(--error)]"; // Merah
+      case "neutral":
+        return "text-gray-500"; // Abu-abu untuk netral
       default:
         return "";
     }
@@ -26,7 +30,7 @@ export function StatTile({ title, value, icon: Icon, change }: StatTileProps) {
 
   return (
     <Card className="border border-[var(--border-color)] hover:shadow-md transition-shadow">
-      <CardContent>
+      <CardContent className="">
         <div className="flex items-center justify-between">
           <div className="flex-1 min-w-0">
             <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1 truncate">
@@ -39,7 +43,6 @@ export function StatTile({ title, value, icon: Icon, change }: StatTileProps) {
               <p
                 className={`text-xs sm:text-sm ${getChangeColor(change.type)}`}
               >
-                {/* Menghilangkan ikon panah untuk tipe 'warning' */}
                 {change.type === "increase" && "↗ "}
                 {change.type === "decrease" && "↘ "}
                 {change.value}

@@ -1,3 +1,5 @@
+// src/components/dashboard/DashboardLayout.tsx (UPDATED)
+
 import { useState, useEffect } from "react";
 import { DashboardSidebar } from "./DashboardSidebar";
 import { Dashboard } from "./Dashboard";
@@ -23,12 +25,11 @@ export function DashboardLayout({
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
-  // Detect screen size changes
   useEffect(() => {
     const checkScreenSize = () => {
-      setIsMobile(window.innerWidth < 1024); // lg breakpoint
+      setIsMobile(window.innerWidth < 1024);
       if (window.innerWidth >= 1024) {
-        setIsMobileSidebarOpen(false); // Close mobile sidebar on desktop
+        setIsMobileSidebarOpen(false);
       }
     };
 
@@ -37,7 +38,6 @@ export function DashboardLayout({
     return () => window.removeEventListener("resize", checkScreenSize);
   }, []);
 
-  // Close sidebar when clicking outside on mobile
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (isMobile && isMobileSidebarOpen) {
@@ -56,24 +56,23 @@ export function DashboardLayout({
   const renderContent = () => {
     switch (activeTab) {
       case "dashboard":
-        return <Dashboard onCreateCV={onCreateCV} />;
+        return <Dashboard onCreateCVAction={onCreateCV} />;
       case "scoring":
         return <CVScoringPage />;
       default:
-        return <Dashboard onCreateCV={onCreateCV} />;
+        return <Dashboard onCreateCVAction={onCreateCV} />;
     }
   };
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
     if (isMobile) {
-      setIsMobileSidebarOpen(false); // Close mobile sidebar after selection
+      setIsMobileSidebarOpen(false);
     }
   };
 
   return (
     <div className="flex min-h-screen bg-[var(--surface)]">
-      {/* Desktop Sidebar */}
       <div className="hidden lg:block">
         <DashboardSidebar
           activeTab={activeTab}
@@ -84,11 +83,9 @@ export function DashboardLayout({
         />
       </div>
 
-      {/* Mobile Sidebar Overlay */}
       <AnimatePresence>
         {isMobile && isMobileSidebarOpen && (
           <>
-            {/* Backdrop */}
             <motion.div
               className="fixed inset-0 bg-black/50 z-40 lg:hidden"
               initial={{ opacity: 0 }}
@@ -97,8 +94,6 @@ export function DashboardLayout({
               transition={{ duration: 0.3 }}
               onClick={() => setIsMobileSidebarOpen(false)}
             />
-
-            {/* Mobile Sidebar */}
             <motion.div
               id="mobile-sidebar"
               className="fixed left-0 top-0 z-50 lg:hidden"
@@ -120,9 +115,7 @@ export function DashboardLayout({
         )}
       </AnimatePresence>
 
-      {/* Main Content */}
       <div className="flex-1 lg:ml-64 min-w-0">
-        {/* Mobile Header */}
         <div className="lg:hidden bg-white/95 backdrop-blur-md border-b border-[var(--border-color)] px-4 py-3 sticky top-0 z-30">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
@@ -145,8 +138,6 @@ export function DashboardLayout({
                 />
               </div>
             </div>
-
-            {/* Mobile User Info */}
             {user && (
               <div className="flex items-center space-x-2">
                 <div className="text-right">
@@ -167,8 +158,6 @@ export function DashboardLayout({
             )}
           </div>
         </div>
-
-        {/* Page Content */}
         <div className="w-full">{renderContent()}</div>
       </div>
     </div>

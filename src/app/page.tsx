@@ -1,5 +1,3 @@
-// app/page.tsx
-
 "use client";
 
 import { useState } from "react";
@@ -26,20 +24,21 @@ export default function Page() {
   const [scoringData, setScoringData] = useState<CVScoringData | null>(null);
   const [hasTriedScoring, setHasTriedScoring] = useState(false);
 
-  const handleCVUpload = async (file: File) => {
-    if (hasTriedScoring && !isAuthenticated) {
-      toast.error(
-        "Silakan login terlebih dahulu untuk melakukan analisis CV lagi"
-      );
-      return;
-    }
+  const handleCVUpload = async (fileIdentifier: {
+    name: string;
+    url: string;
+  }) => {
     setIsProcessingCV(true);
     try {
+      // Fetch the file from the provided URL
+      const response = await fetch(fileIdentifier.url);
+      const blob = await response.blob();
+      const file = new File([blob], fileIdentifier.name, { type: blob.type });
       const results = await analyzeCVFile(file);
       setScoringData(results);
       setHasTriedScoring(true);
     } catch (error) {
-      console.error("[v0] Error analyzing CV:", error);
+      console.error("Error analyzing CV:", error);
       toast.error("Terjadi kesalahan saat menganalisis CV. Silakan coba lagi.");
     } finally {
       setIsProcessingCV(false);
@@ -47,12 +46,11 @@ export default function Page() {
   };
 
   const handleResetScoring = () => setScoringData(null);
-  const handleSaveToRepository = () => router.push("/dashboard");
-  const handleDownloadOptimized = () => {
-    console.log("Downloading optimized CV...");
-  };
 
-  const handleStartNow = () => {
+  // Arahkan ke dashboard baik untuk menyimpan atau melihat detail
+  const handleGoToDashboard = () => router.push("/dashboard");
+
+  const handleAuthAction = () => {
     if (isAuthenticated) {
       router.push("/dashboard");
     } else {
@@ -75,19 +73,18 @@ export default function Page() {
         onLogin={() => router.push("/login")}
         onRegister={() => router.push("/register")}
         onLogout={handleLogout}
-        onDashboard={() => router.push("/dashboard")}
+        onDashboard={handleGoToDashboard}
       />
       <div className="pt-17 ">
         <HeroSection
           onFileUpload={handleCVUpload}
           isProcessing={isProcessingCV}
-          onStartNow={handleStartNow}
+          onStartNow={handleAuthAction}
           scoringData={scoringData}
           onResetScoring={handleResetScoring}
-          onSaveToRepository={handleSaveToRepository}
-          onDownloadOptimized={handleDownloadOptimized}
-          hasTriedScoring={hasTriedScoring}
+          onSaveToRepository={handleGoToDashboard}
           isAuthenticated={isAuthenticated}
+          onAuthAction={handleAuthAction}
         />
         <FeaturesSection />
         <HowItWorksSection />

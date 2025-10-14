@@ -1,4 +1,4 @@
-// src/context/AuthContext.tsx
+// src/context/AuthContext.tsx (UPDATED)
 "use client";
 
 import {
@@ -17,11 +17,12 @@ import {
   GoogleAuthProvider,
   signOut,
   updateProfile,
-  sendEmailVerification, // Impor fungsi verifikasi email
+  sendEmailVerification,
 } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
-import { auth, db } from "@/src/lib/firebase"; // Import dari konfigurasi Firebase
+import { auth, db } from "@/src/lib/firebase";
 
+// ... (Interface User tetap sama) ...
 export interface User {
   id: string;
   email: string;
@@ -44,7 +45,7 @@ interface RegisterData {
 
 interface AuthContextType {
   user: User | null;
-  firebaseUser: FirebaseUser | null; // Tambahkan untuk akses user firebase asli
+  firebaseUser: FirebaseUser | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
@@ -67,6 +68,7 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
+// ... (Fungsi getUserProfile tetap sama) ...
 const getUserProfile = async (firebaseUser: FirebaseUser): Promise<User> => {
   const userDocRef = doc(db, "users", firebaseUser.uid);
   const userDoc = await getDoc(userDocRef);
@@ -103,7 +105,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
       setFirebaseUser(fbUser);
       if (fbUser) {
-        // Hanya set user jika email sudah terverifikasi (kecuali untuk provider non-password)
+        const idToken = await fbUser.getIdToken();
+        // Kirim token ke backend untuk membuat sesi cookie
+        await fetch("/api/auth/session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ idToken }),
+        });
+
         if (
           fbUser.emailVerified ||
           fbUser.providerData[0]?.providerId !== "password"
@@ -111,9 +120,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
           const userProfile = await getUserProfile(fbUser);
           setUser(userProfile);
         } else {
-          setUser(null); // Anggap belum login jika email belum diverifikasi
+          setUser(null);
         }
       } else {
+        // Hapus sesi cookie di backend
+        await fetch("/api/auth/session", { method: "DELETE" });
         setUser(null);
       }
       setIsLoading(false);
@@ -152,7 +163,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const fbUser = userCredential.user;
 
       await updateProfile(fbUser, { displayName: data.fullName });
-      await sendEmailVerification(fbUser); // Kirim email verifikasi
+      await sendEmailVerification(fbUser);
 
       const newUserProfile: User = {
         id: fbUser.uid,
@@ -167,7 +178,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
         scoringCreditsTotal: 10,
       };
       await setDoc(doc(db, "users", fbUser.uid), newUserProfile);
-      // Jangan set user di sini, biarkan onAuthStateChanged yang menangani setelah verifikasi
     } finally {
       setIsLoading(false);
     }
@@ -185,7 +195,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const logout = async () => {
     await signOut(auth);
-    setUser(null);
   };
 
   const value: AuthContextType = {

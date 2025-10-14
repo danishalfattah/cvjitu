@@ -4,21 +4,17 @@ import { useState } from "react";
 import { Button } from "../ui/button";
 import { FileUploadZone } from "../FileUploadZone";
 import { CVScoringData } from "../../utils/cvScoringService";
-import { Upload, FileText } from "lucide-react";
-import { RadialScore } from "../RadialScore";
-import { ImageWithFallback } from "../figma/ImageWithFallback";
 import Image from "next/image";
 
 interface HeroSectionProps {
-  onFileUpload: (file: File) => void;
+  onFileUpload: (fileIdentifier: { name: string; url: string }) => void;
   isProcessing?: boolean;
   onStartNow?: () => void;
   scoringData?: CVScoringData | null;
   onResetScoring?: () => void;
   onSaveToRepository?: () => void;
-  onDownloadOptimized?: () => void;
-  hasTriedScoring?: boolean;
   isAuthenticated?: boolean;
+  onAuthAction?: () => void;
 }
 
 export function HeroSection({
@@ -28,9 +24,8 @@ export function HeroSection({
   scoringData,
   onResetScoring,
   onSaveToRepository,
-  onDownloadOptimized,
-  hasTriedScoring = false,
   isAuthenticated = false,
+  onAuthAction,
 }: HeroSectionProps) {
   const [isHighlighting, setIsHighlighting] = useState(false);
 
@@ -82,16 +77,13 @@ export function HeroSection({
               <FileUploadZone
                 onFileUpload={onFileUpload}
                 isProcessing={isProcessing}
-                acceptedTypes={[".pdf", ".docx", ".doc"]}
-                maxSize={10}
                 scoringData={scoringData}
                 onResetScoring={onResetScoring}
                 onSaveToRepository={onSaveToRepository}
-                onDownloadOptimized={onDownloadOptimized}
-                hasTriedScoring={hasTriedScoring}
                 isAuthenticated={isAuthenticated}
                 isHighlighted={isHighlighting}
-                onAuthAction={onStartNow}
+                onAuthAction={onAuthAction}
+                simplifiedView={true} // <-- PERBAIKAN DI SINI
               />
             </div>
           </div>
