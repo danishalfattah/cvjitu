@@ -17,6 +17,8 @@ import type {
   Education,
 } from "../cvbuilder/types";
 import { t, type Language } from "@/src/lib/translations";
+import { exportCvAsPdf } from "@/src/lib/pdfGenerator";
+import { toast } from "sonner";
 
 interface CVBuilderPageProps {
   initialData?: CVBuilderData | null; // Buat opsional
@@ -169,13 +171,19 @@ export function CVBuilderPage({
   };
 
   const handleExportPDF = () => {
+    const fullName = `${cvData.firstName} ${cvData.lastName}`.trim() || "CV";
+    const jobTitle = cvData.jobTitle || "Untitled";
+    const filename = `${fullName}-${jobTitle}_CVJitu`.replace(/\s+/g, "-");
+
+    // Menampilkan toast atau notifikasi kepada user
+    toast.info("Mempersiapkan PDF Anda, mohon tunggu...");
+
+    // Memberi sedikit jeda agar UI sempat merender notifikasi
     setTimeout(() => {
-      const fullName = `${cvData.firstName} ${cvData.lastName}`.trim();
-      const originalTitle = document.title;
-      document.title = `${fullName}-${cvData.jobTitle}_CV`.replace(/\s+/g, "-");
-      window.print();
-      document.title = originalTitle;
-    }, 300);
+      exportCvAsPdf(filename).catch(() => {
+        toast.error("Gagal membuat PDF. Silakan coba lagi.");
+      });
+    }, 500);
   };
 
   const renderCurrentStep = () => {

@@ -27,6 +27,8 @@ import { CVData } from "@/src/components/dashboard/CVCard";
 import { CVBuilderData } from "./cvbuilder/types";
 import { t } from "@/src/lib/translations";
 import { Footer } from "@/src/components/Footer";
+import { exportCvAsPdf } from "@/src/lib/pdfGenerator"; // Tambahkan ini
+import { toast } from "sonner"; // Tambahkan ini jika belum ada
 
 export function CVPreviewPage() {
   const router = useRouter();
@@ -37,6 +39,22 @@ export function CVPreviewPage() {
   const [error, setError] = useState<string | null>(null);
 
   const cvId = params.id as string;
+
+  const handleDownload = () => {
+    if (!cvData) return;
+    const fullName =
+      `${cvData.firstName || ""} ${cvData.lastName || ""}`.trim() || "CV";
+    const jobTitle = cvData.name || "Untitled";
+    const filename = `${fullName}-${jobTitle}_CVJitu`.replace(/\s+/g, "-");
+
+    toast.info("Mempersiapkan PDF Anda, mohon tunggu...");
+
+    setTimeout(() => {
+      exportCvAsPdf(filename).catch(() => {
+        toast.error("Gagal membuat PDF. Silakan coba lagi.");
+      });
+    }, 500);
+  };
 
   useEffect(() => {
     if (!cvId) return;
@@ -149,7 +167,10 @@ export function CVPreviewPage() {
                 </Button>
               )}
 
-              <Button className="w-full bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white">
+              <Button
+                className="w-full bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white"
+                onClick={handleDownload}
+              >
                 <Download className="w-4 h-4 mr-2" /> Unduh sebagai PDF
               </Button>
               <div className="flex justify-center pt-4">
