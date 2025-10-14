@@ -7,16 +7,12 @@ import { cookies } from 'next/headers';
 import { adminAuth } from '@/src/lib/firebase-admin';
 import crypto from 'crypto';
 
-// --- TAMBAHAN DI SINI ---
-export const runtime = 'nodejs'; // Memberitahu Next.js untuk menggunakan Node.js runtime
-// --- AKHIR TAMBAHAN ---
+export const runtime = 'nodejs';
 
-
-// Fungsi untuk mendapatkan ID pengguna (sama seperti sebelumnya)
 async function getUserId() {
-  const sessionCookie = (await cookies()).get('session')?.value;
-  if (!sessionCookie) return null;
   try {
+    const sessionCookie = (await cookies()).get('session')?.value;
+    if (!sessionCookie) return null;
     const decodedToken = await adminAuth.verifySessionCookie(sessionCookie, true);
     return decodedToken.uid;
   } catch (error) {
@@ -24,7 +20,6 @@ async function getUserId() {
   }
 }
 
-// Inisialisasi S3 Client untuk Cloudflare R2
 const s3Client = new S3Client({
   region: 'auto',
   endpoint: `https://${process.env.CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com`,
@@ -34,22 +29,22 @@ const s3Client = new S3Client({
   },
 });
 
-// Handler untuk POST (meminta URL untuk unggah)
 export async function POST(request: Request) {
-  const userId = await getUserId();
-  if (!userId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
   try {
+    // --- PERBAIKAN UTAMA DI SINI ---
+    // Tetap panggil getUserId, tapi jangan langsung tolak jika null.
+    // Jika tidak ada userId, kita beri nilai 'guest'.
+    const userId = await getUserId() || 'guest';
+    // --- AKHIR PERBAIKAN ---
+
     const { fileName, fileType } = await request.json();
 
     if (!fileName || !fileType) {
       return NextResponse.json({ error: 'Nama file dan tipe file dibutuhkan' }, { status: 400 });
     }
 
-    // Buat nama file yang unik untuk menghindari konflik
     const randomBytes = crypto.randomBytes(8).toString('hex');
+    // Gunakan userId ('guest' atau ID pengguna asli) sebagai bagian dari path
     const uniqueFileName = `${userId}/${Date.now()}-${randomBytes}-${fileName.replace(/\s+/g, '_')}`;
 
     const command = new PutObjectCommand({
@@ -58,10 +53,8 @@ export async function POST(request: Request) {
       ContentType: fileType,
     });
 
-    // Buat presigned URL yang berlaku selama 10 menit
     const signedUrl = await getSignedUrl(s3Client, command, { expiresIn: 600 });
     
-    // Kembalikan URL ke frontend
     return NextResponse.json({
       url: signedUrl,
       fileName: uniqueFileName,
