@@ -1,26 +1,24 @@
 import * as admin from "firebase-admin";
 
-// Cek apakah environment variable ada
 if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
-  throw new Error(
-    "FIREBASE_SERVICE_ACCOUNT_KEY environment variable is not set."
-  );
+  throw new Error("FIREBASE_SERVICE_ACCOUNT_KEY environment variable is not set.");
 }
 
-// Ambil string JSON dari environment variable
 const serviceAccountString = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
 
-// Perbaiki karakter newline yang salah escape
-const correctedServiceAccountString = serviceAccountString.replace(/\\n/g, "\n");
+// 1) PARSE DULU string JSON-nya (biarkan \n tetap escaped saat ini)
+const serviceAccount = JSON.parse(serviceAccountString);
 
-// Parsing string JSON yang sudah diperbaiki
-const serviceAccount = JSON.parse(correctedServiceAccountString);
+// 2) Baru perbaiki newline di NILAI private_key
+if (typeof serviceAccount.private_key === "string") {
+  serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, "\n");
+}
 
-// Inisialisasi Firebase Admin SDK hanya jika belum ada
+// 3) Init admin
 if (!admin.apps.length) {
   try {
     admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
+      credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
     });
   } catch (error: any) {
     console.error("Firebase admin initialization error:", error.stack);
