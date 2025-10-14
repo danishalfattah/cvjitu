@@ -50,8 +50,6 @@ export default function Page() {
     router.push("/dashboard");
   };
 
-  // --- PERBAIKAN UTAMA DI SINI ---
-  // Buat fungsi generik untuk menyimpan dengan status yang berbeda
   const executeSave = async (
     data: CVBuilderData,
     status: "Completed" | "Draft"
@@ -60,8 +58,14 @@ export default function Page() {
       const url = cvId ? `/api/cv/${cvId}` : "/api/cv";
       const method = cvId ? "PUT" : "POST";
 
-      // Tambahkan `status` ke data yang akan dikirim
-      const dataToSave = { ...data, type: "builder", status: status };
+      // --- PERBAIKAN DI SINI ---
+      const dataToSave = {
+        ...data,
+        type: "builder",
+        status: status,
+        lang: lang,
+      };
+      // --- AKHIR PERBAIKAN ---
 
       const response = await fetch(url, {
         method: method,
@@ -90,16 +94,13 @@ export default function Page() {
     }
   };
 
-  // Panggil executeSave dengan status 'Completed'
   const handleSave = (data: CVBuilderData) => {
     executeSave(data, "Completed");
   };
 
-  // Panggil executeSave dengan status 'Draft'
   const handleSaveDraft = (data: CVBuilderData) => {
     executeSave(data, "Draft");
   };
-  // --- AKHIR PERBAIKAN ---
 
   if (isLoading) {
     return (
