@@ -4,7 +4,7 @@ import { X, LayoutDashboard } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import Image from "next/image";
 
-interface User {
+export interface User {
   id: string;
   email: string;
   fullName: string;

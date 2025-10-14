@@ -3,18 +3,19 @@
 import { useState } from "react";
 import { Button } from "../ui/button";
 import { FileUploadZone } from "../FileUploadZone";
-import { CVScoringData } from "../../utils/cvScoringService";
 import Image from "next/image";
+import { type CVScoringData } from "../../app/page";
 
 interface HeroSectionProps {
-  onFileUpload: (fileIdentifier: { name: string; url: string }) => void;
+  onFileUpload: (file: File) => void;
   isProcessing?: boolean;
   onStartNow?: () => void;
-  scoringData?: CVScoringData | null;
+  scoringData?: any | null;
   onResetScoring?: () => void;
   onSaveToRepository?: () => void;
   isAuthenticated?: boolean;
   onAuthAction?: () => void;
+  simplifiedView?: boolean;
 }
 
 export function HeroSection({
@@ -26,6 +27,7 @@ export function HeroSection({
   onSaveToRepository,
   isAuthenticated = false,
   onAuthAction,
+  simplifiedView = false,
 }: HeroSectionProps) {
   const [isHighlighting, setIsHighlighting] = useState(false);
 
@@ -75,7 +77,7 @@ export function HeroSection({
 
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-white/50 shadow-sm">
               <FileUploadZone
-                onFileUpload={onFileUpload}
+                onFileSelect={onFileUpload}
                 isProcessing={isProcessing}
                 scoringData={scoringData}
                 onResetScoring={onResetScoring}

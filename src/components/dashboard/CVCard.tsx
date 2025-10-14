@@ -25,7 +25,7 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
 } from "../ui/dropdown-menu";
-import { CVScoringData } from "@/src/utils/cvScoringService";
+import { type CVScoringData } from "../../app/page";
 import { Education, WorkExperience } from "../cvbuilder/types";
 
 export interface CVData extends Partial<Omit<CVScoringData, "fileName">> {

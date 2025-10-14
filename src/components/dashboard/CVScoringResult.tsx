@@ -1,5 +1,3 @@
-"use client";
-
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
@@ -16,7 +14,7 @@ import {
   ArrowLeft,
   Save,
 } from "lucide-react";
-import { CVScoringData } from "../../utils/cvScoringService";
+import { type CVScoringData } from "../../app/page";
 import { cn } from "@/src/lib/utils";
 
 interface CVScoringResultProps {
@@ -40,12 +38,12 @@ export function CVScoringResult({
         return <CheckCircle className="w-5 h-5 text-green-600" />;
       case "good":
         return <CheckCircle className="w-5 h-5 text-blue-600" />;
-      case "needs_improvement":
+      case "average": // Ditambahkan untuk konsistensi
         return <AlertTriangle className="w-5 h-5 text-yellow-600" />;
-      case "poor":
-        return <XCircle className="w-5 h-5 text-red-600" />;
+      case "needs_improvement":
+        return <AlertTriangle className="w-5 h-5 text-orange-600" />;
       default:
-        return null;
+        return <XCircle className="w-5 h-5 text-red-600" />;
     }
   };
 
@@ -55,12 +53,12 @@ export function CVScoringResult({
         return "bg-green-100 text-green-800";
       case "good":
         return "bg-blue-100 text-blue-800";
-      case "needs_improvement":
+      case "average": // Ditambahkan untuk konsistensi
         return "bg-yellow-100 text-yellow-800";
-      case "poor":
-        return "bg-red-100 text-red-800";
+      case "needs_improvement":
+        return "bg-orange-100 text-orange-800";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-red-100 text-red-800";
     }
   };
 
@@ -70,12 +68,12 @@ export function CVScoringResult({
         return "Sangat Baik";
       case "good":
         return "Baik";
+      case "average": // Tambahkan terjemahan untuk 'average'
+        return "Cukup";
       case "needs_improvement":
         return "Perlu Perbaikan";
-      case "poor":
-        return "Kurang";
       default:
-        return status;
+        return status; // Fallback jika ada status lain
     }
   };
 
@@ -135,18 +133,20 @@ export function CVScoringResult({
 
           <div className="space-y-6">
             <Card className="border border-[var(--border-color)]">
-              <CardHeader className="text-center">
+              <CardHeader className="">
                 <CardTitle className="text-xl font-poppins text-[var(--neutral-ink)]">
                   Skor Keseluruhan
                 </CardTitle>
               </CardHeader>
-              <CardContent className="text-center">
-                <RadialScore
-                  score={data.overallScore}
-                  size="lg"
-                  showLabel={true}
-                />
-                <div className="mt-6 space-y-4">
+              <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div className="flex justify-center">
+                  <RadialScore
+                    score={data.overallScore}
+                    size="lg"
+                    showLabel={true}
+                  />
+                </div>
+                <div className="space-y-4">
                   <div>
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-sm font-medium text-gray-700">

@@ -15,22 +15,34 @@ interface SummaryStepProps {
 export function SummaryStep({ data, onUpdate, lang }: SummaryStepProps) {
   const [isGenerating, setIsGenerating] = useState(false);
 
+  // src/components/cvbuilder/steps/SummaryStep.tsx
+
   const generateSummary = async () => {
     setIsGenerating(true);
+    try {
+      const response = await fetch("/api/generate/summary", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          jobTitle: data.jobTitle,
+          workExperiences: data.workExperiences,
+          skills: data.skills,
+          lang: lang,
+        }),
+      });
 
-    setTimeout(() => {
-      const jobTitle = data.jobTitle || "Professional";
-      const yearsOfExperience = data.workExperiences.length;
-      const topSkills = data.skills.slice(0, 3).join(", ");
+      if (!response.ok) {
+        throw new Error("Gagal mendapatkan saran dari AI.");
+      }
 
-      const generatedSummary =
-        lang === "id"
-          ? `Berpengalaman sebagai ${jobTitle} dengan rekam jejak ${yearsOfExperience}+ tahun dalam memberikan solusi berkualitas tinggi. Terampil dalam ${topSkills} dengan semangat untuk inovasi dan pembelajaran berkelanjutan.`
-          : `Experienced ${jobTitle} with ${yearsOfExperience}+ years of proven track record in delivering high-quality solutions. Skilled in ${topSkills} with a passion for innovation and continuous learning.`;
-
-      onUpdate({ summary: generatedSummary });
+      const result = await response.json();
+      onUpdate({ summary: result.summary });
+    } catch (error: any) {
+      console.error("Failed to generate summary:", error);
+      alert(error.message);
+    } finally {
       setIsGenerating(false);
-    }, 2000);
+    }
   };
 
   const wordCount = data.summary
