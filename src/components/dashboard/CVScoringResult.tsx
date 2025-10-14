@@ -1,3 +1,5 @@
+"use client";
+
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
@@ -21,7 +23,7 @@ interface CVScoringResultProps {
   data: CVScoringData;
   cvBuilderData: CVBuilderData | null;
   onBack: () => void;
-  onSaveToRepository?: (() => void) | null; // <-- Dibuat opsional
+  onSaveToRepository?: (() => void) | null;
   showPreview?: boolean;
 }
 
@@ -100,7 +102,6 @@ export function CVScoringResult({
               </p>
             </div>
           </div>
-          {/* Tombol hanya muncul jika fungsinya ada */}
           {onSaveToRepository && (
             <Button
               onClick={onSaveToRepository}
@@ -112,12 +113,16 @@ export function CVScoringResult({
           )}
         </div>
 
-        <div className={cn("grid gap-8", showPreview && "lg:grid-cols-2")}>
+        {/* --- PERBAIKAN DI SINI --- */}
+        <div
+          className={cn(
+            "grid gap-8 items-start",
+            showPreview && "lg:grid-cols-2"
+          )}
+        >
+          {/* --- AKHIR PERBAIKAN --- */}
           {showPreview && (
             <div className="lg:sticky lg:top-8 h-fit">
-              <h2 className="text-lg font-semibold mb-4 font-poppins">
-                Preview CV
-              </h2>
               {cvBuilderData ? (
                 <CVPreview data={cvBuilderData} lang="id" />
               ) : (

@@ -64,7 +64,6 @@ interface CVCardProps {
   onDelete: (action: "delete", cv: CVData) => void;
   onShare: (action: "share", cv: CVData) => void;
   onVisibilityChange: (cvId: string, visibility: "public" | "private") => void;
-  actionType?: "builder" | "scoring";
 }
 
 export function CVCard({
@@ -75,11 +74,9 @@ export function CVCard({
   onDelete,
   onShare,
   onVisibilityChange,
-  actionType = "builder",
 }: CVCardProps) {
   const getStatusColor = (status: CVData["status"]) => {
     if (status === "Completed") return "bg-[var(--success)] text-white";
-    if (status === "Uploaded") return "bg-blue-500 text-white";
     return "bg-[var(--warn)] text-white";
   };
 
@@ -98,7 +95,7 @@ export function CVCard({
 
   return (
     <Card className="border border-[var(--border-color)] hover:shadow-md transition-shadow flex flex-col">
-      <CardContent className=" flex flex-col flex-grow">
+      <CardContent className="flex flex-col flex-grow">
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1 min-w-0">
             <h3
@@ -109,27 +106,19 @@ export function CVCard({
             </h3>
             <div className="flex flex-wrap items-center gap-2 mb-4">
               <Badge className={`${getStatusColor(cv.status)} text-xs`}>
-                {cv.status === "Completed"
-                  ? "Selesai"
-                  : cv.status === "Uploaded"
-                  ? "Di-upload"
-                  : "Draf"}
+                {cv.status === "Completed" ? "Selesai" : "Draf"}
               </Badge>
-              {cv.lang !== "unknown" && actionType === "builder" && (
-                <Badge variant="outline" className="text-xs">
-                  {cv.lang === "id" ? "ID" : "EN"}
-                </Badge>
-              )}
-              {actionType === "builder" && (
-                <Badge variant="outline" className="text-xs">
-                  {cv.visibility === "public" ? (
-                    <Globe className="w-3 h-3 mr-1" />
-                  ) : (
-                    <Lock className="w-3 h-3 mr-1" />
-                  )}
-                  {cv.visibility === "public" ? "Publik" : "Privat"}
-                </Badge>
-              )}
+              <Badge variant="outline" className="text-xs">
+                {cv.lang === "id" ? "ID" : "EN"}
+              </Badge>
+              <Badge variant="outline" className="text-xs">
+                {cv.visibility === "public" ? (
+                  <Globe className="w-3 h-3 mr-1" />
+                ) : (
+                  <Lock className="w-3 h-3 mr-1" />
+                )}
+                {cv.visibility === "public" ? "Publik" : "Privat"}
+              </Badge>
             </div>
           </div>
           <div className="flex items-center space-x-2 sm:space-x-3 ml-2 sm:ml-4">

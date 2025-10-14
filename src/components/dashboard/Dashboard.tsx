@@ -20,7 +20,7 @@ import { CVTable } from "./CVTable";
 import { EmptyState } from "../EmptyState";
 import { DeleteConfirmModal } from "../DeleteConfirmModal";
 import { CVScoringResult } from "./CVScoringResult";
-import { CVPreview } from "../cvbuilder/preview/CVPreview"; // Impor CVPreview
+import { CVPreview } from "../cvbuilder/preview/CVPreview";
 import { type CVScoringData } from "@/src/utils/cvScoringService";
 import { CVBuilderData } from "../cvbuilder/types";
 import {
@@ -43,6 +43,7 @@ import {
   Edit3,
   X,
   Loader2,
+  ArrowLeft,
 } from "lucide-react";
 
 interface DashboardProps {
@@ -72,8 +73,6 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
   );
   const [selectedCvForPreview, setSelectedCvForPreview] =
     useState<CVData | null>(null);
-
-  // State baru untuk preview draf
   const [draftPreviewData, setDraftPreviewData] = useState<CVData | null>(null);
 
   useEffect(() => {
@@ -122,14 +121,12 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
     };
   }, [cvs]);
 
-  // Logika handleCVAction diubah
   const handleCVAction = (action: string, cv: CVData) => {
     switch (action) {
       case "preview":
         if (cv.status === "Draft") {
-          setDraftPreviewData(cv); // Jika draf, buka modal preview saja
+          setDraftPreviewData(cv);
         } else {
-          // Jika sudah selesai, tampilkan analisis seperti biasa
           const mockResult: CVScoringData = {
             fileName: cv.name,
             overallScore: cv.score,
@@ -141,19 +138,16 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
                 name: "Pengalaman Kerja",
                 score: cv.score + 10,
                 status: "excellent",
-                feedback: "Pengalaman kerja Anda sangat relevan.",
+                feedback: "Sangat relevan.",
               },
               {
                 name: "Pendidikan",
                 score: cv.score - 5,
                 status: "good",
-                feedback: "Latar belakang pendidikan Anda baik.",
+                feedback: "Latar belakang baik.",
               },
             ],
-            suggestions: [
-              "Tambahkan lebih banyak kata kunci yang relevan.",
-              "Kuantifikasi pencapaian Anda.",
-            ],
+            suggestions: ["Tambahkan kata kunci.", "Kuantifikasi pencapaian."],
           };
           setSelectedCvForPreview(cv);
           setScoringResult(mockResult);
@@ -238,6 +232,7 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
   const handleBackToDashboard = () => {
     setScoringResult(null);
     setSelectedCvForPreview(null);
+    setDraftPreviewData(null);
   };
 
   const handleLanguageSelect = (lang: "id" | "en") => {
@@ -295,9 +290,39 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
         data={scoringResult}
         cvBuilderData={cvBuilderDataFromCv}
         onBack={handleBackToDashboard}
-        onSaveToRepository={null} // Tombol Simpan tidak relevan di sini
+        onSaveToRepository={null}
         showPreview={true}
       />
+    );
+  }
+
+  if (draftPreviewData) {
+    return (
+      <div className="p-4 sm:p-6 min-h-screen bg-gray-50">
+        <div className="max-w-4xl mx-auto">
+          <div className="mb-6 flex justify-between items-center">
+            <h2 className="text-xl font-poppins font-semibold text-[var(--neutral-ink)]">
+              Pratinjau CV Draf: {draftPreviewData.name}
+            </h2>
+            <Button
+              variant="outline"
+              onClick={handleBackToDashboard}
+              className="border-[var(--border-color)]"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Kembali ke Dashboard
+            </Button>
+          </div>
+          <CVPreview
+            data={draftPreviewData as CVBuilderData}
+            lang={
+              draftPreviewData.lang === "unknown" || !draftPreviewData.lang
+                ? "id"
+                : draftPreviewData.lang
+            }
+          />
+        </div>
+      </div>
     );
   }
 
@@ -313,7 +338,6 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
           Dashboard
         </h1>
       </div>
-
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
         <StatTile
           title="CV Dibuat"
@@ -346,7 +370,6 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
           change={{ value: "Perlu diselesaikan", type: "warning" }}
         />
       </div>
-
       <div className="mb-8">
         <h2 className="text-xl font-poppins font-semibold text-[var(--neutral-ink)] mb-4">
           Repositori CV Anda
@@ -374,15 +397,13 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
           className="bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white w-full sm:w-auto"
         >
           <Plus className="w-4 h-4 mr-2" />
-          <span className="text-sm sm:text-base">Buat CV</span>
+          Buat CV
         </Button>
       </div>
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0 mb-6">
-        <div className="flex items-center">
-          <span className="text-xs sm:text-sm text-gray-600">
-            Menampilkan {paginatedCVs.length} dari {filteredCVs.length} CV
-          </span>
-        </div>
+      <div className="flex items-center justify-between mb-6">
+        <span className="text-xs sm:text-sm text-gray-600">
+          Menampilkan {paginatedCVs.length} dari {filteredCVs.length} CV
+        </span>
         <div className="flex items-center space-x-2">
           <Button
             variant={viewMode === "cards" ? "default" : "outline"}
@@ -390,9 +411,9 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
             onClick={() => setViewMode("cards")}
             className={`${
               viewMode === "cards" ? "bg-[var(--red-normal)] text-white" : ""
-            } px-3 py-2`}
+            }`}
           >
-            <Grid className="w-3 h-3 sm:w-4 sm:h-4" />
+            <Grid className="w-4 h-4" />
           </Button>
           <Button
             variant={viewMode === "table" ? "default" : "outline"}
@@ -400,16 +421,16 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
             onClick={() => setViewMode("table")}
             className={`${
               viewMode === "table" ? "bg-[var(--red-normal)] text-white" : ""
-            } px-3 py-2`}
+            }`}
           >
-            <List className="w-3 h-3 sm:w-4 sm:h-4" />
+            <List className="w-4 h-4" />
           </Button>
         </div>
       </div>
-      {paginatedCVs.length === 0 ? (
+      {filteredCVs.length === 0 ? (
         <EmptyState
-          title="CV Tidak Ditemukan"
-          description="Tidak ada CV yang sesuai dengan filter Anda. Coba sesuaikan kriteria pencarian atau buat CV baru untuk memulai."
+          title="Repositori Kosong"
+          description="Anda belum membuat CV. Buat CV pertama Anda untuk memulai."
           action={{
             label: "Buat CV Pertama Anda",
             onClick: () => setIsLangModalOpen(true),
@@ -445,8 +466,8 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
           )}
           {totalPages > 1 && (
             <div className="mt-8">
-              <Pagination className="justify-center">
-                <PaginationContent className="flex-wrap gap-1">
+              <Pagination>
+                <PaginationContent>
                   <PaginationItem>
                     <PaginationPrevious
                       href="#"
@@ -454,14 +475,7 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
                         e.preventDefault();
                         setCurrentPage(Math.max(1, currentPage - 1));
                       }}
-                      className={`${
-                        currentPage === 1
-                          ? "pointer-events-none opacity-50"
-                          : "cursor-pointer hover:bg-[var(--red-light)] hover:text-[var(--red-normal)]"
-                      } transition-colors`}
-                    >
-                      Sebelumnya
-                    </PaginationPrevious>
+                    />
                   </PaginationItem>
                   {Array.from({ length: totalPages }, (_, i) => (
                     <PaginationItem key={i + 1}>
@@ -472,11 +486,6 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
                           setCurrentPage(i + 1);
                         }}
                         isActive={currentPage === i + 1}
-                        className={`cursor-pointer transition-colors ${
-                          currentPage === i + 1
-                            ? "bg-[var(--red-normal)] text-white hover:bg-[var(--red-normal-hover)]"
-                            : "hover:bg-[var(--red-light)] hover:text-[var(--red-normal)]"
-                        }`}
                       >
                         {i + 1}
                       </PaginationLink>
@@ -489,24 +498,10 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
                         e.preventDefault();
                         setCurrentPage(Math.min(totalPages, currentPage + 1));
                       }}
-                      className={`${
-                        currentPage === totalPages
-                          ? "pointer-events-none opacity-50"
-                          : "cursor-pointer hover:bg-[var(--red-light)] hover:text-[var(--red-normal)]"
-                      } transition-colors`}
-                    >
-                      Selanjutnya
-                    </PaginationNext>
+                    />
                   </PaginationItem>
                 </PaginationContent>
               </Pagination>
-              <div className="text-center mt-4">
-                <p className="text-sm text-gray-600">
-                  Halaman {currentPage} dari {totalPages} • {startIndex + 1}-
-                  {Math.min(startIndex + itemsPerPage, filteredCVs.length)} dari{" "}
-                  {filteredCVs.length} CV
-                </p>
-              </div>
             </div>
           )}
         </>
@@ -526,7 +521,7 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
               baru.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="sm:justify-center gap-4">
+          <AlertDialogFooter>
             <Button
               variant="outline"
               onClick={() => handleLanguageSelect("id")}
@@ -535,35 +530,6 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
             </Button>
             <Button onClick={() => handleLanguageSelect("en")}>English</Button>
           </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Tambahkan modal untuk preview draf */}
-      <AlertDialog
-        open={!!draftPreviewData}
-        onOpenChange={() => setDraftPreviewData(null)}
-      >
-        <AlertDialogContent className="max-w-4xl h-[90vh] p-0 flex flex-col">
-          <AlertDialogHeader className="p-4 border-b flex-shrink-0">
-            <AlertDialogTitle>
-              Pratinjau CV Draf: {draftPreviewData?.name}
-            </AlertDialogTitle>
-            <AlertDialogCancel className="absolute top-3 right-3 p-2 rounded-full border-none hover:bg-gray-100">
-              <X className="w-4 h-4" />
-            </AlertDialogCancel>
-          </AlertDialogHeader>
-          <div className="overflow-y-auto flex-grow p-2">
-            {draftPreviewData && (
-              <CVPreview
-                data={draftPreviewData as CVBuilderData}
-                lang={
-                  draftPreviewData.lang === "unknown" || !draftPreviewData.lang
-                    ? "id"
-                    : draftPreviewData.lang
-                }
-              />
-            )}
-          </div>
         </AlertDialogContent>
       </AlertDialog>
     </div>
