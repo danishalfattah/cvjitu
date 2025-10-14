@@ -9,6 +9,7 @@ import { Badge } from "../../ui/badge";
 import { Plus, Trash2, Sparkles, Calendar } from "lucide-react";
 import { CVBuilderData, WorkExperience } from "../types";
 import { t, type Language } from "@/src/lib/translations";
+import { toast } from "sonner";
 
 interface WorkExperienceStepProps {
   data: CVBuilderData;
@@ -29,24 +30,41 @@ export function WorkExperienceStep({
 
   const generateKeyAchievements = async (experienceId: string) => {
     setGeneratingAI(experienceId);
+    const experience = data.workExperiences.find(
+      (exp) => exp.id === experienceId
+    );
 
-    setTimeout(() => {
-      const sampleAchievements = [
-        "Led cross-functional team of 8 developers to deliver project 2 weeks ahead of schedule",
-        "Improved application performance by 35% through code optimization and database tuning",
-        "Implemented automated testing framework resulting in 50% reduction in bugs",
-      ];
-
-      const experience = data.workExperiences.find(
-        (exp) => exp.id === experienceId
-      );
-      if (experience) {
-        onUpdateExperience(experienceId, {
-          achievements: [...experience.achievements, ...sampleAchievements],
-        });
-      }
+    if (!experience) {
       setGeneratingAI(null);
-    }, 2000);
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/generate/work-experience", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          jobTitle: experience.jobTitle,
+          company: experience.company,
+          description: experience.description,
+          lang: lang,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Gagal mendapatkan saran dari AI.");
+      }
+
+      const result = await response.json();
+      onUpdateExperience(experienceId, {
+        achievements: [...experience.achievements, ...result.achievements],
+      });
+    } catch (error: any) {
+      console.error("Failed to generate achievements:", error);
+      toast.error(error.message);
+    } finally {
+      setGeneratingAI(null);
+    }
   };
 
   const addAchievement = (experienceId: string) => {
