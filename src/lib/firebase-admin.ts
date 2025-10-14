@@ -7,14 +7,10 @@ if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
   );
 }
 
-// Ambil string JSON dari environment variable
-const serviceAccountString = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
-
-// PERBAIKAN UTAMA: Ganti karakter '\\n' (yang salah) menjadi '\n' (yang benar)
-const correctedServiceAccountString = serviceAccountString.replace(/\\n/g, "\n");
-
-// Parsing string JSON yang sudah diperbaiki
-const serviceAccount = JSON.parse(correctedServiceAccountString);
+// Inisialisasi serviceAccount dari environment variable
+const serviceAccount = JSON.parse(
+  process.env.FIREBASE_SERVICE_ACCOUNT_KEY as string
+);
 
 // Inisialisasi Firebase Admin SDK hanya jika belum ada
 if (!admin.apps.length) {
@@ -23,8 +19,7 @@ if (!admin.apps.length) {
       credential: admin.credential.cert(serviceAccount),
     });
   } catch (error: any) {
-    // Log error dengan lebih detail untuk debugging
-    console.error("Firebase admin initialization error:", error.stack);
+    console.error("Firebase admin initialization error", error.stack);
   }
 }
 
