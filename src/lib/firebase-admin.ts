@@ -1,28 +1,27 @@
-// src/lib/firebase-admin.ts (UPDATED)
+import * as admin from "firebase-admin";
 
-import admin from 'firebase-admin';
-import { getApps } from 'firebase-admin/app';
-import fs from 'fs';
-import path from 'path';
+// Cek apakah environment variable ada
+if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+  throw new Error(
+    "FIREBASE_SERVICE_ACCOUNT_KEY environment variable is not set."
+  );
+}
 
-if (!getApps().length) {
+// Inisialisasi serviceAccount dari environment variable
+const serviceAccount = JSON.parse(
+  process.env.FIREBASE_SERVICE_ACCOUNT_KEY as string
+);
+
+// Inisialisasi Firebase Admin SDK hanya jika belum ada
+if (!admin.apps.length) {
   try {
-    // Path ke service account key sekarang relatif terhadap direktori kerja
-    const serviceAccountPath = path.join(process.cwd(), 'src', 'serviceAccountKey.json');
-    const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
-
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),
     });
-    console.log("Firebase Admin SDK initialized successfully.");
   } catch (error: any) {
-    console.error("Firebase Admin SDK initialization error:", error.message);
-    // Jika inisialisasi gagal, kita bisa melempar error agar masalahnya jelas
-    throw new Error("Could not initialize Firebase Admin SDK. Is serviceAccountKey.json present in the /src directory?");
+    console.error("Firebase admin initialization error", error.stack);
   }
 }
 
-const adminAuth = admin.auth();
-const adminDb = admin.firestore();
-
-export { adminAuth, adminDb };
+export const adminDb = admin.firestore();
+export const adminAuth = admin.auth();
