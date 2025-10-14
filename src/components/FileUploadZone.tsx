@@ -1,5 +1,4 @@
-// src/components/FileUploadZone.tsx
-
+"use client";
 import { useState, useCallback } from "react";
 import {
   Upload,
@@ -11,24 +10,27 @@ import {
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { RadialScore } from "./RadialScore";
-import { CVScoringData } from "../utils/cvScoringService";
 import { toast } from "sonner";
-
+import { type CVScoringData } from "../app/page";
 interface FileUploadZoneProps {
-  onFileUpload: (fileIdentifier: { name: string; url: string }) => void;
+  // Prop baru untuk menangani file yang dipilih secara langsung
+  onFileSelect?: (file: File) => void;
+  // Prop lama, kita jadikan opsional
+  onFileUpload?: (fileIdentifier: { name: string; url: string }) => void;
   isProcessing?: boolean;
   acceptedTypes?: string[];
-  maxSize?: number; // in MB
+  maxSize?: number;
   scoringData?: CVScoringData | null;
   onResetScoring?: () => void;
-  onSaveToRepository?: () => void; // Untuk navigasi ke dashboard
+  onSaveToRepository?: () => void;
   isAuthenticated?: boolean;
   isHighlighted?: boolean;
-  onAuthAction?: () => void; // Untuk navigasi ke login/dashboard
-  simplifiedView?: boolean; // Prop baru untuk mengontrol tampilan
+  onAuthAction?: () => void;
+  simplifiedView?: boolean;
 }
 
 export function FileUploadZone({
+  onFileSelect,
   onFileUpload,
   isProcessing = false,
   acceptedTypes = [".pdf", ".docx", ".doc"],
@@ -39,18 +41,21 @@ export function FileUploadZone({
   isAuthenticated = false,
   isHighlighted = false,
   onAuthAction,
-  simplifiedView = false, // Default false
+  simplifiedView = false,
 }: FileUploadZoneProps) {
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
-  // ... (semua fungsi lain seperti validateFile, handleFiles, dll tetap sama) ...
   const validateFile = (file: File): string | null => {
-    const fileExtension = "." + file.name.split(".").pop()?.toLowerCase();
-    if (!acceptedTypes.includes(fileExtension)) {
-      return `Tipe file tidak didukung. Gunakan: ${acceptedTypes.join(", ")}`;
+    // Memperluas tipe file yang diterima sesuai dengan kemampuan Gemini
+    const allowedTypes = [
+      "application/pdf",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ];
+    if (!allowedTypes.includes(file.type)) {
+      return "Tipe file tidak didukung. Gunakan: PDF, DOCX";
     }
     const fileSizeMB = file.size / (1024 * 1024);
     if (fileSizeMB > maxSize) {
@@ -72,82 +77,34 @@ export function FileUploadZone({
       setError(null);
       setSelectedFile(file);
     },
-    [acceptedTypes, maxSize]
+    [maxSize]
   );
 
-  const handleUpload = async () => {
+  const handleAnalyze = () => {
     if (!selectedFile) return;
-
-    setIsUploading(true);
-    setError(null);
-
-    try {
-      // 1. Dapatkan presigned URL dari backend
-      const presignedUrlResponse = await fetch("/api/upload", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fileName: selectedFile.name,
-          fileType: selectedFile.type,
-        }),
-      });
-
-      if (!presignedUrlResponse.ok) {
-        throw new Error("Gagal mendapatkan izin untuk mengunggah file.");
-      }
-
-      const { url, fileName: uniqueFileName } =
-        await presignedUrlResponse.json();
-
-      // 2. Unggah file langsung ke Cloudflare R2 menggunakan presigned URL
-      const uploadResponse = await fetch(url, {
-        method: "PUT",
-        body: selectedFile,
-        headers: {
-          "Content-Type": selectedFile.type,
-        },
-      });
-
-      if (!uploadResponse.ok) {
-        throw new Error("Gagal mengunggah file ke penyimpanan.");
-      }
-
-      // 3. Panggil prop onFileUpload
-      toast.success("File berhasil diunggah! Menganalisis...");
-      const publicUrl = `${process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_DOMAIN}/${uniqueFileName}`;
-      onFileUpload({ name: selectedFile.name, url: publicUrl });
-    } catch (err: any) {
-      console.error(err);
-      setError(err.message || "Terjadi kesalahan saat mengunggah.");
-      toast.error(err.message || "Terjadi kesalahan saat mengunggah.");
-    } finally {
-      setIsUploading(false);
+    // Panggil onFileSelect jika ada (untuk alur baru)
+    if (onFileSelect) {
+      onFileSelect(selectedFile);
     }
   };
 
-  const handleDrag = useCallback((e: React.DragEvent) => {
+  const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (e.type === "dragenter" || e.type === "dragover") setDragActive(true);
     else if (e.type === "dragleave") setDragActive(false);
-  }, []);
+  };
 
-  const handleDrop = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setDragActive(false);
-      handleFiles(e.dataTransfer.files);
-    },
-    [handleFiles]
-  );
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    handleFiles(e.dataTransfer.files);
+  };
 
-  const handleInputChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      handleFiles(e.target.files);
-    },
-    [handleFiles]
-  );
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handleFiles(e.target.files);
+  };
 
   const clearFile = () => {
     setSelectedFile(null);
@@ -157,14 +114,12 @@ export function FileUploadZone({
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return "0 Bytes";
     const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+    const sizes = ["Bytes", "KB", "MB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
-  // --- PERBAIKAN UTAMA DI SINI ---
   if (scoringData) {
-    // Tampilan sederhana untuk Hero Section
     if (simplifiedView) {
       return (
         <div className="space-y-6 text-center">
@@ -216,16 +171,10 @@ export function FileUploadZone({
         </div>
       );
     }
-
-    // Tampilan detail untuk dashboard (tidak berubah)
-    // Jika Anda punya komponen CVScoringResult, panggil di sini
-    // Jika tidak, logika lama untuk hasil detail tetap di sini
     return <div>Hasil Analisis Detail (Untuk Dashboard)</div>;
   }
-  // --- AKHIR PERBAIKAN ---
 
   return (
-    // ... (kode untuk tampilan upload file tetap sama) ...
     <div className="space-y-4">
       <div className="flex items-center space-x-4 mb-4">
         <Upload className="w-5 h-5 text-[var(--red-normal)]" />
@@ -244,7 +193,7 @@ export function FileUploadZone({
         }`}
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
-        onDragOver={handleDrag}
+        onDragOver={handleDrop}
         onDrop={handleDrop}
         onClick={() => document.getElementById("file-input")?.click()}
       >
@@ -252,9 +201,9 @@ export function FileUploadZone({
           id="file-input"
           type="file"
           className="hidden"
-          accept={acceptedTypes.join(",")}
+          accept=".pdf,.doc,.docx"
           onChange={handleInputChange}
-          disabled={isUploading || isProcessing}
+          disabled={isProcessing}
         />
 
         {selectedFile ? (
@@ -269,7 +218,7 @@ export function FileUploadZone({
                   {formatFileSize(selectedFile.size)}
                 </p>
               </div>
-              {!(isUploading || isProcessing) && (
+              {!isProcessing && (
                 <Button
                   variant="ghost"
                   size="sm"
@@ -284,11 +233,11 @@ export function FileUploadZone({
               )}
             </div>
 
-            {!(isUploading || isProcessing) && (
+            {!isProcessing && (
               <Button
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleUpload();
+                  handleAnalyze();
                 }}
                 className="bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white"
               >
@@ -296,12 +245,10 @@ export function FileUploadZone({
               </Button>
             )}
 
-            {(isUploading || isProcessing) && (
+            {isProcessing && (
               <div className="flex items-center justify-center space-x-2 text-[var(--red-normal)]">
                 <Loader2 className="w-5 h-5 animate-spin" />
-                <span className="text-sm font-medium">
-                  {isUploading ? "Mengunggah file..." : "Menganalisis..."}
-                </span>
+                <span className="text-sm font-medium">Menganalisis...</span>
               </div>
             )}
           </div>
@@ -313,7 +260,7 @@ export function FileUploadZone({
                 Klik untuk memilih file atau drag & drop
               </p>
               <p className="text-xs text-gray-500">
-                Mendukung file: {acceptedTypes.join(", ")} (Maks. {maxSize}MB)
+                Mendukung file: PDF, DOCX (Maks. {maxSize}MB)
               </p>
             </div>
           </div>
