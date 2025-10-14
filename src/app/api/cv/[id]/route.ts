@@ -1,6 +1,6 @@
 // src/app/api/cv/[id]/route.ts (UPDATED)
 
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { cookies } from 'next/headers';
 import { adminAuth, adminDb } from '@/src/lib/firebase-admin'; // Gunakan adminDb
 
@@ -86,25 +86,25 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 }
 
 // HANDLER UNTUK DELETE (MENGHAPUS CV)
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
     const userId = await getUserId();
     if (!userId) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     try {
-        // --- PERUBAHAN DI SINI ---
-        const cvDocRef = adminDb.collection('cvs').doc(params.id);
-        const cvDoc = await cvDocRef.get();
-        // --- AKHIR PERUBAHAN ---
+        const docRef = adminDb.collection('cvs').doc(params.id);
+        const doc = await docRef.get();
         
-        if (!cvDoc.exists || cvDoc.data()?.userId !== userId) {
-            return NextResponse.json({ error: 'CV not found or access denied' }, { status: 404 });
+        // Cukup periksa apakah dokumen ada dan userId cocok
+        if (!doc.exists || doc.data()?.userId !== userId) {
+            return NextResponse.json({ error: 'Document not found or access denied' }, { status: 404 });
         }
         
-        await cvDocRef.delete();
+        await docRef.delete();
         return NextResponse.json({ message: 'CV deleted successfully' }, { status: 200 });
     } catch (error) {
+        console.error("Error deleting CV:", error);
         return NextResponse.json({ error: 'Failed to delete CV' }, { status: 500 });
     }
 }

@@ -79,22 +79,16 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
     const fetchCVs = async () => {
       setIsLoading(true);
       try {
-        // --- PERBAIKAN DI SINI ---
-        const response = await fetch("/api/cv?type=builder");
-        // --- AKHIR PERBAIKAN ---
-        if (!response.ok) {
-          throw new Error("Gagal mengambil data CV");
-        }
+        const response = await fetch("/api/cv?type=builder"); // Minta tipe 'builder'
+        if (!response.ok) throw new Error("Gagal mengambil data CV");
         const data = await response.json();
         setCvs(data);
       } catch (error) {
-        console.error(error);
         toast.error("Gagal memuat data CV Anda.");
       } finally {
         setIsLoading(false);
       }
     };
-
     fetchCVs();
   }, []);
 

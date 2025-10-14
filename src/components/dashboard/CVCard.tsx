@@ -28,9 +28,10 @@ import {
   DropdownMenuRadioItem,
 } from "../ui/dropdown-menu";
 import { Education, WorkExperience } from "../cvbuilder/types"; // Import tipe detail
+import { CVScoringData } from "@/src/utils/cvScoringService";
 
 // --- PERUBAHAN UTAMA DI SINI ---
-export interface CVData {
+export interface CVData extends Partial<Omit<CVScoringData, "fileName">> {
   id: string;
   name: string;
   year: number;
@@ -41,13 +42,12 @@ export interface CVData {
   lang: "id" | "en" | "unknown";
   visibility: "public" | "private";
   owner?: string;
-  userId?: string; // <-- TAMBAHKAN INI
+  userId?: string;
+  type?: "builder" | "uploaded";
 
-  // Properti opsional dari CVBuilderData
-  workExperiences?: WorkExperience[];
-  educations?: Education[];
-  skills?: string[];
-  summary?: string;
+  // Properti dari CVBuilderData (pastikan semuanya opsional)
+  jobTitle?: string;
+  description?: string;
   firstName?: string;
   lastName?: string;
   email?: string;
@@ -55,8 +55,10 @@ export interface CVData {
   location?: string;
   linkedin?: string;
   website?: string;
-  description?: string;
-  jobTitle?: string; // <-- TAMBAHKAN INI JUGA
+  workExperiences?: WorkExperience[];
+  educations?: Education[];
+  skills?: string[];
+  summary?: string;
 }
 // --- AKHIR PERUBAHAN ---
 

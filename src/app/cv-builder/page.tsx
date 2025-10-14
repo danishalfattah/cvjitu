@@ -53,21 +53,15 @@ export default function Page() {
       const url = cvId ? `/api/cv/${cvId}` : "/api/cv";
       const method = cvId ? "PUT" : "POST";
 
-      // --- PERBAIKAN DI SINI ---
-      const dataToSave = { ...data, type: "builder" }; // Tambahkan tipe
-      // --- AKHIR PERBAIKAN ---
+      const dataToSave = { ...data, type: "builder" }; // Tambahkan tipe 'builder'
 
       const response = await fetch(url, {
         method: method,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(dataToSave), // Kirim data yang sudah ada tipenya
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(dataToSave),
       });
 
-      if (!response.ok) {
-        throw new Error("Gagal menyimpan CV");
-      }
+      if (!response.ok) throw new Error("Gagal menyimpan CV");
 
       toast.success(
         cvId ? "CV berhasil diperbarui!" : "CV Anda berhasil disimpan!"
@@ -75,11 +69,9 @@ export default function Page() {
       router.push("/dashboard");
       router.refresh();
     } catch (error) {
-      console.error(error);
       toast.error("Gagal menyimpan CV. Silakan coba lagi.");
     }
   };
-
   const handleSaveDraft = (data: CVBuilderData) => {
     handleSave(data);
     toast.info(

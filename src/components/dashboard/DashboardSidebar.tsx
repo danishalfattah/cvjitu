@@ -32,7 +32,7 @@ export function DashboardSidebar({
     },
     {
       id: "scoring",
-      label: "Scoring CV Anda",
+      label: "Scoring CV",
       icon: BarChart3,
     },
   ];
