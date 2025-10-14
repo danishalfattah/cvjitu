@@ -59,6 +59,7 @@ export function Dashboard({ onCreateCVAction }: DashboardProps) {
     status: "Semua Status",
     year: "Semua Tahun",
     scoreRange: [1, 100],
+    sortBy: "newest" as "newest" | "oldest", // Tambahkan state sortBy
   });
   const [deleteModal, setDeleteModal] = useState<{
     isOpen: boolean;
@@ -95,6 +96,12 @@ export function Dashboard({ onCreateCVAction }: DashboardProps) {
     setCurrentPage(1);
   }, [searchQuery, filters]);
 
+  const availableYears = useMemo(() => {
+    if (!cvs || cvs.length === 0) return [];
+    const yearsSet = new Set(cvs.map((cv) => cv.year.toString()));
+    return Array.from(yearsSet).sort((a, b) => parseInt(b) - parseInt(a));
+  }, [cvs]);
+
   const stats = useMemo(() => {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -125,30 +132,38 @@ export function Dashboard({ onCreateCVAction }: DashboardProps) {
   }, [cvs]);
 
   // --- PERBAIKAN UTAMA DI SINI ---
-  const filteredCVs = cvs.filter((cv) => {
-    const matchesSearch = (cv.name || "")
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
+  const filteredAndSortedCVs = useMemo(() => {
+    let filtered = cvs.filter((cv) => {
+      const matchesSearch = (cv.name || "")
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
 
-    const matchesStatus =
-      filters.status === "Semua Status" ||
-      (filters.status === "Selesai" && cv.status === "Completed") ||
-      (filters.status === "Draf" && cv.status === "Draft");
+      const matchesStatus =
+        filters.status === "Semua Status" ||
+        (filters.status === "Selesai" && cv.status === "Completed") ||
+        (filters.status === "Draf" && cv.status === "Draft");
 
-    const matchesYear =
-      filters.year === "Semua Tahun" ||
-      (cv.year ? cv.year.toString() === filters.year : false);
+      const matchesYear =
+        filters.year === "Semua Tahun" ||
+        (cv.year ? cv.year.toString() === filters.year : false);
 
-    // Logika Filter Skor:
-    // Jika CV adalah draf, abaikan filter skor (selalu tampilkan).
-    // Jika bukan draf, terapkan filter skor seperti biasa.
-    const matchesScore =
-      cv.status === "Draft" ||
-      ((cv.score || 0) >= filters.scoreRange[0] &&
-        (cv.score || 0) <= filters.scoreRange[1]);
+      const matchesScore =
+        cv.status === "Draft" ||
+        ((cv.score || 0) >= filters.scoreRange[0] &&
+          (cv.score || 0) <= filters.scoreRange[1]);
 
-    return matchesSearch && matchesStatus && matchesYear && matchesScore;
-  });
+      return matchesSearch && matchesStatus && matchesYear && matchesScore;
+    });
+
+    // Terapkan pengurutan
+    filtered.sort((a, b) => {
+      const dateA = new Date(a.updatedAt).getTime();
+      const dateB = new Date(b.updatedAt).getTime();
+      return filters.sortBy === "newest" ? dateB - dateA : dateA - dateB;
+    });
+
+    return filtered;
+  }, [cvs, searchQuery, filters]);
   // --- AKHIR PERBAIKAN ---
 
   const handleCVAction = (action: string, cv: CVData) => {
@@ -258,6 +273,7 @@ export function Dashboard({ onCreateCVAction }: DashboardProps) {
       status: "Semua Status",
       year: "Semua Tahun",
       scoreRange: [1, 100],
+      sortBy: "newest", // Reset juga sortBy
     });
     setCurrentPage(1);
   };
@@ -274,10 +290,12 @@ export function Dashboard({ onCreateCVAction }: DashboardProps) {
       ? onCreateCVAction(lang)
       : router.push(`/cv-builder?lang=${lang}`);
   };
-
-  const totalPages = Math.ceil(filteredCVs.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredAndSortedCVs.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedCVs = filteredCVs.slice(startIndex, startIndex + itemsPerPage);
+  const paginatedCVs = filteredAndSortedCVs.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
 
   if (isLoading) {
     return (
@@ -394,6 +412,7 @@ export function Dashboard({ onCreateCVAction }: DashboardProps) {
         </h2>
         <CVFilters
           filters={filters}
+          years={availableYears} // Kirim tahun dinamis ke CVFilters
           onFiltersChange={setFilters}
           onReset={resetFilters}
         />
@@ -420,7 +439,8 @@ export function Dashboard({ onCreateCVAction }: DashboardProps) {
       </div>
       <div className="flex items-center justify-between mb-6">
         <span className="text-xs sm:text-sm text-gray-600">
-          Menampilkan {paginatedCVs.length} dari {filteredCVs.length} CV
+          Menampilkan {paginatedCVs.length} dari {filteredAndSortedCVs.length}{" "}
+          CV
         </span>
         <div className="flex items-center space-x-2">
           <Button
@@ -445,7 +465,7 @@ export function Dashboard({ onCreateCVAction }: DashboardProps) {
           </Button>
         </div>
       </div>
-      {filteredCVs.length === 0 ? (
+      {filteredAndSortedCVs.length === 0 ? (
         <EmptyState
           title="Repositori Kosong"
           description="Anda belum membuat CV. Buat CV pertama Anda untuk memulai."

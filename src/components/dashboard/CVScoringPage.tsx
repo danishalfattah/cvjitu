@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -28,6 +28,7 @@ export function CVScoringPage() {
     status: "Semua Status",
     year: "Semua Tahun",
     scoreRange: [1, 100],
+    sortBy: "newest" as "newest" | "oldest", // Tambahkan state sortBy
   });
   const [isProcessing, setIsProcessing] = useState(false);
   const [scoringResult, setScoringResult] = useState<CVScoringData | null>(
@@ -57,6 +58,12 @@ export function CVScoringPage() {
     };
     fetchScoredCVs();
   }, []);
+
+  const availableYears = useMemo(() => {
+    if (!cvs || cvs.length === 0) return [];
+    const yearsSet = new Set(cvs.map((cv) => cv.year.toString()));
+    return Array.from(yearsSet).sort((a, b) => parseInt(b) - parseInt(a));
+  }, [cvs]);
 
   const handleFileUpload = async (fileIdentifier: {
     name: string;
@@ -148,18 +155,29 @@ export function CVScoringPage() {
     }
   };
 
-  const filteredCVs = cvs.filter((cv) => {
-    const matchesSearch = (cv.name || "")
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    const matchesYear =
-      filters.year === "Semua Tahun" ||
-      (cv.year ? cv.year.toString() === filters.year : false);
-    const matchesScore =
-      (cv.score || 0) >= filters.scoreRange[0] &&
-      (cv.score || 0) <= filters.scoreRange[1];
-    return matchesSearch && matchesYear && matchesScore;
-  });
+  const filteredAndSortedCVs = useMemo(() => {
+    let filtered = cvs.filter((cv) => {
+      const matchesSearch = (cv.name || "")
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
+      const matchesYear =
+        filters.year === "Semua Tahun" ||
+        (cv.year ? cv.year.toString() === filters.year : false);
+      const matchesScore =
+        (cv.score || 0) >= filters.scoreRange[0] &&
+        (cv.score || 0) <= filters.scoreRange[1];
+      return matchesSearch && matchesYear && matchesScore;
+    });
+
+    // Terapkan pengurutan berdasarkan tanggal upload (createdAt)
+    filtered.sort((a, b) => {
+      const dateA = new Date(a.createdAt).getTime();
+      const dateB = new Date(b.createdAt).getTime();
+      return filters.sortBy === "newest" ? dateB - dateA : dateA - dateB;
+    });
+
+    return filtered;
+  }, [cvs, searchQuery, filters]);
 
   if (scoringResult) {
     return (
@@ -208,12 +226,14 @@ export function CVScoringPage() {
       </h2>
       <CVFilters
         filters={filters}
+        years={availableYears} // Kirim tahun dinamis
         onFiltersChange={setFilters}
         onReset={() =>
           setFilters({
-            status: "Semua Tahun",
+            status: "Semua Status",
             year: "Semua Tahun",
             scoreRange: [1, 100],
+            sortBy: "newest", // Reset juga sortBy
           })
         }
         hideStatusFilter={true}
@@ -231,7 +251,7 @@ export function CVScoringPage() {
       </div>
       <div className="flex items-center justify-between mb-6">
         <span className="text-xs sm:text-sm text-gray-600">
-          Menampilkan {filteredCVs.length} dari {cvs.length} hasil
+          Menampilkan {filteredAndSortedCVs.length} dari {cvs.length} hasil
         </span>
         <div className="flex items-center space-x-2">
           <Button
@@ -256,14 +276,14 @@ export function CVScoringPage() {
           </Button>
         </div>
       </div>
-      {filteredCVs.length === 0 ? (
+      {filteredAndSortedCVs.length === 0 ? (
         <EmptyState
           title="Repositori Kosong"
           description="Anda belum mengunggah CV untuk dianalisis. Unggah CV pertama Anda untuk memulai."
         />
       ) : viewMode === "cards" ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
-          {filteredCVs.map((cv) => (
+          {filteredAndSortedCVs.map((cv) => (
             <ScoredCVCard
               key={cv.id}
               cv={cv}
@@ -274,7 +294,7 @@ export function CVScoringPage() {
         </div>
       ) : (
         <ScoredCVTable
-          cvs={filteredCVs}
+          cvs={filteredAndSortedCVs}
           onViewAnalysis={handleViewResult}
           onDelete={handleDelete}
         />
