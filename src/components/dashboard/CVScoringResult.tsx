@@ -12,14 +12,17 @@ import {
   FileText,
   Edit,
   ArrowLeft,
+  Save, // Import ikon Save
 } from "lucide-react";
 import { CVScoringData } from "../../utils/cvScoringService";
+import { cn } from "@/src/lib/utils"; // Import cn utility
 
 interface CVScoringResultProps {
   data: CVScoringData;
   cvBuilderData: CVBuilderData | null;
   onBack: () => void;
   onSaveToRepository: () => void;
+  showPreview?: boolean; // Tambah prop showPreview
 }
 
 export function CVScoringResult({
@@ -27,6 +30,7 @@ export function CVScoringResult({
   cvBuilderData,
   onBack,
   onSaveToRepository,
+  showPreview = true, // Defaultnya true
 }: CVScoringResultProps) {
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -76,7 +80,6 @@ export function CVScoringResult({
   return (
     <div className="min-h-screen bg-[var(--surface)] py-8 px-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header Responsif */}
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
           <div className="flex items-center space-x-4 min-w-0">
             <Button
@@ -89,7 +92,7 @@ export function CVScoringResult({
             </Button>
             <div className="min-w-0">
               <h1 className="text-xl md:text-2xl font-poppins font-bold text-[var(--neutral-ink)] truncate">
-                Hasil Analisis & Preview CV
+                Hasil Analisis CV
               </h1>
               <p className="text-sm text-gray-600 flex items-center mt-1 truncate">
                 <FileText className="w-4 h-4 mr-2 flex-shrink-0" />
@@ -97,24 +100,35 @@ export function CVScoringResult({
               </p>
             </div>
           </div>
+          {/* --- PERUBAHAN UTAMA: TOMBOL SIMPAN --- */}
+          <Button
+            onClick={onSaveToRepository}
+            className="bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white"
+          >
+            <Save className="w-4 h-4 mr-2" />
+            Simpan ke Repositori
+          </Button>
+          {/* --- AKHIR PERUBAHAN --- */}
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-8">
-          {/* Kolom Kiri: CV Preview */}
-          <div className="lg:sticky lg:top-8 h-fit">
-            <h2 className="text-lg font-semibold mb-4 font-poppins">
-              Preview CV
-            </h2>
-            {cvBuilderData ? (
-              <CVPreview data={cvBuilderData} lang="id" />
-            ) : (
-              <div className="w-full aspect-[210/297] bg-gray-100 rounded-lg flex items-center justify-center">
-                <p className="text-gray-500">Preview tidak tersedia.</p>
-              </div>
-            )}
-          </div>
+        {/* --- PERUBAHAN UTAMA: LAYOUT KONDISIONAL --- */}
+        <div className={cn("grid gap-8", showPreview && "lg:grid-cols-2")}>
+          {showPreview && (
+            <div className="lg:sticky lg:top-8 h-fit">
+              <h2 className="text-lg font-semibold mb-4 font-poppins">
+                Preview CV
+              </h2>
+              {cvBuilderData ? (
+                <CVPreview data={cvBuilderData} lang="id" />
+              ) : (
+                <div className="w-full aspect-[210/297] bg-gray-100 rounded-lg flex items-center justify-center">
+                  <p className="text-gray-500">Preview tidak tersedia.</p>
+                </div>
+              )}
+            </div>
+          )}
+          {/* --- AKHIR PERUBAHAN --- */}
 
-          {/* Kolom Kanan: Hasil Analisis */}
           <div className="space-y-6">
             <Card className="border border-[var(--border-color)]">
               <CardHeader className="text-center">
@@ -165,7 +179,6 @@ export function CVScoringResult({
                 </div>
               </CardContent>
             </Card>
-
             <Card className="border border-[var(--border-color)]">
               <CardHeader>
                 <CardTitle className="text-xl font-poppins text-[var(--neutral-ink)]">
@@ -206,7 +219,6 @@ export function CVScoringResult({
                 </div>
               </CardContent>
             </Card>
-
             <Card className="border border-[var(--border-color)]">
               <CardHeader>
                 <CardTitle className="text-xl font-poppins text-[var(--neutral-ink)]">

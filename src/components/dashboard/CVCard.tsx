@@ -41,17 +41,22 @@ export interface CVData {
   lang: "id" | "en" | "unknown";
   visibility: "public" | "private";
   owner?: string;
+  userId?: string; // <-- TAMBAHKAN INI
 
-  // Tambahkan properti opsional dari CVBuilderData
+  // Properti opsional dari CVBuilderData
   workExperiences?: WorkExperience[];
   educations?: Education[];
   skills?: string[];
   summary?: string;
-  // Anda juga bisa menambahkan properti lain jika diperlukan
   firstName?: string;
   lastName?: string;
   email?: string;
+  phone?: string;
+  location?: string;
+  linkedin?: string;
+  website?: string;
   description?: string;
+  jobTitle?: string; // <-- TAMBAHKAN INI JUGA
 }
 // --- AKHIR PERUBAHAN ---
 

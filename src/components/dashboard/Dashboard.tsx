@@ -66,28 +66,29 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
   const [isLangModalOpen, setIsLangModalOpen] = useState(false);
+
+  // --- PERUBAHAN DI SINI ---
   const [scoringResult, setScoringResult] = useState<CVScoringData | null>(
     null
   );
+  const [selectedCvForPreview, setSelectedCvForPreview] =
+    useState<CVData | null>(null);
+  // --- AKHIR PERUBAHAN ---
 
   useEffect(() => {
     const fetchCVs = async () => {
       setIsLoading(true);
       try {
         const response = await fetch("/api/cv");
-        if (!response.ok) {
-          throw new Error("Gagal mengambil data CV");
-        }
+        if (!response.ok) throw new Error("Gagal mengambil data CV");
         const data = await response.json();
         setCvs(data);
       } catch (error) {
-        console.error(error);
         toast.error("Gagal memuat data CV Anda.");
       } finally {
         setIsLoading(false);
       }
     };
-
     fetchCVs();
   }, []);
 
@@ -95,6 +96,7 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
     setCurrentPage(1);
   }, [searchQuery, filters]);
 
+  // --- PERUBAHAN DI SINI ---
   const handleCVAction = (action: string, cv: CVData) => {
     switch (action) {
       case "preview":
@@ -119,12 +121,14 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
             },
           ],
           suggestions: [
-            "Tambahkan lebih banyak kata kunci yang relevan dari deskripsi pekerjaan.",
-            "Kuantifikasi pencapaian Anda dengan angka untuk dampak yang lebih besar.",
+            "Tambahkan lebih banyak kata kunci yang relevan.",
+            "Kuantifikasi pencapaian Anda.",
           ],
         };
-        setScoringResult(mockResult);
+        setSelectedCvForPreview(cv); // Simpan data CV yang asli
+        setScoringResult(mockResult); // Tampilkan hasil skor
         break;
+      // ... sisa case tetap sama
       case "download":
         toast.info("Fitur download akan segera hadir!");
         break;
@@ -139,6 +143,7 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
         break;
     }
   };
+  // --- AKHIR PERUBAHAN ---
 
   const handleShareCV = (cv: CVData) => {
     if (cv.visibility === "private") {
@@ -157,14 +162,11 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
     cvId: string,
     visibility: "public" | "private"
   ) => {
+    // Implementasi PUT request ke backend untuk update visibility
     setCvs((prevCvs) =>
       prevCvs.map((cv) => (cv.id === cvId ? { ...cv, visibility } : cv))
     );
-    toast.success("Visibilitas CV berhasil diubah!", {
-      description: `CV kini diatur sebagai ${
-        visibility === "public" ? "Publik" : "Privat"
-      }.`,
-    });
+    toast.success("Visibilitas CV berhasil diubah!");
   };
 
   const handleDeleteConfirm = async () => {
@@ -173,15 +175,10 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
         const response = await fetch(`/api/cv/${deleteModal.cv.id}`, {
           method: "DELETE",
         });
-
-        if (!response.ok) {
-          throw new Error("Gagal menghapus CV");
-        }
-
+        if (!response.ok) throw new Error("Gagal menghapus CV");
         setCvs((prev) => prev.filter((cv) => cv.id !== deleteModal.cv!.id));
         toast.success(`CV "${deleteModal.cv.name}" telah dihapus.`);
       } catch (error) {
-        console.error(error);
         toast.error("Gagal menghapus CV. Silakan coba lagi.");
       } finally {
         setDeleteModal({ isOpen: false, cv: null });
@@ -200,6 +197,7 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
 
   const handleBackToDashboard = () => {
     setScoringResult(null);
+    setSelectedCvForPreview(null);
   };
 
   const handleLanguageSelect = (lang: "id" | "en") => {
@@ -224,7 +222,6 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
     const matchesScore =
       (cv.score || 0) >= filters.scoreRange[0] &&
       (cv.score || 0) <= filters.scoreRange[1];
-
     return matchesSearch && matchesStatus && matchesYear && matchesScore;
   });
 
@@ -249,57 +246,39 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
     );
   }
 
-  if (scoringResult) {
-    const mockBuilderData: CVBuilderData = {
-      jobTitle: "Software Engineer",
-      description: "CV for the position of Software Engineer",
-      firstName: "Demo",
-      lastName: "User",
-      email: "demo@cvjitu.com",
-      phone: "08123456789",
-      location: "Jakarta, Indonesia",
-      linkedin: "linkedin.com/in/demouser",
-      website: "demouser.com",
-      workExperiences: [
-        {
-          id: "1",
-          jobTitle: "Frontend Developer",
-          company: "Tech Corp",
-          location: "Jakarta",
-          startDate: "2022-01",
-          endDate: "2024-01",
-          current: false,
-          description: "Developing cool stuff.",
-          achievements: ["Achieved X", "Improved Y"],
-        },
-      ],
-      educations: [
-        {
-          id: "1",
-          degree: "S.Kom",
-          institution: "Universitas Coding",
-          location: "Bandung",
-          startDate: "2018-09",
-          endDate: "2022-05",
-          current: false,
-          gpa: "3.8",
-        },
-      ],
-      skills: ["React", "TypeScript", "Next.js"],
-      summary: "A passionate developer.",
+  // --- PERUBAHAN DI SINI ---
+  if (scoringResult && selectedCvForPreview) {
+    // --- PERBAIKAN DI SINI ---
+    const cvBuilderDataFromCv: CVBuilderData = {
+      jobTitle: selectedCvForPreview.name,
+      description: selectedCvForPreview.description || "",
+      firstName: selectedCvForPreview.firstName || "",
+      lastName: selectedCvForPreview.lastName || "",
+      email: selectedCvForPreview.email || "",
+      phone: selectedCvForPreview.phone || "",
+      location: selectedCvForPreview.location || "",
+      linkedin: selectedCvForPreview.linkedin || "",
+      website: selectedCvForPreview.website || "",
+      workExperiences: selectedCvForPreview.workExperiences || [],
+      educations: selectedCvForPreview.educations || [],
+      skills: selectedCvForPreview.skills || [],
+      summary: selectedCvForPreview.summary || "",
     };
     return (
       <CVScoringResult
         data={scoringResult}
-        cvBuilderData={mockBuilderData}
+        cvBuilderData={cvBuilderDataFromCv} // Teruskan data yang sudah dikonversi
         onBack={handleBackToDashboard}
         onSaveToRepository={() => {
-          toast.success("Aksi ini akan kembali ke Dashboard.");
+          toast.success("Hasil analisis CV sudah tersimpan.");
           handleBackToDashboard();
         }}
+        showPreview={true}
       />
     );
+    // --- AKHIR PERBAIKAN ---
   }
+  // --- AKHIR PERUBAHAN ---
 
   return (
     <div className="flex-1 p-4 sm:p-6 bg-[var(--surface)] min-h-screen min-w-0">
@@ -313,7 +292,6 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
           Dashboard
         </h1>
       </div>
-
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
         <StatTile
           title="CV Dibuat"
@@ -340,7 +318,6 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
           change={{ value: "Perlu diselesaikan", type: "warning" }}
         />
       </div>
-
       <div className="mb-8">
         <h2 className="text-xl font-poppins font-semibold text-[var(--neutral-ink)] mb-4">
           Repositori CV Anda
@@ -351,7 +328,6 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
           onReset={resetFilters}
         />
       </div>
-
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mb-6">
         <div className="flex items-center space-x-4 flex-1 w-full sm:w-auto">
           <div className="relative flex-1 max-w-full sm:max-w-md">
@@ -372,7 +348,6 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
           <span className="text-sm sm:text-base">Buat CV</span>
         </Button>
       </div>
-
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0 mb-6">
         <div className="flex items-center">
           <span className="text-xs sm:text-sm text-gray-600">
@@ -402,7 +377,6 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
           </Button>
         </div>
       </div>
-
       {paginatedCVs.length === 0 ? (
         <EmptyState
           title="CV Tidak Ditemukan"
@@ -440,7 +414,6 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
               onVisibilityChange={handleVisibilityChange}
             />
           )}
-
           {totalPages > 1 && (
             <div className="mt-8">
               <Pagination className="justify-center">
@@ -509,14 +482,12 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
           )}
         </>
       )}
-
       <DeleteConfirmModal
         isOpen={deleteModal.isOpen}
         onClose={() => setDeleteModal({ isOpen: false, cv: null })}
         onConfirm={handleDeleteConfirm}
         cv={deleteModal.cv}
       />
-
       <AlertDialog open={isLangModalOpen} onOpenChange={setIsLangModalOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>

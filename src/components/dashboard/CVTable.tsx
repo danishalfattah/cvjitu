@@ -65,7 +65,6 @@ export function CVTable({
     return "bg-[var(--warn)] text-white";
   };
 
-  // --- TAMBAHAN: Fungsi untuk format tanggal ---
   const formatDate = (dateString: string) => {
     if (!dateString) return "-";
     return new Date(dateString).toLocaleString("id-ID", {
@@ -74,7 +73,6 @@ export function CVTable({
       year: "numeric",
     });
   };
-  // --- AKHIR TAMBAHAN ---
 
   return (
     <div className="bg-white rounded-lg border border-[var(--border-color)] overflow-hidden">
@@ -93,13 +91,16 @@ export function CVTable({
               </TableHead>
               {actionType === "builder" && <TableHead>Diperbarui</TableHead>}
               <TableHead>Status</TableHead>
-              <TableHead>Skor</TableHead>
+              <TableHead className="text-center">Skor</TableHead>
               <TableHead className="text-right">Aksi</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {cvs.map((cv) => (
-              <TableRow key={cv.id} className="hover:bg-[var(--surface)]">
+              <TableRow
+                key={cv.id}
+                className="hover:bg-[var(--surface)] align-middle"
+              >
                 <TableCell className="font-medium">{cv.name}</TableCell>
                 <TableCell>{cv.year}</TableCell>
                 {actionType === "builder" && (
@@ -125,7 +126,6 @@ export function CVTable({
                     </TableCell>
                   </>
                 )}
-                {/* --- PERUBAHAN DI SINI --- */}
                 <TableCell className="text-gray-600">
                   {formatDate(cv.createdAt)}
                 </TableCell>
@@ -134,7 +134,6 @@ export function CVTable({
                     {formatDate(cv.updatedAt)}
                   </TableCell>
                 )}
-                {/* --- AKHIR PERUBAHAN --- */}
                 <TableCell>
                   <Badge className={getStatusColor(cv.status)}>
                     {cv.status === "Completed"
@@ -144,11 +143,10 @@ export function CVTable({
                       : cv.status}
                   </Badge>
                 </TableCell>
-                <TableCell>
+                <TableCell className="text-center">
                   <RadialScore score={cv.score} size="sm" showLabel={false} />
                 </TableCell>
                 <TableCell className="text-right">
-                  {/* ... (Dropdown menu tetap sama) ... */}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="sm">

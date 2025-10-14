@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { DashboardSidebar } from "./DashboardSidebar";
 import { Dashboard } from "./Dashboard";
-import { CVScoringPage } from "./CVScoringPage";
+import { CVPreviewPage as CVScoringPage } from "./CVScoringPage";
 import { Button } from "../ui/button";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";

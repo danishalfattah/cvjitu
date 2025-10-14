@@ -1,4 +1,5 @@
-// src/components/CVPreviewPage.tsx (UPDATED FULL CODE)
+// src/components/CVPreviewPage.tsx (UPDATED)
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -14,16 +15,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/src/components/ui/card";
-import { Switch } from "@/src/components/ui/switch";
-import { Label } from "@/src/components/ui/label";
 import {
-  Globe,
-  Lock,
   Download,
   User as UserIcon,
   ArrowLeft,
   Home,
   Loader2,
+  Lock,
 } from "lucide-react";
 import { CVData } from "@/src/components/dashboard/CVCard";
 import { CVBuilderData } from "./cvbuilder/types";
@@ -35,10 +33,6 @@ export function CVPreviewPage() {
   const params = useParams();
   const { user, isAuthenticated } = useAuth();
   const [cvData, setCvData] = useState<CVData | null>(null);
-  const [cvBuilderData, setCvBuilderData] = useState<CVBuilderData | null>(
-    null
-  );
-  const [isPublic, setIsPublic] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -58,31 +52,8 @@ export function CVPreviewPage() {
           throw new Error(data.error || "Gagal memuat CV.");
         }
 
-        const fetchedCV: CVData = data;
-
-        document.title = `${fetchedCV.name} | CVJitu`;
-        setCvData(fetchedCV);
-        setIsPublic(fetchedCV.visibility === "public");
-
-        // Konversi CVData menjadi CVBuilderData untuk preview
-        const mockBuilderData: CVBuilderData = {
-          jobTitle: fetchedCV.name,
-          description: `CV for the position of ${fetchedCV.name}`,
-          firstName: "John", // Anda mungkin perlu menyimpan nama asli di data CV
-          lastName: "Doe",
-          email: "john.doe@example.com",
-          phone: "+1234567890",
-          location: "San Francisco, CA",
-          linkedin: "linkedin.com/in/johndoe",
-          website: "johndoe.com",
-          workExperiences: fetchedCV.workExperiences || [],
-          educations: fetchedCV.educations || [],
-          skills: fetchedCV.skills || [],
-          summary:
-            fetchedCV.summary ||
-            `A passionate ${fetchedCV.name} with experience.`,
-        };
-        setCvBuilderData(mockBuilderData);
+        document.title = `${data.name} | CVJitu`;
+        setCvData(data);
       } catch (err: any) {
         document.title = "Error | CVJitu";
         setError(err.message);
@@ -94,29 +65,7 @@ export function CVPreviewPage() {
     fetchCVData();
   }, [cvId]);
 
-  const handleVisibilityChange = async (checked: boolean) => {
-    // Optimistic UI update
-    setIsPublic(checked);
-    setCvData((prev) =>
-      prev ? { ...prev, visibility: checked ? "public" : "private" } : null
-    );
-
-    try {
-      await fetch(`/api/cv/${cvId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ visibility: checked ? "public" : "private" }),
-      });
-    } catch (error) {
-      // Revert UI on failure
-      setIsPublic(!checked);
-      setCvData((prev) =>
-        prev ? { ...prev, visibility: !checked ? "public" : "private" } : null
-      );
-    }
-  };
-
-  const isOwner = isAuthenticated && user?.id === cvData?.owner;
+  const isOwner = isAuthenticated && user?.id === cvData?.userId;
 
   if (isLoading) {
     return (
@@ -143,39 +92,12 @@ export function CVPreviewPage() {
     <>
       <div className="min-h-screen bg-gray-50 p-4 sm:p-8">
         <div className="max-w-5xl mx-auto">
-          {isOwner && (
-            <div className="flex justify-end items-center mb-6">
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="visibility-switch"
-                  checked={isPublic}
-                  onCheckedChange={handleVisibilityChange}
-                />
-                <Label
-                  htmlFor="visibility-switch"
-                  className="flex items-center"
-                >
-                  {isPublic ? (
-                    <>
-                      <Globe className="w-4 h-4 mr-2 text-green-600" />
-                      Publik
-                    </>
-                  ) : (
-                    <>
-                      <Lock className="w-4 h-4 mr-2 text-red-600" />
-                      Privat
-                    </>
-                  )}
-                </Label>
-              </div>
-            </div>
-          )}
-
+          {/* BLOK KODE UNTUK TOGGLE BUTTON SUDAH DIHAPUS DARI SINI */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
-              {cvBuilderData && (
+              {cvData && (
                 <CVPreview
-                  data={cvBuilderData}
+                  data={cvData as CVBuilderData}
                   lang={
                     cvData?.lang === "unknown" || !cvData?.lang
                       ? "id"
@@ -193,8 +115,7 @@ export function CVPreviewPage() {
                   {cvData && (
                     <div className="space-y-2 text-sm text-gray-700">
                       <p>
-                        <strong>{t("jobTitleLabel", "id")}:</strong>{" "}
-                        {cvData.name}
+                        <strong>Posisi yang Dilamar:</strong> {cvData.name}
                       </p>
                       <p className="flex items-center">
                         <strong className="mr-2">Pemilik:</strong>
@@ -216,8 +137,7 @@ export function CVPreviewPage() {
                   variant="outline"
                   className="w-full"
                 >
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Kembali ke Dashboard
+                  <ArrowLeft className="w-4 h-4 mr-2" /> Kembali ke Dashboard
                 </Button>
               ) : (
                 <Button
@@ -225,14 +145,12 @@ export function CVPreviewPage() {
                   variant="outline"
                   className="w-full"
                 >
-                  <Home className="w-4 h-4 mr-2" />
-                  Kembali ke Beranda
+                  <Home className="w-4 h-4 mr-2" /> Kembali ke Beranda
                 </Button>
               )}
 
               <Button className="w-full bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white">
-                <Download className="w-4 h-4 mr-2" />
-                Unduh sebagai PDF
+                <Download className="w-4 h-4 mr-2" /> Unduh sebagai PDF
               </Button>
               <div className="flex justify-center pt-4">
                 <Link href="/">

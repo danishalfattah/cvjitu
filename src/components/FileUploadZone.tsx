@@ -1,4 +1,4 @@
-// components/FileUploadZone.tsx
+// src/components/FileUploadZone.tsx
 
 import { useState, useCallback } from "react";
 import {
@@ -20,9 +20,10 @@ import { Badge } from "./ui/badge";
 import { Progress } from "./ui/progress";
 import { RadialScore } from "./RadialScore";
 import { CVScoringData } from "../utils/cvScoringService";
+import { toast } from "sonner";
 
 interface FileUploadZoneProps {
-  onFileUpload: (file: File) => void;
+  onFileUpload: (fileIdentifier: { name: string; url: string }) => void;
   isProcessing?: boolean;
   acceptedTypes?: string[];
   maxSize?: number; // in MB
@@ -55,50 +56,91 @@ export function FileUploadZone({
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const validateFile = (file: File): string | null => {
-    // Check file type
     const fileExtension = "." + file.name.split(".").pop()?.toLowerCase();
     if (!acceptedTypes.includes(fileExtension)) {
       return `Tipe file tidak didukung. Gunakan: ${acceptedTypes.join(", ")}`;
     }
-
-    // Check file size
     const fileSizeMB = file.size / (1024 * 1024);
     if (fileSizeMB > maxSize) {
       return `Ukuran file terlalu besar. Maksimal ${maxSize}MB`;
     }
-
     return null;
   };
 
   const handleFiles = useCallback(
     (files: FileList | null) => {
       if (!files || files.length === 0) return;
-
       const file = files[0];
       const validationError = validateFile(file);
-
       if (validationError) {
         setError(validationError);
         setSelectedFile(null);
         return;
       }
-
       setError(null);
       setSelectedFile(file);
     },
     [acceptedTypes, maxSize]
   );
 
+  const handleUpload = async () => {
+    if (!selectedFile) return;
+
+    setIsUploading(true);
+    setError(null);
+
+    try {
+      // 1. Dapatkan presigned URL dari backend
+      const presignedUrlResponse = await fetch("/api/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fileName: selectedFile.name,
+          fileType: selectedFile.type,
+        }),
+      });
+
+      if (!presignedUrlResponse.ok) {
+        throw new Error("Gagal mendapatkan izin untuk mengunggah file.");
+      }
+
+      const { url, fileName: uniqueFileName } =
+        await presignedUrlResponse.json();
+
+      // 2. Unggah file langsung ke Cloudflare R2 menggunakan presigned URL
+      const uploadResponse = await fetch(url, {
+        method: "PUT",
+        body: selectedFile,
+        headers: {
+          "Content-Type": selectedFile.type,
+        },
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error("Gagal mengunggah file ke penyimpanan.");
+      }
+
+      // 3. Panggil prop onFileUpload dengan nama file unik dan URL-nya
+      toast.success("File berhasil diunggah!");
+      const publicUrl = `${process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_DOMAIN}/${uniqueFileName}`;
+      onFileUpload({ name: selectedFile.name, url: publicUrl });
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || "Terjadi kesalahan saat mengunggah.");
+      toast.error(err.message || "Terjadi kesalahan saat mengunggah.");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true);
-    } else if (e.type === "dragleave") {
-      setDragActive(false);
-    }
+    if (e.type === "dragenter" || e.type === "dragover") setDragActive(true);
+    else if (e.type === "dragleave") setDragActive(false);
   }, []);
 
   const handleDrop = useCallback(
@@ -118,22 +160,17 @@ export function FileUploadZone({
     [handleFiles]
   );
 
-  const handleUpload = () => {
-    if (selectedFile) {
-      onFileUpload(selectedFile);
-    }
-  };
-
   const clearFile = () => {
     setSelectedFile(null);
     setError(null);
   };
 
   const formatFileSize = (bytes: number): string => {
-    const sizes = ["Bytes", "KB", "MB", "GB"];
     if (bytes === 0) return "0 Bytes";
-    const i = Math.floor(Math.log(bytes) / Math.log(1024));
-    return Math.round((bytes / Math.pow(1024, i)) * 100) / 100 + " " + sizes[i];
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
   const getStatusIcon = (status: string) => {
@@ -181,11 +218,9 @@ export function FileUploadZone({
     }
   };
 
-  // If scoring data exists, show results
   if (scoringData) {
     return (
       <div className="space-y-6">
-        {/* Header with back button */}
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <BarChart3 className="w-5 h-5 text-[var(--red-normal)]" />
@@ -203,8 +238,6 @@ export function FileUploadZone({
             Upload Ulang
           </Button>
         </div>
-
-        {/* Overall Score */}
         <div className="text-center py-6 border-b border-gray-200">
           <RadialScore
             score={scoringData.overallScore}
@@ -216,8 +249,6 @@ export function FileUploadZone({
             {scoringData.fileName}
           </p>
         </div>
-
-        {/* Quick Metrics */}
         <div className="grid grid-cols-3 gap-4">
           <div className="text-center">
             <div className="text-lg font-bold text-[var(--neutral-ink)]">
@@ -238,8 +269,6 @@ export function FileUploadZone({
             <div className="text-xs text-gray-600">Readability</div>
           </div>
         </div>
-
-        {/* Top Sections (show only top 3) */}
         <div className="space-y-3">
           <h4 className="text-sm font-medium text-gray-700">
             Analisis Bagian CV:
@@ -271,8 +300,6 @@ export function FileUploadZone({
             </p>
           )}
         </div>
-
-        {/* Top Suggestions */}
         <div className="space-y-3">
           <h4 className="text-sm font-medium text-gray-700">Saran Utama:</h4>
           {scoringData.suggestions.slice(0, 2).map((suggestion, index) => (
@@ -285,8 +312,6 @@ export function FileUploadZone({
             </div>
           ))}
         </div>
-
-        {/* Action Buttons based on Auth State */}
         <div className="pt-4 border-t border-gray-200">
           {isAuthenticated ? (
             <Button
@@ -307,48 +332,6 @@ export function FileUploadZone({
             </Button>
           )}
         </div>
-      </div>
-    );
-  }
-
-  // Show login requirement if user has tried scoring and is not authenticated
-  if (hasTriedScoring && !isAuthenticated && !scoringData) {
-    return (
-      <div className="space-y-6 text-center">
-        <div className="flex items-center justify-center space-x-4 mb-4">
-          <Upload className="w-5 h-5 text-[var(--red-normal)]" />
-          <span className="text-sm font-medium text-gray-700">
-            Upload CV untuk Analisis
-          </span>
-        </div>
-
-        <div className="bg-[var(--red-light)] border border-[var(--red-normal)] rounded-lg p-6">
-          <div className="mb-4">
-            <div className="w-16 h-16 bg-[var(--red-normal)] rounded-full flex items-center justify-center mx-auto mb-4">
-              <FileText className="w-8 h-8 text-white" />
-            </div>
-            <h3 className="text-lg font-poppins font-semibold text-[var(--neutral-ink)] mb-2">
-              Login Diperlukan
-            </h3>
-            <p className="text-gray-600 mb-4">
-              Anda sudah melakukan analisis CV sebelumnya. Silakan login
-              terlebih dahulu untuk melakukan analisis CV lagi dan menyimpan
-              hasil analisis Anda.
-            </p>
-          </div>
-
-          <Button
-            onClick={onTryScoring}
-            className="bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white"
-          >
-            Login untuk Analisis Lagi
-          </Button>
-        </div>
-
-        <p className="text-xs text-gray-500">
-          Dengan login, Anda dapat menyimpan hasil analisis CV dan mengakses
-          fitur premium lainnya.
-        </p>
       </div>
     );
   }
@@ -382,7 +365,7 @@ export function FileUploadZone({
           className="hidden"
           accept={acceptedTypes.join(",")}
           onChange={handleInputChange}
-          disabled={isProcessing}
+          disabled={isUploading || isProcessing}
         />
 
         {selectedFile ? (
@@ -397,7 +380,7 @@ export function FileUploadZone({
                   {formatFileSize(selectedFile.size)}
                 </p>
               </div>
-              {!isProcessing && (
+              {!(isUploading || isProcessing) && (
                 <Button
                   variant="ghost"
                   size="sm"
@@ -412,7 +395,7 @@ export function FileUploadZone({
               )}
             </div>
 
-            {!isProcessing && (
+            {!(isUploading || isProcessing) && (
               <Button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -424,10 +407,12 @@ export function FileUploadZone({
               </Button>
             )}
 
-            {isProcessing && (
+            {(isUploading || isProcessing) && (
               <div className="flex items-center justify-center space-x-2 text-[var(--red-normal)]">
                 <Loader2 className="w-5 h-5 animate-spin" />
-                <span className="text-sm font-medium">Menganalisis CV...</span>
+                <span className="text-sm font-medium">
+                  {isUploading ? "Mengunggah file..." : "Menganalisis..."}
+                </span>
               </div>
             )}
           </div>
