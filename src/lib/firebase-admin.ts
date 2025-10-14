@@ -7,10 +7,16 @@ if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
   );
 }
 
-// Inisialisasi serviceAccount dari environment variable
-const serviceAccount = JSON.parse(
-  process.env.FIREBASE_SERVICE_ACCOUNT_KEY as string
-);
+// --- PERBAIKAN UTAMA DI SINI ---
+// Ambil string JSON dari environment variable
+const serviceAccountString = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+
+// Ganti karakter '\\n' (yang salah) menjadi '\n' (yang benar) di seluruh string
+const correctedServiceAccountString = serviceAccountString.replace(/\\n/g, "\n");
+
+// Parsing string JSON yang sudah diperbaiki
+const serviceAccount = JSON.parse(correctedServiceAccountString);
+// --- AKHIR PERBAIKAN ---
 
 // Inisialisasi Firebase Admin SDK hanya jika belum ada
 if (!admin.apps.length) {
