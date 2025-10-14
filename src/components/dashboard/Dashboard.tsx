@@ -124,6 +124,33 @@ export function Dashboard({ onCreateCVAction }: DashboardProps) {
     };
   }, [cvs]);
 
+  // --- PERBAIKAN UTAMA DI SINI ---
+  const filteredCVs = cvs.filter((cv) => {
+    const matchesSearch = (cv.name || "")
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+
+    const matchesStatus =
+      filters.status === "Semua Status" ||
+      (filters.status === "Selesai" && cv.status === "Completed") ||
+      (filters.status === "Draf" && cv.status === "Draft");
+
+    const matchesYear =
+      filters.year === "Semua Tahun" ||
+      (cv.year ? cv.year.toString() === filters.year : false);
+
+    // Logika Filter Skor:
+    // Jika CV adalah draf, abaikan filter skor (selalu tampilkan).
+    // Jika bukan draf, terapkan filter skor seperti biasa.
+    const matchesScore =
+      cv.status === "Draft" ||
+      ((cv.score || 0) >= filters.scoreRange[0] &&
+        (cv.score || 0) <= filters.scoreRange[1]);
+
+    return matchesSearch && matchesStatus && matchesYear && matchesScore;
+  });
+  // --- AKHIR PERBAIKAN ---
+
   const handleCVAction = (action: string, cv: CVData) => {
     switch (action) {
       case "preview":
@@ -247,23 +274,6 @@ export function Dashboard({ onCreateCVAction }: DashboardProps) {
       ? onCreateCVAction(lang)
       : router.push(`/cv-builder?lang=${lang}`);
   };
-
-  const filteredCVs = cvs.filter((cv) => {
-    const matchesSearch = (cv.name || "")
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    const matchesStatus =
-      filters.status === "Semua Status" ||
-      (filters.status === "Selesai" && cv.status === "Completed") ||
-      (filters.status === "Draf" && cv.status === "Draft");
-    const matchesYear =
-      filters.year === "Semua Tahun" ||
-      (cv.year ? cv.year.toString() === filters.year : false);
-    const matchesScore =
-      (cv.score || 0) >= filters.scoreRange[0] &&
-      (cv.score || 0) <= filters.scoreRange[1];
-    return matchesSearch && matchesStatus && matchesYear && matchesScore;
-  });
 
   const totalPages = Math.ceil(filteredCVs.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
