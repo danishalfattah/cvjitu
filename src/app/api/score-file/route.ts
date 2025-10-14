@@ -15,7 +15,6 @@ const model = genAI.getGenerativeModel({
   },
 });
 
-// Fungsi untuk mengubah file menjadi format yang bisa dibaca Gemini
 async function fileToGenerativePart(file: File) {
   const arrayBuffer = await file.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);

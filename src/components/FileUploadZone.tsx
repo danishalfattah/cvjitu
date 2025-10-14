@@ -12,6 +12,8 @@ import { Button } from "./ui/button";
 import { RadialScore } from "./RadialScore";
 import { toast } from "sonner";
 import { type CVScoringData } from "../app/page";
+import { CVScoringResult } from "./dashboard/CVScoringResult";
+
 interface FileUploadZoneProps {
   // Prop baru untuk menangani file yang dipilih secara langsung
   onFileSelect?: (file: File) => void;
@@ -120,6 +122,7 @@ export function FileUploadZone({
   };
 
   if (scoringData) {
+    // Tampilan sederhana untuk Hero Section
     if (simplifiedView) {
       return (
         <div className="space-y-6 text-center">
@@ -171,7 +174,19 @@ export function FileUploadZone({
         </div>
       );
     }
-    return <div>Hasil Analisis Detail (Untuk Dashboard)</div>;
+
+    // --- PERBAIKAN DI SINI ---
+    // Tampilan detail untuk Dashboard
+    return (
+      <CVScoringResult
+        data={scoringData}
+        onBack={onResetScoring!}
+        onSaveToRepository={onSaveToRepository!}
+        showPreview={false}
+        cvBuilderData={null}
+      />
+    );
+    // --- AKHIR PERBAIKAN ---
   }
 
   return (
