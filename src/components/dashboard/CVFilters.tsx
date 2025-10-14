@@ -61,7 +61,7 @@ export function CVFilters({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="Semua Status">Semua Status</SelectItem>
-                <SelectItem value="Draft">Draft</SelectItem>
+                <SelectItem value="Draft">Draf</SelectItem>
                 <SelectItem value="Selesai">Selesai</SelectItem>
               </SelectContent>
             </Select>
@@ -128,7 +128,7 @@ export function CVFilters({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="Semua Status">Semua Status</SelectItem>
-              <SelectItem value="Draft">Draft</SelectItem>
+              <SelectItem value="Draft">Draf</SelectItem>
               <SelectItem value="Selesai">Selesai</SelectItem>
             </SelectContent>
           </Select>
