@@ -56,11 +56,11 @@ export function DashboardLayout({
   const renderContent = () => {
     switch (activeTab) {
       case "dashboard":
-        return <Dashboard onCreateCV={onCreateCV} />;
+        return <Dashboard onCreateCVAction={onCreateCV} />;
       case "scoring":
         return <CVScoringPage />;
       default:
-        return <Dashboard onCreateCV={onCreateCV} />;
+        return <Dashboard onCreateCVAction={onCreateCV} />;
     }
   };
 

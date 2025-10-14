@@ -5,8 +5,8 @@ import { toast } from "sonner";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { CVFilters } from "./CVFilters";
-import { CVCard, CVData } from "./CVCard";
-import { CVTable } from "./CVTable";
+import { ScoredCVTable } from "./ScoredCVTable";
+import { ScoredCVCard } from "./ScoredCVCard";
 import { EmptyState } from "../EmptyState";
 import { FileUploadZone } from "../FileUploadZone";
 import { CVScoringResult } from "./CVScoringResult";
@@ -16,9 +16,11 @@ import {
   type CVScoringData,
 } from "@/src/utils/cvScoringService";
 import { Search, Grid, List, Loader2 } from "lucide-react";
+import { CVData } from "./CVCard";
 
 export function CVScoringPage() {
   const [searchQuery, setSearchQuery] = useState("");
+  // --- PERUBAHAN 1: Ubah default state ke 'cards' ---
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
   const [cvs, setCvs] = useState<CVData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -74,8 +76,6 @@ export function CVScoringPage() {
         year: new Date().getFullYear(),
         status: "Uploaded",
         score: results.overallScore,
-        lang: "unknown",
-        visibility: "private",
         ...results,
       };
       setNewlyScoredCv(newCV);
@@ -133,14 +133,15 @@ export function CVScoringPage() {
   const handleDeleteConfirm = async () => {
     if (!deleteModal.cv) return;
     const originalCvs = [...cvs];
-    setCvs((prev) => prev.filter((cv) => cv.id !== deleteModal.cv!.id));
+    const cvToDelete = deleteModal.cv;
+    setCvs((prev) => prev.filter((cv) => cv.id !== cvToDelete.id));
     setDeleteModal({ isOpen: false, cv: null });
     try {
-      const response = await fetch(`/api/cv/${deleteModal.cv.id}`, {
+      const response = await fetch(`/api/cv/${cvToDelete.id}?type=uploaded`, {
         method: "DELETE",
       });
       if (!response.ok) throw new Error("Gagal menghapus CV dari server.");
-      toast.success(`CV "${deleteModal.cv.name}" telah dihapus.`);
+      toast.success(`CV "${cvToDelete.name}" telah dihapus.`);
     } catch (error: any) {
       toast.error(error.message);
       setCvs(originalCvs);
@@ -183,6 +184,12 @@ export function CVScoringPage() {
   return (
     <div className="p-4 sm:p-6 min-h-screen">
       <div className="mb-6 sm:mb-8">
+        {/* --- PERUBAHAN 2: Tambahkan Breadcrumb di sini --- */}
+        <div className="flex items-center space-x-2 text-sm text-gray-500 mb-2">
+          <span>Pages</span>
+          <span>/</span>
+          <span className="text-[var(--neutral-ink)]">Scoring CV</span>
+        </div>
         <h1 className="text-2xl sm:text-3xl font-poppins font-bold text-[var(--neutral-ink)]">
           Scoring CV Anda
         </h1>
@@ -257,27 +264,19 @@ export function CVScoringPage() {
       ) : viewMode === "cards" ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
           {filteredCVs.map((cv) => (
-            <CVCard
+            <ScoredCVCard
               key={cv.id}
               cv={cv}
-              onPreview={(_, cvData) => handleViewResult(cvData)}
-              onDelete={(_, cvData) => handleDelete(cvData)}
-              onDownload={() => {}}
-              onUpdate={() => {}}
-              onShare={() => {}}
-              onVisibilityChange={() => {}}
+              onViewAnalysis={handleViewResult}
+              onDelete={handleDelete}
             />
           ))}
         </div>
       ) : (
-        <CVTable
+        <ScoredCVTable
           cvs={filteredCVs}
-          onPreview={(_, cvData) => handleViewResult(cvData)}
-          onDelete={(_, cvData) => handleDelete(cvData)}
-          onDownload={() => {}}
-          onUpdate={() => {}}
-          onShare={() => {}}
-          onVisibilityChange={() => {}}
+          onViewAnalysis={handleViewResult}
+          onDelete={handleDelete}
         />
       )}
       <DeleteConfirmModal

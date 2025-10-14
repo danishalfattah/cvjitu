@@ -1,110 +1,52 @@
-// src/app/api/cv/[id]/route.ts (UPDATED)
-
-import { NextResponse, NextRequest } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 import { cookies } from 'next/headers';
-import { adminAuth, adminDb } from '@/src/lib/firebase-admin'; // Gunakan adminDb
+import { adminAuth, adminDb } from '@/src/lib/firebase-admin';
 
 async function getUserId() {
-  const sessionCookie = (await cookies()).get('session')?.value;
+  const cookieStore = await cookies();
+  const sessionCookie = cookieStore.get('session')?.value;
   if (!sessionCookie) return null;
-
   try {
     const decodedToken = await adminAuth.verifySessionCookie(sessionCookie, true);
     return decodedToken.uid;
   } catch (error) {
-    console.error("Session verification failed:", error);
     return null;
   }
 }
 
-// HANDLER UNTUK GET (MENGAMBIL SATU CV)
-export async function GET(request: Request, { params }: { params: { id: string } }) {
-  try {
-    const cvDocRef = adminDb.collection('cvs').doc(params.id);
-    const cvDoc = await cvDocRef.get();
-
-    if (!cvDoc.exists) {
-      return NextResponse.json({ error: 'CV not found' }, { status: 404 });
-    }
-
-    const cvData = cvDoc.data();
-
-    // Jika CV bersifat publik, langsung kembalikan datanya
-    if (cvData?.visibility === 'public') {
-      return NextResponse.json({ id: cvDoc.id, ...cvData }, { status: 200 });
-    }
-
-    // Jika privat, verifikasi apakah yang mengakses adalah pemiliknya
-    const userId = await getUserId();
-    if (userId && cvData?.userId === userId) {
-      return NextResponse.json({ id: cvDoc.id, ...cvData }, { status: 200 });
-    }
-
-    // Jika privat dan bukan pemilik, tolak akses
-    return NextResponse.json({ error: 'Access denied' }, { status: 403 });
-
-  } catch (error) {
-    console.error("Error fetching CV:", error);
-    return NextResponse.json({ error: 'Failed to fetch CV' }, { status: 500 });
+// HANDLER DELETE (Diperbarui)
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const userId = await getUserId();
+  if (!userId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-}
 
-// HANDLER UNTUK PUT (MEMPERBARUI CV)
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
-    const userId = await getUserId();
-    if (!userId) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  try {
+    const id = params.id;
+    const { searchParams } = new URL(request.url);
+    const type = searchParams.get('type');
+
+    // Tentukan nama koleksi berdasarkan parameter 'type'
+    // Default ke 'cvs' jika type tidak disediakan untuk kompatibilitas
+    const collectionName = type === 'uploaded' ? 'scored_cvs' : 'cvs';
+
+    const docRef = adminDb.collection(collectionName).doc(id);
+    const doc = await docRef.get();
+
+    // Verifikasi bahwa dokumen ada dan dimiliki oleh pengguna yang benar
+    if (!doc.exists || doc.data()?.userId !== userId) {
+      return NextResponse.json({ error: 'CV not found or access denied' }, { status: 404 });
     }
+    
+    // Hapus dokumen dari koleksi yang benar
+    await docRef.delete();
 
-    try {
-        const cvDocRef = adminDb.collection('cvs').doc(params.id);
-        const cvDoc = await cvDocRef.get();
-
-        if (!cvDoc.exists || cvDoc.data()?.userId !== userId) {
-            return NextResponse.json({ error: 'CV not found or access denied' }, { status: 404 });
-        }
-        
-        const updatedDataFromClient = await request.json();
-        
-        // --- PERUBAHAN DI SINI ---
-        // Buat objek data baru untuk memastikan field penting tidak terhapus
-        const finalUpdatedData = {
-            ...updatedDataFromClient, // Ambil semua data baru dari form
-            name: updatedDataFromClient.jobTitle || cvDoc.data()?.name || "CV Tanpa Judul", // Perbarui 'name' jika 'jobTitle' berubah
-            updatedAt: new Date().toISOString(),
-        };
-        
-        // Gunakan set dengan opsi merge untuk memperbarui, bukan menimpa total
-        await cvDocRef.set(finalUpdatedData, { merge: true });
-        // --- AKHIR PERUBAHAN ---
-
-        return NextResponse.json({ message: 'CV updated successfully' }, { status: 200 });
-    } catch (error) {
-        console.error("Error updating CV:", error);
-        return NextResponse.json({ error: 'Failed to update CV' }, { status: 500 });
-    }
-}
-
-// HANDLER UNTUK DELETE (MENGHAPUS CV)
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
-    const userId = await getUserId();
-    if (!userId) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    try {
-        const docRef = adminDb.collection('cvs').doc(params.id);
-        const doc = await docRef.get();
-        
-        // Cukup periksa apakah dokumen ada dan userId cocok
-        if (!doc.exists || doc.data()?.userId !== userId) {
-            return NextResponse.json({ error: 'Document not found or access denied' }, { status: 404 });
-        }
-        
-        await docRef.delete();
-        return NextResponse.json({ message: 'CV deleted successfully' }, { status: 200 });
-    } catch (error) {
-        console.error("Error deleting CV:", error);
-        return NextResponse.json({ error: 'Failed to delete CV' }, { status: 500 });
-    }
+    return NextResponse.json({ message: 'CV deleted successfully' }, { status: 200 });
+  } catch (error: any) {
+    console.error("Error deleting CV:", error.message);
+    return NextResponse.json({ error: 'Failed to delete CV' }, { status: 500 });
+  }
 }

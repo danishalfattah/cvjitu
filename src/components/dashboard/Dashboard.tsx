@@ -41,16 +41,15 @@ import {
   TrendingUp,
   CheckCircle,
   Edit3,
-  X,
   Loader2,
   ArrowLeft,
 } from "lucide-react";
 
 interface DashboardProps {
-  onCreateCV?: (lang: "id" | "en") => void;
+  onCreateCVAction?: (lang: "id" | "en") => void;
 }
 
-export function Dashboard({ onCreateCV }: DashboardProps) {
+export function Dashboard({ onCreateCVAction }: DashboardProps) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
@@ -99,25 +98,29 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
   const stats = useMemo(() => {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    const cvsThisMonth = cvs.filter(
+
+    const completedCvs = cvs.filter((cv) => cv.status !== "Draft");
+
+    const cvsThisMonth = completedCvs.filter(
       (cv) => new Date(cv.createdAt) > thirtyDaysAgo
     );
-    const completedThisMonth = cvsThisMonth.filter(
-      (cv) => cv.status === "Completed"
-    ).length;
+
     const total = cvs.length;
     const avgScore = Math.round(
-      cvs.reduce((sum, cv) => sum + (cv.score || 0), 0) / (cvs.length || 1)
+      completedCvs.reduce((sum, cv) => sum + (cv.score || 0), 0) /
+        (completedCvs.length || 1)
     );
-    const completed = cvs.filter((cv) => cv.status === "Completed").length;
-    const drafted = cvs.filter((cv) => cv.status === "Draft").length;
+    const completed = completedCvs.length;
+    const drafted = total - completed;
+
     return {
       total,
       avgScore,
       completed,
       drafted,
-      newThisMonth: cvsThisMonth.length,
-      completedThisMonth: completedThisMonth,
+      newThisMonth: cvs.filter((cv) => new Date(cv.createdAt) > thirtyDaysAgo)
+        .length,
+      completedThisMonth: cvsThisMonth.length,
     };
   }, [cvs]);
 
@@ -157,7 +160,7 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
         toast.info("Fitur download akan segera hadir!");
         break;
       case "update":
-        router.push(`/cv-builder?id=${cv.id}`);
+        router.push(`/cv-builder?id=${cv.id}&lang=${cv.lang || "id"}`);
         break;
       case "share":
         handleShareCV(cv);
@@ -191,7 +194,7 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
     );
     setCvs(updatedCvs);
     try {
-      await fetch(`/api/cv/${cvId}`, {
+      await fetch(`/api/cv/${cvId}?type=builder`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ visibility }),
@@ -206,9 +209,12 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
   const handleDeleteConfirm = async () => {
     if (deleteModal.cv) {
       try {
-        const response = await fetch(`/api/cv/${deleteModal.cv.id}`, {
-          method: "DELETE",
-        });
+        const response = await fetch(
+          `/api/cv/${deleteModal.cv.id}?type=builder`,
+          {
+            method: "DELETE",
+          }
+        );
         if (!response.ok) throw new Error("Gagal menghapus CV");
         setCvs((prev) => prev.filter((cv) => cv.id !== deleteModal.cv!.id));
         toast.success(`CV "${deleteModal.cv.name}" telah dihapus.`);
@@ -237,7 +243,9 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
 
   const handleLanguageSelect = (lang: "id" | "en") => {
     setIsLangModalOpen(false);
-    onCreateCV ? onCreateCV(lang) : router.push(`/cv-builder?lang=${lang}`);
+    onCreateCVAction
+      ? onCreateCVAction(lang)
+      : router.push(`/cv-builder?lang=${lang}`);
   };
 
   const filteredCVs = cvs.filter((cv) => {
@@ -352,7 +360,7 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
           title="Skor Rata-rata"
           value={stats.avgScore}
           icon={TrendingUp}
-          change={{ value: "Dari semua CV", type: "neutral" }}
+          change={{ value: "Dari CV selesai", type: "neutral" }}
         />
         <StatTile
           title="Total Selesai"
@@ -444,11 +452,11 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
                 <CVCard
                   key={cv.id}
                   cv={cv}
-                  onPreview={handleCVAction}
-                  onDownload={handleCVAction}
-                  onUpdate={handleCVAction}
-                  onDelete={handleCVAction}
-                  onShare={handleCVAction}
+                  onPreview={() => handleCVAction("preview", cv)}
+                  onDownload={() => handleCVAction("download", cv)}
+                  onUpdate={() => handleCVAction("update", cv)}
+                  onDelete={() => handleCVAction("delete", cv)}
+                  onShare={() => handleCVAction("share", cv)}
                   onVisibilityChange={handleVisibilityChange}
                 />
               ))}
@@ -475,6 +483,11 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
                         e.preventDefault();
                         setCurrentPage(Math.max(1, currentPage - 1));
                       }}
+                      className={
+                        currentPage === 1
+                          ? "pointer-events-none opacity-50"
+                          : ""
+                      }
                     />
                   </PaginationItem>
                   {Array.from({ length: totalPages }, (_, i) => (
@@ -498,6 +511,11 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
                         e.preventDefault();
                         setCurrentPage(Math.min(totalPages, currentPage + 1));
                       }}
+                      className={
+                        currentPage === totalPages
+                          ? "pointer-events-none opacity-50"
+                          : ""
+                      }
                     />
                   </PaginationItem>
                 </PaginationContent>
@@ -521,14 +539,23 @@ export function Dashboard({ onCreateCV }: DashboardProps) {
               baru.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
+          <div className="flex flex-col sm:flex-row gap-2 justify-end pt-4">
             <Button
               variant="outline"
               onClick={() => handleLanguageSelect("id")}
+              className="w-full sm:w-auto"
             >
               Bahasa Indonesia
             </Button>
-            <Button onClick={() => handleLanguageSelect("en")}>English</Button>
+            <Button
+              onClick={() => handleLanguageSelect("en")}
+              className="w-full sm:w-auto bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white"
+            >
+              English
+            </Button>
+          </div>
+          <AlertDialogFooter className="sm:hidden mt-2">
+            <AlertDialogCancel className="w-full">Batal</AlertDialogCancel>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
