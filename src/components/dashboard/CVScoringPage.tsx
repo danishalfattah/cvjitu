@@ -1,224 +1,287 @@
-// src/components/CVPreviewPage.tsx (UPDATED)
+// src/components/dashboard/CVScoringPage.tsx (UPDATED & FIXED)
 
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
-import Image from "next/image";
-import Link from "next/link";
-import { useAuth } from "@/src/context/AuthContext";
-import { CVPreview } from "@/src/components/cvbuilder/preview/CVPreview";
-import { Button } from "@/src/components/ui/button";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import { CVFilters } from "./CVFilters";
+import { CVCard, CVData } from "./CVCard";
+import { CVTable } from "./CVTable";
+import { EmptyState } from "../EmptyState";
+import { FileUploadZone } from "../FileUploadZone";
+import { CVScoringResult } from "./CVScoringResult";
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/src/components/ui/card";
-import { Switch } from "@/src/components/ui/switch";
-import { Label } from "@/src/components/ui/label";
-import {
-  Globe,
-  Lock,
-  Download,
-  User as UserIcon,
-  ArrowLeft,
-  Home,
-  Loader2,
-} from "lucide-react";
-import { CVData } from "@/src/components/dashboard/CVCard";
+  analyzeCVFile,
+  type CVScoringData,
+} from "@/src/utils/cvScoringService";
 import { CVBuilderData } from "../cvbuilder/types";
-import { t } from "@/src/lib/translations";
-import { Footer } from "@/src/components/Footer";
+import { Search, Grid, List, Loader2 } from "lucide-react";
 
-export function CVPreviewPage() {
+export function CVScoringPage() {
   const router = useRouter();
-  const params = useParams();
-  const { user, isAuthenticated } = useAuth();
-  const [cvData, setCvData] = useState<CVData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
+  // State ini sekarang hanya untuk halaman scoring, dimulai dengan array kosong
+  const [cvs, setCvs] = useState<CVData[]>([]);
+  const [isLoading, setIsLoading] = useState(false); // Loading hanya untuk aksi, bukan load halaman
+  const [filters, setFilters] = useState({
+    status: "Semua Status",
+    year: "Semua Tahun",
+    scoreRange: [1, 100],
+  });
 
-  const cvId = params.id as string;
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [scoringResult, setScoringResult] = useState<CVScoringData | null>(
+    null
+  );
+  const [newlyScoredCv, setNewlyScoredCv] = useState<CVData | null>(null);
 
   useEffect(() => {
-    if (!cvId) return;
-
-    const fetchCVData = async () => {
+    const fetchUploadedCVs = async () => {
       setIsLoading(true);
-      setError(null);
       try {
-        const response = await fetch(`/api/cv/${cvId}`);
-        const data = await response.json();
-
+        // --- PERBAIKAN DI SINI ---
+        const response = await fetch("/api/cv?type=uploaded");
+        // --- AKHIR PERBAIKAN ---
         if (!response.ok) {
-          throw new Error(data.error || "Gagal memuat CV.");
+          throw new Error("Gagal mengambil riwayat scoring.");
         }
-
-        document.title = `${data.name} | CVJitu`;
-        setCvData(data);
-      } catch (err: any) {
-        document.title = "Error | CVJitu";
-        setError(err.message);
+        const data = await response.json();
+        setCvs(data);
+      } catch (error: any) {
+        toast.error(error.message);
       } finally {
         setIsLoading(false);
       }
     };
+    fetchUploadedCVs();
+  }, []);
 
-    fetchCVData();
-  }, [cvId]);
-
-  const handleVisibilityChange = async (checked: boolean) => {
-    if (!cvData) return;
-    const newVisibility = checked ? "public" : "private";
-
-    const originalData = { ...cvData };
-    setCvData((prev) => (prev ? { ...prev, visibility: newVisibility } : null));
-
+  const handleFileUpload = async (fileIdentifier: {
+    name: string;
+    url: string;
+  }) => {
+    setIsProcessing(true);
+    setScoringResult(null);
+    setNewlyScoredCv(null);
     try {
-      await fetch(`/api/cv/${cvData.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ visibility: newVisibility }),
+      const dummyFile = new File([""], fileIdentifier.name, {
+        type: "application/pdf",
       });
+      const results = await analyzeCVFile(dummyFile);
+      setScoringResult(results);
+
+      const newCV: CVData = {
+        id: `temp-${Date.now()}`,
+        name: fileIdentifier.name,
+        year: new Date().getFullYear(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        status: "Uploaded",
+        score: results.overallScore,
+        lang: "unknown",
+        visibility: "private",
+        // fileUrl: fileIdentifier.url
+      };
+      setNewlyScoredCv(newCV);
     } catch (error) {
-      setCvData(originalData); // Kembalikan jika gagal
+      toast.error("Gagal menganalisis CV. Silakan coba lagi.");
+    } finally {
+      setIsProcessing(false);
     }
   };
 
-  const isOwner = isAuthenticated && user?.id === cvData?.userId;
+  const handleSaveToRepository = async () => {
+    if (newlyScoredCv) {
+      try {
+        // --- PERBAIKAN DI SINI ---
+        const dataToSave = { ...newlyScoredCv, type: "uploaded" }; // Tambahkan tipe
+        const response = await fetch("/api/cv", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(dataToSave),
+        });
+        // --- AKHIR PERBAIKAN ---
+
+        if (!response.ok) {
+          throw new Error("Gagal menyimpan CV ke database.");
+        }
+
+        const savedCv = await response.json();
+        setCvs((prev) => [savedCv, ...prev]);
+        toast.success(`CV "${savedCv.name}" berhasil disimpan.`);
+      } catch (error: any) {
+        toast.error(error.message);
+      } finally {
+        setScoringResult(null);
+        setNewlyScoredCv(null);
+      }
+    }
+  };
+
+  const handleViewResult = (cv: CVData) => {
+    toast.info("Membuka detail analisis CV yang sudah tersimpan...");
+  };
+
+  const handleBackToList = () => {
+    setScoringResult(null);
+    setNewlyScoredCv(null);
+  };
+
+  const handleDelete = (cvToDelete: CVData) => {
+    setCvs((prev) => prev.filter((cv) => cv.id !== cvToDelete.id));
+    toast.success(
+      `CV "${cvToDelete.name}" telah dihapus dari daftar sesi ini.`
+    );
+  };
+
+  // Filter hanya dari state 'cvs' lokal halaman ini
+  const filteredCVs = cvs.filter((cv) => {
+    const matchesSearch = (cv.name || "")
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+    const matchesYear =
+      filters.year === "Semua Tahun" ||
+      (cv.year ? cv.year.toString() === filters.year : false);
+    const matchesScore =
+      (cv.score || 0) >= filters.scoreRange[0] &&
+      (cv.score || 0) <= filters.scoreRange[1];
+    return matchesSearch && matchesYear && matchesScore;
+  });
+
+  if (scoringResult) {
+    return (
+      <CVScoringResult
+        data={scoringResult}
+        cvBuilderData={null}
+        onBack={handleBackToList}
+        onSaveToRepository={handleSaveToRepository}
+        showPreview={false}
+      />
+    );
+  }
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <div className="flex items-center justify-center h-screen">
         <Loader2 className="w-8 h-8 animate-spin text-[var(--red-normal)]" />
       </div>
     );
   }
 
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 text-center px-4">
-        <Lock className="w-16 h-16 text-red-500 mb-4" />
-        <h1 className="text-2xl font-bold mb-2">
-          Akses Ditolak atau CV Tidak Ditemukan
-        </h1>
-        <p className="text-gray-600 mb-6">{error}</p>
-        <Button onClick={() => router.push("/")}>Kembali ke Beranda</Button>
-      </div>
-    );
-  }
-
   return (
-    <>
-      <div className="min-h-screen bg-gray-50 p-4 sm:p-8">
-        <div className="max-w-5xl mx-auto">
-          {isOwner && (
-            <div className="flex justify-end items-center mb-6">
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="visibility-switch"
-                  checked={cvData?.visibility === "public"}
-                  onCheckedChange={handleVisibilityChange}
-                />
-                <Label
-                  htmlFor="visibility-switch"
-                  className="flex items-center"
-                >
-                  {cvData?.visibility === "public" ? (
-                    <>
-                      <Globe className="w-4 h-4 mr-2 text-green-600" />
-                      Publik
-                    </>
-                  ) : (
-                    <>
-                      <Lock className="w-4 h-4 mr-2 text-red-600" />
-                      Privat
-                    </>
-                  )}
-                </Label>
-              </div>
-            </div>
-          )}
+    <div className="p-4 sm:p-6 min-h-screen">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-poppins font-bold text-[var(--neutral-ink)]">
+          Scoring CV Anda
+        </h1>
+        <p className="text-gray-600 mt-1">
+          Unggah CV baru untuk dianalisis. Hasil akan ditampilkan di bawah ini
+          untuk sesi ini saja.
+        </p>
+      </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2">
-              {/* --- PERBAIKAN DI SINI --- */}
-              {/* Langsung teruskan data CV yang sudah lengkap ke komponen Preview */}
-              {cvData && (
-                <CVPreview
-                  data={cvData as CVBuilderData}
-                  lang={
-                    cvData?.lang === "unknown" || !cvData?.lang
-                      ? "id"
-                      : cvData.lang
-                  }
-                />
-              )}
-              {/* --- AKHIR PERBAIKAN --- */}
-            </div>
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Tentang CV Ini</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {cvData && (
-                    <div className="space-y-2 text-sm text-gray-700">
-                      <p>
-                        <strong>Posisi yang Dilamar:</strong> {cvData.name}
-                      </p>
-                      <p className="flex items-center">
-                        <strong className="mr-2">Pemilik:</strong>
-                        <UserIcon className="w-4 h-4 mr-1 text-gray-500" />{" "}
-                        {cvData.owner}
-                      </p>
-                      <p>
-                        <strong>Terakhir diperbarui:</strong>{" "}
-                        {new Date(cvData.updatedAt).toLocaleDateString("id-ID")}
-                      </p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+      <div className="mb-8">
+        <FileUploadZone
+          onFileUpload={handleFileUpload}
+          isProcessing={isProcessing}
+        />
+      </div>
 
-              {isOwner ? (
-                <Button
-                  onClick={() => router.push("/dashboard")}
-                  variant="outline"
-                  className="w-full"
-                >
-                  <ArrowLeft className="w-4 h-4 mr-2" /> Kembali ke Dashboard
-                </Button>
-              ) : (
-                <Button
-                  onClick={() => router.push("/")}
-                  variant="outline"
-                  className="w-full"
-                >
-                  <Home className="w-4 h-4 mr-2" /> Kembali ke Beranda
-                </Button>
-              )}
+      <h2 className="text-xl font-poppins font-semibold text-[var(--neutral-ink)] mb-4">
+        Repositori Hasil Scoring (Sesi Ini)
+      </h2>
 
-              <Button className="w-full bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white">
-                <Download className="w-4 h-4 mr-2" /> Unduh sebagai PDF
-              </Button>
-              <div className="flex justify-center pt-4">
-                <Link href="/">
-                  <Image
-                    src="/logo.svg"
-                    width={100}
-                    height={40}
-                    alt="CVJitu Logo"
-                    className="cursor-pointer"
-                  />
-                </Link>
-              </div>
-            </div>
-          </div>
+      <CVFilters
+        filters={filters}
+        onFiltersChange={setFilters}
+        onReset={() =>
+          setFilters({
+            status: "Semua Status",
+            year: "Semua Tahun",
+            scoreRange: [1, 100],
+          })
+        }
+        hideStatusFilter={true}
+      />
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mb-6">
+        <div className="relative flex-1 max-w-full sm:max-w-md">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
+          <Input
+            placeholder="Cari nama file CV..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9 sm:pl-10 text-sm sm:text-base"
+          />
         </div>
       </div>
-      <Footer />
-    </>
+
+      <div className="flex items-center justify-between mb-6">
+        <span className="text-xs sm:text-sm text-gray-600">
+          Menampilkan {filteredCVs.length} dari {cvs.length} hasil
+        </span>
+        <div className="flex items-center space-x-2">
+          <Button
+            variant={viewMode === "cards" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setViewMode("cards")}
+            className={`${
+              viewMode === "cards" ? "bg-[var(--red-normal)] text-white" : ""
+            }`}
+          >
+            <Grid className="w-4 h-4" />
+          </Button>
+          <Button
+            variant={viewMode === "table" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setViewMode("table")}
+            className={`${
+              viewMode === "table" ? "bg-[var(--red-normal)] text-white" : ""
+            }`}
+          >
+            <List className="w-4 h-4" />
+          </Button>
+        </div>
+      </div>
+
+      {filteredCVs.length === 0 ? (
+        <EmptyState
+          title="Repositori Sesi Kosong"
+          description="Anda belum mengunggah CV untuk dianalisis pada sesi ini. Unggah CV untuk memulai."
+        />
+      ) : viewMode === "cards" ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-6">
+          {filteredCVs.map((cv) => (
+            <CVCard
+              key={cv.id}
+              cv={cv}
+              actionType="scoring"
+              onPreview={() => {}}
+              onDelete={handleDelete}
+              onScore={() => {}}
+              onDownload={() => {}}
+              onUpdate={() => {}}
+              onShare={() => {}}
+              onVisibilityChange={() => {}}
+            />
+          ))}
+        </div>
+      ) : (
+        <CVTable
+          cvs={filteredCVs}
+          actionType="scoring"
+          onPreview={() => {}}
+          onDelete={handleDelete}
+          onScore={() => {}}
+          onDownload={() => {}}
+          onUpdate={() => {}}
+          onShare={() => {}}
+          onVisibilityChange={() => {}}
+        />
+      )}
+    </div>
   );
 }

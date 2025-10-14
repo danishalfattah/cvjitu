@@ -53,12 +53,16 @@ export default function Page() {
       const url = cvId ? `/api/cv/${cvId}` : "/api/cv";
       const method = cvId ? "PUT" : "POST";
 
+      // --- PERBAIKAN DI SINI ---
+      const dataToSave = { ...data, type: "builder" }; // Tambahkan tipe
+      // --- AKHIR PERBAIKAN ---
+
       const response = await fetch(url, {
         method: method,
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(dataToSave), // Kirim data yang sudah ada tipenya
       });
 
       if (!response.ok) {

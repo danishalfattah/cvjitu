@@ -1,10 +1,10 @@
 // src/app/api/cv/route.ts (UPDATED)
 
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server'; // Import NextRequest
 import { cookies } from 'next/headers';
-import { adminAuth, adminDb } from '@/src/lib/firebase-admin'; // Gunakan adminDb
+import { adminAuth, adminDb } from '@/src/lib/firebase-admin';
 
-async function getUserId() {
+async function getUserId(req: NextRequest) {
   const sessionCookie = (await cookies()).get('session')?.value;
   if (!sessionCookie) return null;
 
@@ -12,30 +12,36 @@ async function getUserId() {
     const decodedToken = await adminAuth.verifySessionCookie(sessionCookie, true);
     return decodedToken.uid;
   } catch (error) {
-    console.error("Session verification failed:", error);
     return null;
   }
 }
 
-// HANDLER GET (Mengambil semua CV)
-export async function GET() {
-  const userId = await getUserId();
+// HANDLER GET (Mengambil CV berdasarkan tipe)
+export async function GET(request: NextRequest) { // Gunakan NextRequest
+  const userId = await getUserId(request);
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
-    // --- PERUBAHAN DI SINI ---
-    // Gunakan adminDb untuk query
-    const snapshot = await adminDb.collection('cvs').where('userId', '==', userId).get();
+    // --- PERBAIKAN DI SINI ---
+    const { searchParams } = new URL(request.url);
+    const type = searchParams.get('type'); // Ambil parameter 'type' dari URL
+
+    if (!type) {
+        return NextResponse.json({ error: 'Tipe CV harus ditentukan (builder atau uploaded)' }, { status: 400 });
+    }
+
+    const cvsCollection = adminDb.collection('cvs');
+    const q = cvsCollection.where('userId', '==', userId).where('type', '==', type);
+    const snapshot = await q.get();
+    // --- AKHIR PERBAIKAN ---
     
     if (snapshot.empty) {
       return NextResponse.json([], { status: 200 });
     }
     
     const cvs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    // --- AKHIR PERUBAHAN ---
-
     return NextResponse.json(cvs, { status: 200 });
   } catch (error: any) {
     console.error("Error fetching CVs:", error.message);
@@ -43,32 +49,30 @@ export async function GET() {
   }
 }
 
-// HANDLER POST (Membuat CV baru)
-export async function POST(request: Request) {
-  const userId = await getUserId();
+// HANDLER POST (Menyimpan CV dengan tipe)
+export async function POST(request: NextRequest) {
+  const userId = await getUserId(request);
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
-    // --- PERUBAHAN DI SINI ---
-    // Ambil detail pengguna dari Firebase Auth
     const userRecord = await adminAuth.getUser(userId);
     const ownerName = userRecord.displayName || userRecord.email || "Pengguna Anonim";
-    // --- AKHIR PERUBAHAN ---
 
     const cvData = await request.json();
     
     const newCvData = {
       ...cvData,
-      name: cvData.jobTitle || "CV Tanpa Judul",
-      status: "Draft",
-      score: Math.floor(Math.random() * (75 - 50 + 1)) + 50,
-      year: new Date().getFullYear(),
+      name: cvData.jobTitle || cvData.name || "CV Tanpa Judul",
+      status: cvData.status || "Draft",
+      score: cvData.score || Math.floor(Math.random() * (75 - 50 + 1)) + 50,
+      year: cvData.year || new Date().getFullYear(),
       userId,
-      owner: ownerName, // Simpan nama pemilik
+      owner: ownerName,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      // 'type' akan datang dari body request
     };
 
     const docRef = await adminDb.collection('cvs').add(newCvData);
