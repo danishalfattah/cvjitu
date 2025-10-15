@@ -22,7 +22,6 @@ import {
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { auth, db } from "@/src/lib/firebase";
 
-// ... (Interface User tetap sama) ...
 export interface User {
   id: string;
   email: string;
@@ -46,7 +45,7 @@ interface RegisterData {
 interface AuthContextType {
   user: User | null;
   firebaseUser: FirebaseUser | null;
-  isLoading: boolean;
+  isLoading: boolean; // isLoading akan jadi kunci utama
   login: (email: string, password: string) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
@@ -68,7 +67,6 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
-// ... (Fungsi getUserProfile tetap sama) ...
 const getUserProfile = async (firebaseUser: FirebaseUser): Promise<User> => {
   const userDocRef = doc(db, "users", firebaseUser.uid);
   const userDoc = await getDoc(userDocRef);
@@ -76,6 +74,7 @@ const getUserProfile = async (firebaseUser: FirebaseUser): Promise<User> => {
   if (userDoc.exists()) {
     return userDoc.data() as User;
   } else {
+    // Logika untuk membuat profil baru jika tidak ada
     const newUser: User = {
       id: firebaseUser.uid,
       email: firebaseUser.email || "",
@@ -99,20 +98,21 @@ const getUserProfile = async (firebaseUser: FirebaseUser): Promise<User> => {
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true); // Mulai dengan true
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
       setFirebaseUser(fbUser);
       if (fbUser) {
         const idToken = await fbUser.getIdToken();
-        // Kirim token ke backend untuk membuat sesi cookie
+        // --- PERBAIKAN DI SINI: Panggil API untuk membuat session cookie ---
         await fetch("/api/auth/session", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ idToken }),
         });
 
+        // Verifikasi email sebelum set user profile
         if (
           fbUser.emailVerified ||
           fbUser.providerData[0]?.providerId !== "password"
@@ -120,19 +120,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
           const userProfile = await getUserProfile(fbUser);
           setUser(userProfile);
         } else {
-          setUser(null);
+          setUser(null); // Jangan set user jika email belum diverifikasi
         }
       } else {
-        // Hapus sesi cookie di backend
+        // --- PERBAIKAN DI SINI: Panggil API untuk menghapus session cookie ---
         await fetch("/api/auth/session", { method: "DELETE" });
         setUser(null);
       }
+      // --- PERBAIKAN DI SINI: Set isLoading ke false SETELAH pengecekan selesai ---
       setIsLoading(false);
     });
 
     return () => unsubscribe();
   }, []);
 
+  // Sisa fungsi (login, register, dll) tetap sama
   const login = async (email: string, password: string): Promise<void> => {
     setIsLoading(true);
     try {
@@ -142,13 +144,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
         password
       );
       if (!userCredential.user.emailVerified) {
-        await signOut(auth);
+        await signOut(auth); // Langsung logout jika email belum diverifikasi
         throw new Error(
           "Silakan verifikasi email Anda terlebih dahulu. Cek kotak masuk Anda."
         );
       }
     } finally {
-      setIsLoading(false);
+      // Dihapus: setIsLoading(false) akan ditangani oleh onAuthStateChanged
     }
   };
 
@@ -189,7 +191,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
     } finally {
-      setIsLoading(false);
     }
   };
 
@@ -205,7 +206,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     register,
     loginWithGoogle,
     logout,
-    isAuthenticated: !!user,
+    isAuthenticated: !isLoading && !!user, // isAuthenticated hanya true jika loading selesai DAN ada user
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

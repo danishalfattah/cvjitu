@@ -1,9 +1,15 @@
+// src/components/NavBar.tsx (UPDATED)
+"use client"; // Tambahkan ini jika belum ada
+
 import { useState } from "react";
 import { Button } from "./ui/button";
-import { X, LayoutDashboard } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
+import { LayoutDashboard } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
+import { useAuth } from "../context/AuthContext"; // --- Impor useAuth ---
+import { Skeleton } from "./ui/skeleton"; // --- Impor Skeleton ---
 
+// ... (interface User dan NavBarProps tetap sama) ...
 export interface User {
   id: string;
   email: string;
@@ -28,6 +34,7 @@ export function NavBar({
   onDashboard,
 }: NavBarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { isLoading } = useAuth(); // --- PERBAIKAN: Ambil isLoading dari context ---
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -36,6 +43,52 @@ export function NavBar({
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
   };
+
+  const renderAuthButtons = () => {
+    // --- PERBAIKAN: Tampilkan skeleton saat loading ---
+    if (isLoading) {
+      return (
+        <div className="hidden lg:flex items-center space-x-4">
+          <Skeleton className="h-9 w-20 rounded-md" />
+          <Skeleton className="h-9 w-20 rounded-md" />
+        </div>
+      );
+    }
+
+    if (user) {
+      return (
+        <div className="hidden lg:flex items-center space-x-4">
+          <Button
+            variant="ghost"
+            onClick={onDashboard}
+            className="text-[var(--neutral-ink)] hover:text-[var(--red-normal)]"
+          >
+            <LayoutDashboard className="w-4 h-4 mr-2" />
+            Dashboard
+          </Button>
+        </div>
+      );
+    }
+
+    return (
+      <div className="hidden lg:flex items-center space-x-4">
+        <Button
+          variant="ghost"
+          onClick={onLogin}
+          className="text-[var(--neutral-ink)] hover:text-[var(--red-normal)]"
+        >
+          Sign In
+        </Button>
+        <Button
+          onClick={onRegister}
+          className="bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white"
+        >
+          Sign Up
+        </Button>
+      </div>
+    );
+  };
+
   return (
     <>
       <nav className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-md border-b border-[var(--border-color)] px-6 py-4 z-50">
@@ -84,36 +137,10 @@ export function NavBar({
             </a>
           </div>
 
-          {/* Right Section - Desktop Only */}
-          <div className="hidden lg:flex items-center space-x-4">
-            {user ? (
-              <Button
-                variant="ghost"
-                onClick={onDashboard}
-                className="text-[var(--neutral-ink)] hover:text-[var(--red-normal)]"
-              >
-                <LayoutDashboard className="w-4 h-4 mr-2" />
-                Dashboard
-              </Button>
-            ) : (
-              <>
-                <Button
-                  variant="ghost"
-                  onClick={onLogin}
-                  className="text-[var(--neutral-ink)] hover:text-[var(--red-normal)]"
-                >
-                  Sign In
-                </Button>
-                <Button
-                  onClick={onRegister}
-                  className="bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white"
-                >
-                  Sign Up
-                </Button>
-              </>
-            )}
-          </div>
+          {/* --- PERBAIKAN: Panggil fungsi render --- */}
+          {renderAuthButtons()}
 
+          {/* ... (sisa kode untuk mobile menu tetap sama) ... */}
           {/* Mobile Menu Button */}
           <div className="lg:hidden">
             <motion.button
@@ -256,7 +283,6 @@ export function NavBar({
                     FAQ
                   </motion.a>
                 </div>
-
                 {/* Divider */}
                 <div className="h-px bg-gradient-to-r from-transparent via-[var(--border-color)] to-transparent mb-6"></div>
 
