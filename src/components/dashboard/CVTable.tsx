@@ -1,5 +1,3 @@
-"use client";
-
 import {
   Table,
   TableBody,
@@ -35,6 +33,7 @@ import {
   DropdownMenuRadioItem,
 } from "../ui/dropdown-menu";
 import { CVData } from "./CVCard";
+import { downloadCV } from "@/src/lib/utils";
 
 interface CVTableProps {
   cvs: CVData[];
@@ -160,7 +159,7 @@ export function CVTable({
                           Edit
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                          onClick={() => onDownload("download", cv)}
+                          onClick={() => downloadCV(cv.id, cv.name)}
                         >
                           <Download className="w-4 h-4 mr-2" />
                           Download

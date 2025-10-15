@@ -27,6 +27,7 @@ import {
 } from "../ui/dropdown-menu";
 import { type CVScoringData } from "../../app/page";
 import { Education, WorkExperience } from "../cvbuilder/types";
+import { downloadCV } from "@/src/lib/utils";
 
 export interface CVData extends Partial<Omit<CVScoringData, "fileName">> {
   id: string;
@@ -144,7 +145,7 @@ export function CVCard({
                   <Edit className="w-4 h-4 mr-2" />
                   Edit
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onDownload("download", cv)}>
+                <DropdownMenuItem onClick={() => downloadCV(cv.id, cv.name)}>
                   <Download className="w-4 h-4 mr-2" />
                   Download
                 </DropdownMenuItem>

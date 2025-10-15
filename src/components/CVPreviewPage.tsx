@@ -27,6 +27,7 @@ import { CVData } from "@/src/components/dashboard/CVCard";
 import { CVBuilderData } from "./cvbuilder/types";
 import { t } from "@/src/lib/translations";
 import { Footer } from "@/src/components/Footer";
+import { downloadCV } from "@/src/lib/utils";
 
 export function CVPreviewPage() {
   const router = useRouter();
@@ -34,6 +35,7 @@ export function CVPreviewPage() {
   const { user, isAuthenticated } = useAuth();
   const [cvData, setCvData] = useState<CVData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDownloading, setIsDownloading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const cvId = params.id as string;
@@ -64,6 +66,19 @@ export function CVPreviewPage() {
 
     fetchCVData();
   }, [cvId]);
+
+  const handleDownload = async () => {
+    if (!cvId || !cvData) return;
+
+    setIsDownloading(true);
+    try {
+      await downloadCV(cvId, cvData.name);
+    } catch (err) {
+      console.error("Download failed:", err);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   const isOwner = isAuthenticated && user?.id === cvData?.userId;
 
@@ -149,8 +164,17 @@ export function CVPreviewPage() {
                 </Button>
               )}
 
-              <Button className="w-full bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white">
-                <Download className="w-4 h-4 mr-2" /> Unduh sebagai PDF
+              <Button
+                onClick={handleDownload}
+                disabled={isDownloading}
+                className="w-full bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white"
+              >
+                {isDownloading ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <Download className="w-4 h-4 mr-2" />
+                )}
+                {isDownloading ? "Mengunduh..." : "Unduh sebagai PDF"}
               </Button>
               <div className="flex justify-center pt-4">
                 <Link href="/">
