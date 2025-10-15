@@ -1,9 +1,8 @@
 "use client";
-
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { NavBar } from "@/src/components/NavBar";
+import { NavBar, type User as NavBarUser } from "@/src/components/NavBar";
 import { HeroSection } from "@/src/components/landing-page/HeroSection";
 import { FeaturesSection } from "@/src/components/landing-page/FeaturesSection";
 import { HowItWorksSection } from "@/src/components/landing-page/HowItWorksSection";
@@ -12,42 +11,65 @@ import { PricingSection } from "@/src/components/landing-page/PricingSection";
 import { FAQSection } from "@/src/components/landing-page/FAQSection";
 import { Footer } from "@/src/components/Footer";
 import { useAuth } from "@/src/context/AuthContext";
-import {
-  analyzeCVFile,
-  type CVScoringData,
-} from "@/src/utils/cvScoringService";
+
+// Definisikan tipe data untuk hasil scoring di sini
+export interface CVScoringData {
+  fileName: string;
+  isCv: boolean;
+  overallScore: number;
+  atsCompatibility: number;
+  keywordMatch: number;
+  readabilityScore: number;
+  sections: {
+    name: string;
+    score: number;
+    feedback: string;
+    status: "excellent" | "good" | "average" | "needs_improvement";
+  }[];
+  suggestions: string[];
+}
 
 export default function Page() {
   const router = useRouter();
   const { user, isAuthenticated, logout } = useAuth();
   const [isProcessingCV, setIsProcessingCV] = useState(false);
   const [scoringData, setScoringData] = useState<CVScoringData | null>(null);
-  const [hasTriedScoring, setHasTriedScoring] = useState(false);
 
-  const handleCVUpload = async (fileIdentifier: {
-    name: string;
-    url: string;
-  }) => {
+  const handleCVUpload = async (file: File) => {
     setIsProcessingCV(true);
     try {
-      // Fetch the file from the provided URL
-      const response = await fetch(fileIdentifier.url);
-      const blob = await response.blob();
-      const file = new File([blob], fileIdentifier.name, { type: blob.type });
-      const results = await analyzeCVFile(file);
-      setScoringData(results);
-      setHasTriedScoring(true);
-    } catch (error) {
-      console.error("Error analyzing CV:", error);
-      toast.error("Terjadi kesalahan saat menganalisis CV. Silakan coba lagi.");
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch("/api/score-file", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.error || "Gagal mendapatkan analisis dari server."
+        );
+      }
+
+      const results = await response.json();
+      setScoringData({
+        fileName: file.name,
+        ...results,
+      });
+    } catch (error: any) {
+      console.error("[v0] Error analyzing CV:", error);
+      toast.error(
+        error.message ||
+          "Terjadi kesalahan saat menganalisis CV. Silakan coba lagi."
+      );
     } finally {
       setIsProcessingCV(false);
     }
   };
 
   const handleResetScoring = () => setScoringData(null);
-
-  // Arahkan ke dashboard baik untuk menyimpan atau melihat detail
   const handleGoToDashboard = () => router.push("/dashboard");
 
   const handleAuthAction = () => {
@@ -61,15 +83,23 @@ export default function Page() {
   const handleLogout = () => {
     logout();
     setScoringData(null);
-    setHasTriedScoring(false);
     toast.success("Berhasil keluar.");
     router.push("/");
   };
 
+  const navBarUser: NavBarUser | null = user
+    ? {
+        id: user.id, // -> Mengubah 'uid' menjadi 'id'
+        fullName: user.fullName, // -> Mengubah 'displayName' menjadi 'fullName'
+        email: user.email,
+        avatar: user.avatar, // -> Mengubah 'photoURL' menjadi 'avatar'
+      }
+    : null;
+
   return (
     <div className="min-h-screen bg-[var(--surface)]">
       <NavBar
-        user={user}
+        user={navBarUser}
         onLogin={() => router.push("/login")}
         onRegister={() => router.push("/register")}
         onLogout={handleLogout}
@@ -85,6 +115,7 @@ export default function Page() {
           onSaveToRepository={handleGoToDashboard}
           isAuthenticated={isAuthenticated}
           onAuthAction={handleAuthAction}
+          simplifiedView={true}
         />
         <FeaturesSection />
         <HowItWorksSection />

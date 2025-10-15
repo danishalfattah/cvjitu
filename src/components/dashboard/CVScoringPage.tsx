@@ -11,16 +11,12 @@ import { EmptyState } from "../EmptyState";
 import { FileUploadZone } from "../FileUploadZone";
 import { CVScoringResult } from "./CVScoringResult";
 import { DeleteConfirmModal } from "../DeleteConfirmModal";
-import {
-  analyzeCVFile,
-  type CVScoringData,
-} from "@/src/utils/cvScoringService";
 import { Search, Grid, List, Loader2 } from "lucide-react";
 import { CVData } from "./CVCard";
+import { type CVScoringData } from "../../app/page";
 
 export function CVScoringPage() {
   const [searchQuery, setSearchQuery] = useState("");
-  // --- PERUBAHAN 1: Ubah default state ke 'cards' ---
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
   const [cvs, setCvs] = useState<CVData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -28,7 +24,7 @@ export function CVScoringPage() {
     status: "Semua Status",
     year: "Semua Tahun",
     scoreRange: [1, 100],
-    sortBy: "newest" as "newest" | "oldest", // Tambahkan state sortBy
+    sortBy: "newest" as "newest" | "oldest",
   });
   const [isProcessing, setIsProcessing] = useState(false);
   const [scoringResult, setScoringResult] = useState<CVScoringData | null>(
@@ -59,65 +55,80 @@ export function CVScoringPage() {
     fetchScoredCVs();
   }, []);
 
-  const availableYears = useMemo(() => {
-    if (!cvs || cvs.length === 0) return [];
-    const yearsSet = new Set(cvs.map((cv) => cv.year.toString()));
-    return Array.from(yearsSet).sort((a, b) => parseInt(b) - parseInt(a));
-  }, [cvs]);
-
-  const handleFileUpload = async (fileIdentifier: {
-    name: string;
-    url: string;
-  }) => {
+  const handleFileUpload = async (file: File) => {
     setIsProcessing(true);
     setScoringResult(null);
     setNewlyScoredCv(null);
     try {
-      const dummyFile = new File([""], fileIdentifier.name, {
-        type: "application/pdf",
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch("/api/score-file", {
+        method: "POST",
+        body: formData,
       });
-      const results = await analyzeCVFile(dummyFile);
-      setScoringResult(results);
-      const newCV: Partial<CVData> = {
-        name: fileIdentifier.name,
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.error || "Gagal mendapatkan analisis dari server."
+        );
+      }
+
+      const results = await response.json();
+
+      if (!results.isCv) {
+        toast.error(results.suggestions[0] || "File yang diunggah bukan CV.");
+        return;
+      }
+
+      const fullResult: CVScoringData = { fileName: file.name, ...results };
+      setScoringResult(fullResult);
+
+      const cvToSave: Partial<CVData> = {
+        name: file.name,
         year: new Date().getFullYear(),
-        status: "Uploaded",
+        status: "Di Upload",
         score: results.overallScore,
         ...results,
       };
-      setNewlyScoredCv(newCV);
-    } catch (error) {
-      toast.error("Gagal menganalisis CV. Silakan coba lagi.");
+      setNewlyScoredCv(cvToSave);
+    } catch (error: any) {
+      toast.error(error.message || "Terjadi kesalahan saat menganalisis CV.");
     } finally {
       setIsProcessing(false);
     }
   };
 
   const handleSaveToRepository = async () => {
-    if (newlyScoredCv) {
-      try {
-        const dataToSave = { ...newlyScoredCv, type: "uploaded" };
-        const response = await fetch("/api/cv", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(dataToSave),
-        });
-        if (!response.ok) throw new Error("Gagal menyimpan CV ke database.");
-        const savedCv = await response.json();
-        setCvs((prev) => [savedCv, ...prev]);
-        toast.success(`CV "${savedCv.name}" berhasil disimpan.`);
-      } catch (error: any) {
-        toast.error(error.message);
-      } finally {
-        setScoringResult(null);
-        setNewlyScoredCv(null);
-      }
+    if (!newlyScoredCv) return;
+
+    try {
+      const dataToSave = { ...newlyScoredCv, type: "uploaded" };
+
+      const response = await fetch("/api/cv", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(dataToSave),
+      });
+
+      if (!response.ok) throw new Error("Gagal menyimpan CV ke database.");
+
+      const savedCv = await response.json();
+      setCvs((prev) => [savedCv, ...prev]);
+      toast.success(`CV "${savedCv.name}" berhasil dianalisis dan disimpan.`);
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setScoringResult(null);
+      setNewlyScoredCv(null);
     }
   };
 
   const handleViewResult = (cv: CVData) => {
     const resultData: CVScoringData = {
       fileName: cv.name,
+      isCv: true,
       overallScore: cv.score,
       sections: cv.sections || [],
       suggestions: cv.suggestions || [],
@@ -126,6 +137,7 @@ export function CVScoringPage() {
       readabilityScore: cv.readabilityScore || 0,
     };
     setScoringResult(resultData);
+    setNewlyScoredCv(cv);
   };
 
   const handleBackToList = () => {
@@ -155,6 +167,12 @@ export function CVScoringPage() {
     }
   };
 
+  const availableYears = useMemo(() => {
+    if (!cvs || cvs.length === 0) return [];
+    const yearsSet = new Set(cvs.map((cv) => cv.year.toString()));
+    return Array.from(yearsSet).sort((a, b) => parseInt(b) - parseInt(a));
+  }, [cvs]);
+
   const filteredAndSortedCVs = useMemo(() => {
     let filtered = cvs.filter((cv) => {
       const matchesSearch = (cv.name || "")
@@ -169,7 +187,6 @@ export function CVScoringPage() {
       return matchesSearch && matchesYear && matchesScore;
     });
 
-    // Terapkan pengurutan berdasarkan tanggal upload (createdAt)
     filtered.sort((a, b) => {
       const dateA = new Date(a.createdAt).getTime();
       const dateB = new Date(b.createdAt).getTime();
@@ -179,17 +196,21 @@ export function CVScoringPage() {
     return filtered;
   }, [cvs, searchQuery, filters]);
 
+  // --- PERBAIKAN DI SINI ---
   if (scoringResult) {
     return (
       <CVScoringResult
         data={scoringResult}
-        cvBuilderData={null}
+        cvBuilderData={null} // Tambahkan prop ini dengan nilai null
         onBack={handleBackToList}
-        onSaveToRepository={handleSaveToRepository}
+        onSaveToRepository={
+          newlyScoredCv && !newlyScoredCv.id ? handleSaveToRepository : null
+        }
         showPreview={false}
       />
     );
   }
+  // --- AKHIR PERBAIKAN ---
 
   if (isLoading) {
     return (
@@ -202,7 +223,6 @@ export function CVScoringPage() {
   return (
     <div className="p-4 sm:p-6 min-h-screen">
       <div className="mb-6 sm:mb-8">
-        {/* --- PERUBAHAN 2: Tambahkan Breadcrumb di sini --- */}
         <div className="flex items-center space-x-2 text-sm text-gray-500 mb-2">
           <span>Pages</span>
           <span>/</span>
@@ -217,8 +237,9 @@ export function CVScoringPage() {
       </div>
       <div className="mb-8">
         <FileUploadZone
-          onFileUpload={handleFileUpload}
+          onFileSelect={handleFileUpload}
           isProcessing={isProcessing}
+          simplifiedView={false}
         />
       </div>
       <h2 className="text-xl font-poppins font-semibold text-[var(--neutral-ink)] mb-4">
@@ -226,14 +247,14 @@ export function CVScoringPage() {
       </h2>
       <CVFilters
         filters={filters}
-        years={availableYears} // Kirim tahun dinamis
+        years={availableYears}
         onFiltersChange={setFilters}
         onReset={() =>
           setFilters({
-            status: "Semua Status",
+            status: "Semua Tahun",
             year: "Semua Tahun",
             scoreRange: [1, 100],
-            sortBy: "newest", // Reset juga sortBy
+            sortBy: "newest",
           })
         }
         hideStatusFilter={true}

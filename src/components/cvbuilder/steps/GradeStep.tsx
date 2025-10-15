@@ -6,191 +6,108 @@ import { Progress } from "../../ui/progress";
 import { RadialScore } from "../../RadialScore";
 import {
   Bot,
-  Target,
-  TrendingUp,
-  AlertTriangle,
-  CheckCircle,
   RefreshCw,
+  Edit,
+  CheckCircle,
+  AlertTriangle,
+  XCircle,
 } from "lucide-react";
 import { CVBuilderData } from "../types";
+import { toast } from "sonner";
+import { cn } from "@/src/lib/utils";
 
-interface GradeStepProps {
-  data: CVBuilderData;
-}
-
+// Definisikan tipe untuk hasil analisis
 interface CVGrade {
   overallScore: number;
+  atsCompatibility: number;
+  keywordMatch: number;
+  readabilityScore: number;
   sections: {
-    content: number;
-    formatting: number;
-    keywords: number;
-    completeness: number;
-  };
-  strengths: string[];
-  improvements: string[];
-  recommendations: string[];
+    name: string;
+    score: number;
+    feedback: string;
+    status: "excellent" | "good" | "average" | "needs_improvement";
+  }[];
+  suggestions: string[];
 }
 
-export function GradeStep({ data }: GradeStepProps) {
+export function GradeStep({ data }: { data: CVBuilderData }) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [grade, setGrade] = useState<CVGrade | null>(null);
 
   const analyzeCV = async () => {
     setIsAnalyzing(true);
+    setGrade(null);
 
-    // Simulate AI analysis
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    try {
+      const response = await fetch("/api/score-builder", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
 
-    // Mock CV grading based on actual data
-    const mockGrade: CVGrade = {
-      overallScore: calculateOverallScore(),
-      sections: {
-        content: calculateContentScore(),
-        formatting: 85,
-        keywords: calculateKeywordScore(),
-        completeness: calculateCompletenessScore(),
-      },
-      strengths: generateStrengths(),
-      improvements: generateImprovements(),
-      recommendations: generateRecommendations(),
-    };
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Analisis AI gagal.");
+      }
 
-    setGrade(mockGrade);
-    setIsAnalyzing(false);
+      const result: CVGrade = await response.json();
+      setGrade(result);
+      toast.success("Analisis CV berhasil!");
+    } catch (error: any) {
+      console.error("Analysis Error:", error);
+      toast.error(error.message || "Terjadi kesalahan saat menganalisis CV.");
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
-  const calculateOverallScore = () => {
-    let score = 60; // Base score
-
-    // Add points for completed sections
-    if (data.firstName && data.lastName) score += 5;
-    if (data.email) score += 5;
-    if (data.jobTitle) score += 5;
-    if (data.workExperiences.length > 0) score += 10;
-    if (data.educations.length > 0) score += 5;
-    if (data.skills.length > 0) score += 5;
-    if (data.summary) score += 5;
-
-    return Math.min(score, 95);
+  // Helper Functions untuk UI (Mirip CVScoringResult)
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "excellent":
+        return <CheckCircle className="w-5 h-5 text-green-600" />;
+      case "good":
+        return <CheckCircle className="w-5 h-5 text-blue-600" />;
+      case "average":
+        return <AlertTriangle className="w-5 h-5 text-yellow-600" />;
+      case "needs_improvement":
+        return <AlertTriangle className="w-5 h-5 text-orange-600" />;
+      default:
+        return <XCircle className="w-5 h-5 text-red-600" />;
+    }
   };
 
-  const calculateContentScore = () => {
-    let score = 60;
-    if (data.summary && data.summary.length > 100) score += 15;
-    if (data.workExperiences.length > 0) score += 15;
-    if (data.workExperiences.some((exp) => exp.achievements.length > 0))
-      score += 10;
-    return Math.min(score, 95);
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "excellent":
+        return "bg-green-100 text-green-800";
+      case "good":
+        return "bg-blue-100 text-blue-800";
+      case "average":
+        return "bg-yellow-100 text-yellow-800";
+      case "needs_improvement":
+        return "bg-orange-100 text-orange-800";
+      default:
+        return "bg-red-100 text-red-800";
+    }
   };
 
-  const calculateKeywordScore = () => {
-    let score = 50;
-    const allText = `${data.jobTitle} ${data.summary} ${data.skills.join(
-      " "
-    )} ${data.workExperiences
-      .map((exp) => exp.description + " " + exp.achievements.join(" "))
-      .join(" ")}`;
-
-    // Check for common keywords
-    const keywords = [
-      "experience",
-      "skill",
-      "project",
-      "team",
-      "leadership",
-      "development",
-      "management",
-    ];
-    const foundKeywords = keywords.filter((keyword) =>
-      allText.toLowerCase().includes(keyword)
-    );
-    score += foundKeywords.length * 5;
-
-    return Math.min(score, 90);
-  };
-
-  const calculateCompletenessScore = () => {
-    let score = 0;
-    const totalSections = 7;
-    let completedSections = 0;
-
-    if (data.firstName && data.lastName) completedSections++;
-    if (data.email) completedSections++;
-    if (data.jobTitle) completedSections++;
-    if (data.workExperiences.length > 0) completedSections++;
-    if (data.educations.length > 0) completedSections++;
-    if (data.skills.length > 0) completedSections++;
-    if (data.summary) completedSections++;
-
-    score = (completedSections / totalSections) * 100;
-    return Math.round(score);
-  };
-
-  const generateStrengths = () => {
-    const strengths = [];
-
-    if (data.workExperiences.length > 0) {
-      strengths.push("Bagian pengalaman kerja yang kuat");
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case "excellent":
+        return "Sangat Baik";
+      case "good":
+        return "Baik";
+      case "average":
+        return "Cukup";
+      case "needs_improvement":
+        return "Perlu Perbaikan";
+      default:
+        return status;
     }
-    if (data.skills.length >= 5) {
-      strengths.push("Daftar keahlian yang komprehensif");
-    }
-    if (data.summary && data.summary.length > 100) {
-      strengths.push("Ringkasan profesional yang detail");
-    }
-    if (data.educations.length > 0) {
-      strengths.push("Latar belakang pendidikan tercantum");
-    }
-
-    if (strengths.length === 0) {
-      strengths.push("Struktur informasi dasar sudah ada");
-    }
-
-    return strengths;
-  };
-
-  const generateImprovements = () => {
-    const improvements = [];
-
-    if (!data.summary || data.summary.length < 50) {
-      improvements.push("Tambahkan ringkasan profesional yang lebih detail");
-    }
-    if (data.workExperiences.length === 0) {
-      improvements.push("Sertakan pengalaman kerja yang relevan");
-    }
-    if (data.skills.length < 5) {
-      improvements.push("Tambahkan lebih banyak keahlian yang relevan");
-    }
-    if (data.workExperiences.some((exp) => exp.achievements.length === 0)) {
-      improvements.push("Tambahkan pencapaian spesifik pada pengalaman kerja");
-    }
-    if (!data.phone) {
-      improvements.push("Pertimbangkan menambahkan nomor telepon untuk kontak");
-    }
-
-    return improvements.slice(0, 4); // Limit to 4 improvements
-  };
-
-  const generateRecommendations = () => {
-    return [
-      "Gunakan kata kerja aktif seperti 'Memimpin', 'Mengembangkan', 'Menerapkan' dalam deskripsi pengalaman",
-      "Kuantifikasi pencapaian Anda dengan angka dan persentase spesifik jika memungkinkan",
-      "Sesuaikan kata kunci dengan deskripsi pekerjaan yang Anda lamar",
-      "Buat CV 1-2 halaman untuk keterbacaan optimal",
-      "Gunakan format yang konsisten di seluruh CV Anda",
-    ];
-  };
-
-  const getScoreColor = (score: number) => {
-    if (score >= 80) return "text-green-600";
-    if (score >= 60) return "text-yellow-600";
-    return "text-red-600";
-  };
-
-  const getScoreBadgeVariant = (score: number) => {
-    if (score >= 80) return "default";
-    if (score >= 60) return "secondary";
-    return "destructive";
   };
 
   if (!grade && !isAnalyzing) {
@@ -240,133 +157,128 @@ export function GradeStep({ data }: GradeStepProps) {
     );
   }
 
-  return (
+  return grade ? (
     <div className="space-y-6">
-      {/* Overall Score */}
-      <Card className="border-[var(--border-color)]">
-        <CardHeader className="text-center">
-          <CardTitle className="flex items-center justify-center gap-2">
-            <Target className="w-5 h-5 text-[var(--red-normal)]" />
-            CV Score
+      <Card className="border border-[var(--border-color)]">
+        <CardHeader>
+          <CardTitle className="text-xl font-poppins text-[var(--neutral-ink)]">
+            Skor Keseluruhan
           </CardTitle>
         </CardHeader>
-        <CardContent className="text-center">
-          <div className="flex justify-center mb-4">
-            <RadialScore score={grade!.overallScore} size="lg" />
+        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+          <div className="flex justify-center">
+            <RadialScore
+              score={grade.overallScore}
+              size="lg"
+              showLabel={true}
+            />
           </div>
-          <Badge
-            variant={getScoreBadgeVariant(grade!.overallScore)}
-            className="text-lg px-4 py-1"
-          >
-            {grade!.overallScore >= 80
-              ? "Sangat Baik"
-              : grade!.overallScore >= 60
-              ? "Baik"
-              : "Perlu Perbaikan"}
-          </Badge>
-        </CardContent>
-      </Card>
-
-      {/* Section Scores */}
-      <Card className="border-[var(--border-color)]">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-[var(--red-normal)]" />
-            Rincian Bagian
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {Object.entries(grade!.sections).map(([section, score]) => {
-            const sectionNames: Record<string, string> = {
-              content: "Konten",
-              formatting: "Format",
-              keywords: "Kata Kunci",
-              completeness: "Kelengkapan",
-            };
-
-            return (
-              <div key={section} className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="font-medium">
-                    {sectionNames[section] || section}
-                  </span>
-                  <span className={`font-semibold ${getScoreColor(score)}`}>
-                    {score}%
-                  </span>
-                </div>
-                <Progress value={score} className="h-2" />
+          <div className="space-y-4">
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm font-medium text-gray-700">
+                  Kompatibilitas ATS
+                </span>
+                <span className="text-sm font-bold text-[var(--neutral-ink)]">
+                  {grade.atsCompatibility}%
+                </span>
               </div>
-            );
-          })}
+              <Progress value={grade.atsCompatibility} className="h-2" />
+            </div>
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm font-medium text-gray-700">
+                  Pencocokan Kata Kunci
+                </span>
+                <span className="text-sm font-bold text-[var(--neutral-ink)]">
+                  {grade.keywordMatch}%
+                </span>
+              </div>
+              <Progress value={grade.keywordMatch} className="h-2" />
+            </div>
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm font-medium text-gray-700">
+                  Keterbacaan
+                </span>
+                <span className="text-sm font-bold text-[var(--neutral-ink)]">
+                  {grade.readabilityScore}%
+                </span>
+              </div>
+              <Progress value={grade.readabilityScore} className="h-2" />
+            </div>
+          </div>
         </CardContent>
       </Card>
 
-      {/* Strengths */}
-      <Card className="border-[var(--border-color)]">
+      <Card className="border border-[var(--border-color)]">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-green-600">
-            <CheckCircle className="w-5 h-5" />
-            Kekuatan
+          <CardTitle className="text-xl font-poppins text-[var(--neutral-ink)]">
+            Analisis per Bagian
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <ul className="space-y-2">
-            {grade!.strengths.map((strength, index) => (
-              <li key={index} className="flex items-start gap-2">
-                <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                <span className="text-sm">{strength}</span>
-              </li>
-            ))}
-          </ul>
-        </CardContent>
-      </Card>
-
-      {/* Improvements */}
-      <Card className="border-[var(--border-color)]">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-orange-600">
-            <AlertTriangle className="w-5 h-5" />
-            Area yang Perlu Diperbaiki
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ul className="space-y-2">
-            {grade!.improvements.map((improvement, index) => (
-              <li key={index} className="flex items-start gap-2">
-                <AlertTriangle className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
-                <span className="text-sm">{improvement}</span>
-              </li>
-            ))}
-          </ul>
-        </CardContent>
-      </Card>
-
-      {/* Recommendations */}
-      <Card className="border-[var(--border-color)]">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-blue-600">
-            <Bot className="w-5 h-5" />
-            Rekomendasi AI
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ul className="space-y-3">
-            {grade!.recommendations.map((recommendation, index) => (
-              <li key={index} className="flex items-start gap-2">
-                <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0">
-                  <span className="text-xs font-medium text-blue-600">
-                    {index + 1}
-                  </span>
+          <div className="space-y-4">
+            {grade.sections.map((section, index) => (
+              <div
+                key={index}
+                className="border border-[var(--border-color)] rounded-lg p-4"
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center space-x-3">
+                    {getStatusIcon(section.status)}
+                    <h3 className="font-medium text-[var(--neutral-ink)]">
+                      {section.name}
+                    </h3>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <Badge
+                      className={cn(
+                        getStatusColor(section.status),
+                        "font-medium"
+                      )}
+                    >
+                      {getStatusText(section.status)}
+                    </Badge>
+                    <div className="text-right">
+                      <span className="text-2xl font-bold text-[var(--neutral-ink)]">
+                        {section.score}
+                      </span>
+                      <span className="text-sm text-gray-600">/100</span>
+                    </div>
+                  </div>
                 </div>
-                <span className="text-sm">{recommendation}</span>
-              </li>
+                <p className="text-gray-600 text-sm">{section.feedback}</p>
+              </div>
             ))}
-          </ul>
+          </div>
         </CardContent>
       </Card>
 
-      {/* Re-analyze Button */}
-      <div className="text-center">
+      <Card className="border border-[var(--border-color)]">
+        <CardHeader>
+          <CardTitle className="text-xl font-poppins text-[var(--neutral-ink)]">
+            Saran Perbaikan
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {grade.suggestions.map((suggestion, index) => (
+              <div
+                key={index}
+                className="flex items-start space-x-3 p-3 bg-[var(--red-light)] rounded-lg"
+              >
+                <Edit className="w-5 h-5 text-[var(--red-normal)] mt-0.5 flex-shrink-0" />
+                <p className="text-sm text-[var(--neutral-ink)]">
+                  {suggestion}
+                </p>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="text-center pt-2">
         <Button
           onClick={analyzeCV}
           variant="outline"
@@ -377,5 +289,5 @@ export function GradeStep({ data }: GradeStepProps) {
         </Button>
       </div>
     </div>
-  );
+  ) : null;
 }
