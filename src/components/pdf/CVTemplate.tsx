@@ -42,12 +42,12 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   fullName: {
-    fontSize: 24, // text-2xl
+    fontSize: 22, // text-2xl
     fontFamily: "Times-Bold", // font-bold
     marginBottom: 4, // space-y-1
   },
   jobTitleHeader: {
-    fontSize: 16, // text-base
+    fontSize: 14, // text-base
     color: "#6b7280", // text-muted-foreground
     fontFamily: "Times-Roman", // font-medium (Times tidak punya medium, jadi pakai regular)
   },
@@ -60,11 +60,11 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   contactInfoText: {
-    fontSize: 12, // text-xs
+    fontSize: 10, // text-xs
     color: "#6b7280",
   },
   separator: {
-    fontSize: 12,
+    fontSize: 10,
     color: "#6b7280",
     marginHorizontal: 2,
   },
@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
     marginBottom: 8, // space-y-2
   },
   sectionTitle: {
-    fontSize: 14, // text-sm
+    fontSize: 12, // text-sm
     fontFamily: "Times-Bold", // font-semibold
   },
   separatorLine: {
@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
   },
   // Summary
   summaryText: {
-    fontSize: 12, // text-xs
+    fontSize: 10, // text-xs
     color: "#6b7280",
     lineHeight: 1.6, // leading-relaxed
   },
@@ -104,19 +104,19 @@ const styles = StyleSheet.create({
     textAlign: "right",
   },
   entryTitle: {
-    fontSize: 12, // text-xs
+    fontSize: 10, // text-xs
     fontFamily: "Times-Bold", // font-medium
   },
   entryDate: {
-    fontSize: 12, // text-xs
+    fontSize: 10, // text-xs
     color: "#6b7280",
   },
   entryLocation: {
-    fontSize: 12,
+    fontSize: 10,
     color: "#6b7280",
   },
   description: {
-    fontSize: 12,
+    fontSize: 10,
     color: "#6b7280",
     lineHeight: 1.6,
     marginTop: 4,
@@ -132,23 +132,23 @@ const styles = StyleSheet.create({
   },
   bulletPoint: {
     width: 10,
-    fontSize: 12,
+    fontSize: 10,
     color: "#6b7280",
   },
   achievementText: {
     flex: 1,
-    fontSize: 12,
+    fontSize: 10,
     color: "#6b7280",
     lineHeight: 1.6,
   },
   // Education
   degreeText: {
-    fontSize: 12,
+    fontSize: 10,
     color: "#6b7280",
   },
   // Skills
   skillsText: {
-    fontSize: 12,
+    fontSize: 10,
     color: "#6b7280",
     lineHeight: 1.6,
   },
@@ -183,43 +183,42 @@ export const CVTemplate: React.FC<CVTemplateProps> = ({ cvData, lang }) => {
           <Text style={styles.jobTitleHeader}>{cvData.jobTitle}</Text>
           <View style={styles.contactInfoContainer}>
             {cvData.email && (
-              <Link
-                style={styles.contactInfoText}
-                src={`mailto:${cvData.email}`}
-              >
-                {cvData.email}
-              </Link>
+              <Text style={styles.contactInfoText}>{cvData.email}</Text>
             )}
+
             {cvData.phone && (
-              <Text>
-                {cvData.email && <Text style={styles.separator}>|</Text>}
-                <Text style={styles.contactInfoText}> {cvData.phone}</Text>
+              <Text style={styles.contactInfoText}>
+                {cvData.email && <Text style={styles.separator}> | </Text>}
+                {cvData.phone}
               </Text>
             )}
+
             {cvData.location && (
-              <Text>
+              <Text style={styles.contactInfoText}>
                 {(cvData.email || cvData.phone) && (
-                  <Text style={styles.separator}>|</Text>
+                  <Text style={styles.separator}> | </Text>
                 )}
-                <Text style={styles.contactInfoText}> {cvData.location}</Text>
+                {cvData.location}
               </Text>
             )}
+
             {cvData.linkedin && (
-              <Link style={styles.contactInfoText} src={cvData.linkedin}>
+              <Text style={styles.contactInfoText}>
                 {(cvData.email || cvData.phone || cvData.location) && (
-                  <Text style={styles.separator}>|</Text>
+                  <Text style={styles.separator}> | </Text>
                 )}
-                <Text> {cvData.linkedin.replace(/https?:\/\//, "")}</Text>
-              </Link>
+                {cvData.linkedin.replace(/https?:\/\//, "")}
+              </Text>
             )}
+
             {cvData.website && (
-              <Link style={styles.contactInfoText} src={cvData.website}>
+              <Text style={styles.contactInfoText}>
                 {(cvData.email ||
                   cvData.phone ||
                   cvData.location ||
-                  cvData.linkedin) && <Text style={styles.separator}>|</Text>}
-                <Text> {cvData.website.replace(/https?:\/\//, "")}</Text>
-              </Link>
+                  cvData.linkedin) && <Text style={styles.separator}> | </Text>}
+                {cvData.website.replace(/https?:\/\//, "")}
+              </Text>
             )}
           </View>
         </View>
