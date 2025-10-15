@@ -315,7 +315,8 @@ export function CVBuilderPage({
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <div className="text-sm text-gray-500">
-                  {t("stepOf", lang)} {currentStep + 1} of {steps.length}
+                  {t("stepOf", lang)} {currentStep + 1} {t("of", lang)}{" "}
+                  {steps.length}
                 </div>
                 {/* --- PERUBAHAN DI SINI (TOMBOL SAVE DRAFT/UPDATE) --- */}
                 <Button

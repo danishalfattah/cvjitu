@@ -10,6 +10,7 @@ const translations: { [key: string]: TranslationEntry } = {
   designYourResume: { id: 'Rancang Resume Anda', en: 'Design Your Resume' },
   followSteps: { id: 'Ikuti langkah-langkah di bawah ini untuk membuat resume Anda. Progres Anda akan disimpan secara otomatis.', en: 'Follow the steps below to create your resume. Your progress will be saved automatically.' },
   stepOf: { id: 'Langkah', en: 'Step' },
+  of: { id: 'dari', en: 'of' },
   previousButton: { id: 'Sebelumnya', en: 'Previous' },
   nextButton: { id: 'Selanjutnya', en: 'Next' },
   exportPdfButton: { id: 'Ekspor PDF', en: 'Export PDF' },
