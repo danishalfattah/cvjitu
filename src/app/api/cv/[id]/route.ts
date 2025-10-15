@@ -58,8 +58,67 @@ export async function GET(
   }
 }
 
-// --- AKHIR PERBAIKAN 1 ---
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const userId = await getUserId();
+  const id = params.id;
+  const cvData = await request.json();
 
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (!id) {
+    return NextResponse.json({ error: "CV ID is required" }, { status: 400 });
+  }
+
+  try {
+    // Tentukan nama koleksi berdasarkan 'type' dari data yang dikirim
+    const collectionName = cvData.type === 'uploaded' ? 'scored_cvs' : 'cvs';
+    const docRef = adminDb.collection(collectionName).doc(id);
+    
+    const doc = await docRef.get();
+
+    // Jika dokumen tidak ada, kirim error
+    if (!doc.exists) {
+      return NextResponse.json({ error: "CV not found" }, { status: 404 });
+    }
+
+    // Verifikasi bahwa pengguna yang mencoba mengedit adalah pemilik dokumen
+    const existingData = doc.data();
+    if (existingData?.userId !== userId) {
+      return NextResponse.json({ error: "Access denied" }, { status: 403 });
+    }
+
+    // Lakukan pembaruan pada dokumen
+    const dataToUpdate = {
+      ...cvData,
+      updatedAt: new Date().toISOString(),
+    };
+
+    // Jika 'jobTitle' diperbarui, salin nilainya ke 'name' untuk konsistensi tampilan
+    if (cvData.jobTitle) {
+      dataToUpdate.name = cvData.jobTitle;
+    }
+    // --- AKHIR PERBAIKAN ---
+
+    // Lakukan pembaruan pada dokumen menggunakan objek yang sudah disiapkan
+    await docRef.update(dataToUpdate);
+
+    return NextResponse.json({
+      message: "CV updated successfully",
+      cvId: id,
+    });
+  } catch (error) {
+    console.error("Error updating CV:", error);
+    return NextResponse.json(
+      { error: "Failed to update CV" },
+      { status: 500 }
+    );
+  }
+}
 
 // HANDLER DELETE (Tetap sama)
 export async function DELETE(
