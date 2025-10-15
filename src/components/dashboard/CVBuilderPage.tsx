@@ -17,6 +17,7 @@ import type {
   Education,
 } from "../cvbuilder/types";
 import { t, type Language } from "@/src/lib/translations";
+import { downloadCV } from "@/src/lib/utils";
 
 interface CVBuilderPageProps {
   initialData?: CVBuilderData | null; // Buat opsional
@@ -45,6 +46,7 @@ export function CVBuilderPage({
   onSaveDraft,
   lang,
 }: CVBuilderPageProps) {
+  const [isExporting, setIsExporting] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   // Inisialisasi state dengan struktur data kosong
   const [cvData, setCvData] = useState<CVBuilderData>({
@@ -168,14 +170,26 @@ export function CVBuilderPage({
     onSaveDraft(cvData);
   };
 
-  const handleExportPDF = () => {
-    setTimeout(() => {
+  const handleExportPDF = async () => {
+    // 1. Pastikan CV memiliki ID (sudah disimpan) sebelum diekspor
+    if (!cvId) {
+      alert("Harap simpan CV Anda terlebih dahulu sebelum mengekspor ke PDF.");
+      return;
+    }
+
+    setIsExporting(true);
+    try {
+      // 2. Buat nama file yang deskriptif dari data CV
       const fullName = `${cvData.firstName} ${cvData.lastName}`.trim();
-      const originalTitle = document.title;
-      document.title = `${fullName}-${cvData.jobTitle}_CV`.replace(/\s+/g, "-");
-      window.print();
-      document.title = originalTitle;
-    }, 300);
+      const fileName = `${fullName}-${cvData.jobTitle}_CV`.replace(/\s+/g, "-");
+
+      // 3. Panggil fungsi downloadCV yang sudah diimpor
+      await downloadCV(cvId, fileName);
+    } catch (error) {
+      console.error("Gagal mengekspor PDF:", error);
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const renderCurrentStep = () => {
@@ -345,14 +359,6 @@ export function CVBuilderPage({
                 </Button>
                 {currentStep === steps.length - 1 ? (
                   <div className="flex items-center space-x-3">
-                    <Button
-                      onClick={handleExportPDF}
-                      variant="outline"
-                      className="border-[var(--red-normal)] text-[var(--red-normal)] hover:bg-[var(--red-light)] bg-transparent"
-                    >
-                      <Download className="w-4 h-4 mr-2" />
-                      {t("exportPdfButton", lang)}
-                    </Button>
                     {/* --- PERUBAHAN DI SINI (TOMBOL SAVE/UPDATE) --- */}
                     <Button
                       onClick={handleSave}
