@@ -39,7 +39,6 @@ export function SummaryStep({ data, onUpdate, lang }: SummaryStepProps) {
       onUpdate({ summary: result.summary });
     } catch (error: any) {
       console.error("Failed to generate summary:", error);
-      alert(error.message);
     } finally {
       setIsGenerating(false);
     }
