@@ -13,7 +13,6 @@ const translations: { [key: string]: TranslationEntry } = {
   of: { id: 'dari', en: 'of' },
   previousButton: { id: 'Sebelumnya', en: 'Previous' },
   nextButton: { id: 'Selanjutnya', en: 'Next' },
-  exportPdfButton: { id: 'Ekspor PDF', en: 'Export PDF' },
   saveCvButton: { id: 'Simpan CV', en: 'Save CV' },
   saveDraftButton: { id: 'Simpan Draf', en: 'Save Draft' },
   

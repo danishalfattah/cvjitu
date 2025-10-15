@@ -187,7 +187,6 @@ export function CVBuilderPage({
       await downloadCV(cvId, fileName);
     } catch (error) {
       console.error("Gagal mengekspor PDF:", error);
-      alert("Terjadi kesalahan saat membuat file PDF. Silakan coba lagi.");
     } finally {
       setIsExporting(false);
     }
@@ -360,21 +359,6 @@ export function CVBuilderPage({
                 </Button>
                 {currentStep === steps.length - 1 ? (
                   <div className="flex items-center space-x-3">
-                    <Button
-                      onClick={handleExportPDF}
-                      variant="outline"
-                      className="border-[var(--red-normal)] text-[var(--red-normal)] hover:bg-[var(--red-light)] bg-transparent"
-                      disabled={isExporting}
-                    >
-                      {isExporting ? (
-                        <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                      ) : (
-                        <Download className="w-4 h-4 mr-2" />
-                      )}
-                      {isExporting
-                        ? "Mengekspor..."
-                        : t("exportPdfButton", lang)}
-                    </Button>
                     {/* --- PERUBAHAN DI SINI (TOMBOL SAVE/UPDATE) --- */}
                     <Button
                       onClick={handleSave}
