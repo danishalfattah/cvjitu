@@ -21,7 +21,7 @@ import { EmptyState } from "../EmptyState";
 import { DeleteConfirmModal } from "../DeleteConfirmModal";
 import { CVScoringResult } from "./CVScoringResult";
 import { CVPreview } from "../cvbuilder/preview/CVPreview";
-import { type CVScoringData } from "@/src/utils/cvScoringService";
+import { type CVScoringData } from "@/src/app/page";
 import { CVBuilderData } from "../cvbuilder/types";
 import {
   AlertDialog,
@@ -193,6 +193,7 @@ export function Dashboard({ onCreateCVAction }: DashboardProps) {
               },
             ],
             suggestions: ["Tambahkan kata kunci.", "Kuantifikasi pencapaian."],
+            isCv: false,
           };
           setSelectedCvForPreview(cv);
           setScoringResult(mockResult);
