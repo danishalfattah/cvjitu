@@ -72,7 +72,7 @@ export function CVFilters({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="Semua Status">Semua Status</SelectItem>
-              <SelectItem value="Draft">Draf</SelectItem>
+              <SelectItem value="Draf">Draf</SelectItem>
               <SelectItem value="Selesai">Selesai</SelectItem>
             </SelectContent>
           </Select>

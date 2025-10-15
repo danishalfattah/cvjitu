@@ -162,7 +162,7 @@ export function CVTable({
                           onClick={() => downloadCV(cv.id, cv.name)}
                         >
                           <Download className="w-4 h-4 mr-2" />
-                          Download
+                          Unduh
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => onShare("share", cv)}>
                           <Share2 className="w-4 h-4 mr-2" />
