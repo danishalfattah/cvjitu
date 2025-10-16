@@ -44,6 +44,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { toast } from "sonner";
+import { downloadCV } from "@/lib/utils";
 
 interface DashboardProps {
   onCreateCVAction?: (lang: "id" | "en") => void;
@@ -59,7 +60,7 @@ export function Dashboard({ onCreateCVAction }: DashboardProps) {
     status: "Semua Status",
     year: "Semua Tahun",
     scoreRange: [1, 100],
-    sortBy: "newest" as "newest" | "oldest", // Tambahkan state sortBy
+    sortBy: "newest" as "newest" | "oldest",
   });
   const [deleteModal, setDeleteModal] = useState<{
     isOpen: boolean;
@@ -74,6 +75,7 @@ export function Dashboard({ onCreateCVAction }: DashboardProps) {
   const [selectedCvForPreview, setSelectedCvForPreview] =
     useState<CVData | null>(null);
   const [draftPreviewData, setDraftPreviewData] = useState<CVData | null>(null);
+  const [activeTab, setActiveTab] = useState("cv-repo");
 
   useEffect(() => {
     const fetchCVs = async () => {
@@ -105,13 +107,10 @@ export function Dashboard({ onCreateCVAction }: DashboardProps) {
   const stats = useMemo(() => {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
     const completedCvs = cvs.filter((cv) => cv.status !== "Draft");
-
     const cvsThisMonth = completedCvs.filter(
       (cv) => new Date(cv.createdAt) > thirtyDaysAgo
     );
-
     const total = cvs.length;
     const avgScore = Math.round(
       completedCvs.reduce((sum, cv) => sum + (cv.score || 0), 0) /
@@ -119,7 +118,6 @@ export function Dashboard({ onCreateCVAction }: DashboardProps) {
     );
     const completed = completedCvs.length;
     const drafted = total - completed;
-
     return {
       total,
       avgScore,
@@ -131,75 +129,68 @@ export function Dashboard({ onCreateCVAction }: DashboardProps) {
     };
   }, [cvs]);
 
-  // --- PERBAIKAN UTAMA DI SINI ---
   const filteredAndSortedCVs = useMemo(() => {
     let filtered = cvs.filter((cv) => {
       const matchesSearch = (cv.name || "")
         .toLowerCase()
         .includes(searchQuery.toLowerCase());
-
       const matchesStatus =
         filters.status === "Semua Status" ||
         (filters.status === "Selesai" && cv.status === "Completed") ||
         (filters.status === "Draf" && cv.status === "Draft");
-
       const matchesYear =
         filters.year === "Semua Tahun" ||
         (cv.year ? cv.year.toString() === filters.year : false);
-
       const matchesScore =
         cv.status === "Draft" ||
         ((cv.score || 0) >= filters.scoreRange[0] &&
           (cv.score || 0) <= filters.scoreRange[1]);
-
       return matchesSearch && matchesStatus && matchesYear && matchesScore;
     });
-
-    // Terapkan pengurutan
     filtered.sort((a, b) => {
       const dateA = new Date(a.updatedAt).getTime();
       const dateB = new Date(b.updatedAt).getTime();
       return filters.sortBy === "newest" ? dateB - dateA : dateA - dateB;
     });
-
     return filtered;
   }, [cvs, searchQuery, filters]);
-  // --- AKHIR PERBAIKAN ---
 
-  const handleCVAction = (action: string, cv: CVData) => {
+  const handleCVAction = async (action: string, cv: CVData) => {
     switch (action) {
       case "preview":
         if (cv.status === "Draft") {
           setDraftPreviewData(cv);
         } else {
-          const mockResult: CVScoringData = {
-            fileName: cv.name,
-            overallScore: cv.score,
-            atsCompatibility: Math.min(cv.score + 5, 100),
-            keywordMatch: Math.max(cv.score - 3, 0),
-            readabilityScore: Math.min(cv.score + 2, 100),
-            sections: [
-              {
-                name: "Pengalaman Kerja",
-                score: cv.score + 10,
-                status: "excellent",
-                feedback: "Sangat relevan.",
-              },
-              {
-                name: "Pendidikan",
-                score: cv.score - 5,
-                status: "good",
-                feedback: "Latar belakang baik.",
-              },
-            ],
-            suggestions: ["Tambahkan kata kunci.", "Kuantifikasi pencapaian."],
-            isCv: false,
-          };
-          setSelectedCvForPreview(cv);
-          setScoringResult(mockResult);
+          // **PERBAIKAN UTAMA: Gunakan data analisis asli, bukan mock data**
+          if (cv.analysis) {
+            const analysisData: CVScoringData = {
+              fileName: cv.name,
+              isCv: true, // Pastikan properti ini ada untuk memenuhi tipe
+              overallScore: cv.analysis.overallScore,
+              atsCompatibility: cv.analysis.atsCompatibility,
+              keywordMatch: cv.analysis.keywordMatch,
+              readabilityScore: cv.analysis.readabilityScore,
+              sections: cv.analysis.sections,
+              suggestions: cv.analysis.suggestions,
+            };
+            setSelectedCvForPreview(cv);
+            setScoringResult(analysisData);
+          } else {
+            toast.info("CV ini belum memiliki data analisis.", {
+              description: "Anda bisa menganalisisnya ulang di halaman edit.",
+            });
+          }
         }
         break;
       case "download":
+        try {
+          await downloadCV(cv.id);
+        } catch (error) {
+          // Anda bisa menambahkan penanganan error di sini jika diperlukan,
+          // misalnya menampilkan pesan di konsol.
+          console.error("Gagal mengunduh CV:", error);
+        }
+        break;
         toast.info("Fitur download akan segera hadir!");
         break;
       case "update":
@@ -274,7 +265,7 @@ export function Dashboard({ onCreateCVAction }: DashboardProps) {
       status: "Semua Status",
       year: "Semua Tahun",
       scoreRange: [1, 100],
-      sortBy: "newest", // Reset juga sortBy
+      sortBy: "newest",
     });
     setCurrentPage(1);
   };
@@ -291,6 +282,7 @@ export function Dashboard({ onCreateCVAction }: DashboardProps) {
       ? onCreateCVAction(lang)
       : router.push(`/cv-builder?lang=${lang}`);
   };
+
   const totalPages = Math.ceil(filteredAndSortedCVs.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedCVs = filteredAndSortedCVs.slice(
@@ -413,7 +405,7 @@ export function Dashboard({ onCreateCVAction }: DashboardProps) {
         </h2>
         <CVFilters
           filters={filters}
-          years={availableYears} // Kirim tahun dinamis ke CVFilters
+          years={availableYears}
           onFiltersChange={setFilters}
           onReset={resetFilters}
         />
@@ -483,11 +475,11 @@ export function Dashboard({ onCreateCVAction }: DashboardProps) {
                 <CVCard
                   key={cv.id}
                   cv={cv}
-                  onPreview={() => handleCVAction("preview", cv)}
-                  onDownload={() => handleCVAction("download", cv)}
-                  onUpdate={() => handleCVAction("update", cv)}
-                  onDelete={() => handleCVAction("delete", cv)}
-                  onShare={() => handleCVAction("share", cv)}
+                  onPreview={handleCVAction}
+                  onDownload={handleCVAction}
+                  onUpdate={handleCVAction}
+                  onDelete={handleCVAction}
+                  onShare={handleCVAction}
                   onVisibilityChange={handleVisibilityChange}
                 />
               ))}
@@ -574,7 +566,7 @@ export function Dashboard({ onCreateCVAction }: DashboardProps) {
             <Button
               variant="outline"
               onClick={() => handleLanguageSelect("id")}
-              className="w-full sm:w-auto"
+              className="w-full sm:w-auto  border-[var(--red-normal)] text-[var(--red-normal)] hover:bg-[var(--red-light)] "
             >
               Bahasa Indonesia
             </Button>
@@ -585,9 +577,6 @@ export function Dashboard({ onCreateCVAction }: DashboardProps) {
               English
             </Button>
           </div>
-          <AlertDialogFooter className="sm:hidden mt-2">
-            <AlertDialogCancel className="w-full">Batal</AlertDialogCancel>
-          </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </div>

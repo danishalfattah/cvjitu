@@ -238,9 +238,11 @@ export function CVPreview({ data, lang }: CVPreviewProps) {
                 <div className="text-center py-12 text-gray-500">
                   <FileText className="w-12 h-12 mx-auto mb-3 text-gray-300" />
                   <div className="space-y-1">
-                    <p className="text-sm font-medium">CV Preview</p>
+                    <p className="text-sm font-medium">
+                      {t("previewTitlePlaceholder", lang)}
+                    </p>
                     <p className="text-xs">
-                      Fill out the form to see your CV preview
+                      {t("previewSubtitlePlaceholder", lang)}
                     </p>
                   </div>
                 </div>
@@ -249,7 +251,7 @@ export function CVPreview({ data, lang }: CVPreviewProps) {
         </div>
       </CardContent>
 
-      <style jsx global>{`
+      {/* <style jsx global>{`
         @media print {
           body * {
             visibility: hidden;
@@ -329,7 +331,7 @@ export function CVPreview({ data, lang }: CVPreviewProps) {
             margin: 1in;
           }
         }
-      `}</style>
+      `}</style> */}
     </Card>
   );
 }

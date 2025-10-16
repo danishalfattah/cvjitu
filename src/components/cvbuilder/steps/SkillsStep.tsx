@@ -104,13 +104,11 @@ export function SkillsStep({ data, onUpdate, lang }: SkillsStepProps) {
               <Badge
                 key={index}
                 variant="outline"
-                className="bg-[var(--red-light)] border-[var(--red-normal)] text-[var(--red-normal)] hover:bg-[var(--red-normal)] hover:text-white group transition-colors"
+                onClick={() => removeSkill(skill)}
+                className=" cursor-pointer bg-[var(--red-light)] border-[var(--red-normal)] text-[var(--red-normal)] hover:bg-[var(--red-normal)] hover:text-white group transition-colors"
               >
                 {skill}
-                <button
-                  onClick={() => removeSkill(skill)}
-                  className="ml-2 text-current hover:text-current group-hover:text-white"
-                >
+                <button className="ml-2 text-current hover:text-current group-hover:text-white">
                   <X className="w-3 h-3" />
                 </button>
               </Badge>

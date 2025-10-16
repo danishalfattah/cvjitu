@@ -4,7 +4,7 @@ type TranslationEntry = {
   [key in Language]: string;
 };
 
-const translations: { [key: string]: TranslationEntry } = {
+export const translations: { [key: string]: TranslationEntry } = {
   // CVBuilderPage.tsx
   backToDashboard: { id: 'Kembali ke Dashboard', en: 'Back to Dashboard' },
   designYourResume: { id: 'Rancang Resume Anda', en: 'Design Your Resume' },
@@ -15,6 +15,53 @@ const translations: { [key: string]: TranslationEntry } = {
   nextButton: { id: 'Selanjutnya', en: 'Next' },
   saveCvButton: { id: 'Simpan CV', en: 'Save CV' },
   saveDraftButton: { id: 'Simpan Draf', en: 'Save Draft' },
+  updateDraftButton: {
+    id: "Perbarui Draf",
+    en: "Update Draft",
+  },
+  updateCvButton: {
+    id: "Perbarui CV",
+    en: "Update CV",
+  },
+  validationErrorTitle: {
+    id: "Validasi Gagal",
+    en: "Validation Failed",
+  },
+  validationErrorDesc: {
+    id: "Harap isi semua kolom yang wajib diisi.",
+    en: "Please fill in all required fields.",
+  },
+  analysisRequiredTitle: {
+    id: "Analisis Diperlukan",
+    en: "Analysis Required",
+  },
+  analysisRequiredDesc: {
+    id: "Anda harus menganalisis CV terlebih dahulu sebelum menyimpannya.",
+    en: "You must analyze the CV before saving it.",
+  },
+  analysisReRequiredDesc: {
+    id: "Anda telah mengubah data, harap analisis ulang CV Anda.",
+    en: "You have changed the data, please re-analyze your CV.",
+  },
+  
+ 
+  // **TAMBAHAN BARU DI SINI**
+  emailInvalid: {
+    id: "Format email yang Anda masukkan tidak valid.",
+    en: "The email format you entered is invalid.",
+  },
+  skillsRequired: {
+    id: "Harap tambahkan setidaknya satu keahlian.",
+    en: "Please add at least one skill.",
+  },
+  summaryRequired: {
+    id: "Ringkasan profesional tidak boleh kosong.",
+    en: "The professional summary cannot be empty.",
+  },
+
+  
+
+  
   
   // GeneralInfoStep.tsx
   generalTitle: { id: 'Info Umum', en: 'General Info' },
@@ -61,7 +108,7 @@ const translations: { [key: string]: TranslationEntry } = {
   clickToAddEducation: { id: 'Klik "Tambah Pendidikan" untuk memulai.', en: 'Click "Add Education" to get started.' },
   degreeLabel: { id: 'Gelar/Jurusan', en: 'Degree/Major' },
   institutionLabel: { id: 'Institusi/Sekolah', en: 'Institution/School' },
-  gradeGpaLabel: { id: 'Nilai/IPK (Opsional)', en: 'Grade/GPA (Optional)' },
+  gradeGpaLabel: { id: 'Nilai/IPK ', en: 'Grade/GPA ' },
   currentStudyLabel: { id: 'Saya masih belajar di sini', en: 'I am currently studying here' },
 
   // SkillsStep.tsx
@@ -99,6 +146,8 @@ const translations: { [key: string]: TranslationEntry } = {
   previewSkills: { id: "Keahlian", en: "Skills" },
   previewNow: { id: "Sekarang", en: "Now" },
   previewGpa: { id: "Nilai", en: "Grade" },
+  previewTitlePlaceholder: { id: "Pratinjau CV", en: "CV Preview" },
+  previewSubtitlePlaceholder: { id: "Isi formulir untuk melihat pratinjau CV Anda", en: "Fill out the form to see your CV preview" },
   
   //CVPreviewPage
   previewLangID: { id: "Bahasa Indonesia", en: "Indonesian" },
@@ -124,6 +173,9 @@ const translations: { [key: string]: TranslationEntry } = {
   gradeGpaPlaceholder: { id: 'Contoh: 3.82 atau Rata-rata: 88', en: 'e.g., 3.82 or Average: 88' },
 };
 
-export const t = (key: string, lang: Language): string => {
-  return translations[key]?.[lang] || key;
+export const t = (
+  key: keyof typeof translations,
+  lang: Language
+): string => {
+  return translations[key]?.[lang] || translations[key]?.["id"] || String(key);
 };

@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react"; // Tambahkan useEffect
+import { useState, useEffect } from "react";
 import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
 import { Progress } from "../ui/progress";
-import { ArrowLeft, ArrowRight, Download, Save, RefreshCw } from "lucide-react"; // Tambahkan RefreshCw
+import { ArrowLeft, ArrowRight, Save, RefreshCw, Loader2 } from "lucide-react";
 import { GeneralInfoStep } from "../cvbuilder/steps/GeneralInfoStep";
 import { PersonalInfoStep } from "../cvbuilder/steps/PersonalInfoStep";
 import { WorkExperienceStep } from "../cvbuilder/steps/WorkExperienceStep";
@@ -17,15 +17,21 @@ import type {
   Education,
 } from "../cvbuilder/types";
 import { t, type Language } from "@/lib/translations";
-import { downloadCV } from "@/lib/utils";
+import { validateStep } from "@/lib/validation";
+import { toast } from "sonner";
+import { type CVGrade } from "../cvbuilder/types"; // Import CVGrade
 
 interface CVBuilderPageProps {
-  initialData?: CVBuilderData | null; // Buat opsional
-  cvId?: string | null; // Tambahkan prop cvId
+  initialData?: CVBuilderData | null;
+  cvId?: string | null;
+  initialCvStatus?: string;
   onBack: () => void;
   onSave: (data: CVBuilderData) => void;
   onSaveDraft: (data: CVBuilderData) => void;
   lang: Language;
+  isSaving?: boolean;
+  initialAnalysisData?: CVGrade | null; // Prop baru
+  onAnalysisComplete: (grade: CVGrade | null) => void; // Prop baru
 }
 
 const steps = [
@@ -40,15 +46,17 @@ const steps = [
 
 export function CVBuilderPage({
   initialData,
-  cvId, // Terima prop cvId
+  cvId,
+  initialCvStatus,
   onBack,
   onSave,
   onSaveDraft,
   lang,
+  isSaving = false,
+  initialAnalysisData,
+  onAnalysisComplete,
 }: CVBuilderPageProps) {
-  const [isExporting, setIsExporting] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
-  // Inisialisasi state dengan struktur data kosong
   const [cvData, setCvData] = useState<CVBuilderData>({
     jobTitle: "",
     description: "",
@@ -65,18 +73,57 @@ export function CVBuilderPage({
     summary: "",
   });
 
-  // --- PERUBAHAN UTAMA: Gunakan useEffect untuk mengisi form saat data tiba ---
+  const [highestCompletedStep, setHighestCompletedStep] = useState(-1);
+  const [hasBeenAnalyzed, setHasBeenAnalyzed] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [saveAction, setSaveAction] = useState<"draft" | "completed" | null>(
+    null
+  );
+
+  const isEditMode = !!cvId;
+  const isEditingCompletedCV = isEditMode && initialCvStatus === "Completed";
+
   useEffect(() => {
     if (initialData) {
       setCvData(initialData);
+      if (isEditingCompletedCV) {
+        setHighestCompletedStep(steps.length - 1);
+        setHasBeenAnalyzed(true);
+      } else {
+        let lastValidStep = -1;
+        for (let i = 0; i < steps.length - 1; i++) {
+          if (validateStep(steps[i].id, initialData).isValid) {
+            lastValidStep = i;
+          } else {
+            break;
+          }
+        }
+        setHighestCompletedStep(lastValidStep);
+      }
     }
-  }, [initialData]);
-  // --- AKHIR PERUBAHAN ---
+  }, [initialData, isEditingCompletedCV]);
 
-  const isEditMode = !!cvId; // Tentukan mode edit berdasarkan keberadaan cvId
+  useEffect(() => {
+    if (!isSaving) {
+      setSaveAction(null);
+    }
+  }, [isSaving]);
 
   const updateCvData = (updates: Partial<CVBuilderData>) => {
     setCvData((prev) => ({ ...prev, ...updates }));
+    if (isEditingCompletedCV) {
+      setHasBeenAnalyzed(false);
+    }
+  };
+
+  const handleSetCurrentStep = (index: number) => {
+    if (isAnalyzing || isSaving) return;
+    if (index <= highestCompletedStep + 1 || isEditingCompletedCV) {
+      setCurrentStep(index);
+      if (steps[index].id === "grade") {
+        setHasBeenAnalyzed(true);
+      }
+    }
   };
 
   const addWorkExperience = () => {
@@ -151,44 +198,49 @@ export function CVBuilderPage({
   };
 
   const nextStep = () => {
-    if (currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1);
+    if (isAnalyzing || isSaving) return;
+    const validationResult = validateStep(steps[currentStep].id, cvData);
+    if (validationResult.isValid) {
+      if (currentStep < steps.length - 1) {
+        setHighestCompletedStep(Math.max(highestCompletedStep, currentStep));
+        setCurrentStep(currentStep + 1);
+      }
+    } else {
+      toast.error(t("validationErrorTitle", lang), {
+        description: t(
+          validationResult.errorKey || "validationErrorDesc",
+          lang
+        ),
+      });
     }
   };
 
   const prevStep = () => {
+    if (isAnalyzing || isSaving) return;
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
     }
   };
 
   const handleSave = () => {
+    if (!hasBeenAnalyzed) {
+      toast.error(t("analysisRequiredTitle", lang), {
+        description: isEditingCompletedCV
+          ? t("analysisReRequiredDesc", lang)
+          : t("analysisRequiredDesc", lang),
+      });
+      return;
+    }
+    setSaveAction("completed");
     onSave(cvData);
   };
 
-  const handleSaveDraft = () => {
-    onSaveDraft(cvData);
-  };
-
-  const handleExportPDF = async () => {
-    // 1. Pastikan CV memiliki ID (sudah disimpan) sebelum diekspor
-    if (!cvId) {
-      alert("Harap simpan CV Anda terlebih dahulu sebelum mengekspor ke PDF.");
-      return;
-    }
-
-    setIsExporting(true);
-    try {
-      // 2. Buat nama file yang deskriptif dari data CV
-      const fullName = `${cvData.firstName} ${cvData.lastName}`.trim();
-      const fileName = `${fullName}-${cvData.jobTitle}_CV`.replace(/\s+/g, "-");
-
-      // 3. Panggil fungsi downloadCV yang sudah diimpor
-      await downloadCV(cvId, fileName);
-    } catch (error) {
-      console.error("Gagal mengekspor PDF:", error);
-    } finally {
-      setIsExporting(false);
+  const handleSaveDraftOrUpdate = () => {
+    if (isEditingCompletedCV) {
+      handleSave();
+    } else {
+      setSaveAction("draft");
+      onSaveDraft(cvData);
     }
   };
 
@@ -229,7 +281,14 @@ export function CVBuilderPage({
           <SummaryStep data={cvData} onUpdate={updateCvData} lang={lang} />
         );
       case "grade":
-        return <GradeStep data={cvData} />;
+        return (
+          <GradeStep
+            data={cvData}
+            onAnalysisChange={setIsAnalyzing}
+            initialGrade={initialAnalysisData}
+            onAnalysisComplete={onAnalysisComplete}
+          />
+        );
       default:
         return null;
     }
@@ -239,26 +298,24 @@ export function CVBuilderPage({
 
   return (
     <div className="min-h-screen bg-[var(--surface)]">
-      {/* ... (Header dan Progress Bar tetap sama) ... */}
       <div className="bg-white border-b border-[var(--border-color)] px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onBack}
-              className="text-gray-500 hover:text-[var(--red-normal)]"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              {t("backToDashboard", lang)}
-            </Button>
-            <div className="h-6 w-px bg-[var(--border-color)]" />
-            <div>
-              <h1 className="text-xl font-poppins font-semibold text-[var(--neutral-ink)]">
-                {t("designYourResume", lang)}
-              </h1>
-              <p className="text-sm text-gray-600">{t("followSteps", lang)}</p>
-            </div>
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:justify-start">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onBack}
+            className="text-gray-500 hover:text-[var(--red-normal)] flex-shrink-0"
+            disabled={isAnalyzing || isSaving}
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            {t("backToDashboard", lang)}
+          </Button>
+          <div className="h-6 w-px bg-[var(--border-color)] hidden md:block md:ml-4" />
+          <div className="flex-grow md:ml-4">
+            <h1 className="text-xl font-poppins font-semibold text-[var(--neutral-ink)]">
+              {t("designYourResume", lang)}
+            </h1>
+            <p className="text-sm text-gray-600">{t("followSteps", lang)}</p>
           </div>
         </div>
       </div>
@@ -269,33 +326,67 @@ export function CVBuilderPage({
               {steps.map((step, index) => (
                 <div key={step.id} className="flex items-center">
                   <button
-                    onClick={() => setCurrentStep(index)}
-                    className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium transition-all duration-200 hover:scale-105 cursor-pointer flex-shrink-0 ${
-                      index < currentStep
-                        ? "bg-[var(--success)] text-white hover:bg-green-600"
-                        : index === currentStep
-                        ? "bg-[var(--red-normal)] text-white hover:bg-[var(--red-normal-hover)]"
-                        : "bg-gray-200 text-gray-500 hover:bg-gray-300"
+                    onClick={() => handleSetCurrentStep(index)}
+                    className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium transition-all duration-200 ${
+                      isAnalyzing
+                        ? "cursor-not-allowed bg-gray-200 text-gray-500"
+                        : index <= highestCompletedStep + 1 ||
+                          isEditingCompletedCV
+                        ? index === currentStep
+                          ? "bg-[var(--red-normal)] text-white"
+                          : "bg-[var(--success)] text-white hover:scale-105"
+                        : "bg-gray-200 text-gray-500 cursor-not-allowed"
                     }`}
-                    title={`Go to ${t(step.title, lang)}`}
+                    title={
+                      isAnalyzing
+                        ? "Analisis sedang berjalan"
+                        : `Go to ${t(step.title, lang)}`
+                    }
+                    disabled={
+                      isAnalyzing ||
+                      !(
+                        index <= highestCompletedStep + 1 ||
+                        isEditingCompletedCV
+                      )
+                    }
                   >
-                    {index < currentStep ? "✓" : index + 1}
+                    {index <= highestCompletedStep ||
+                    (isEditingCompletedCV && index < steps.length)
+                      ? "✓"
+                      : index + 1}
                   </button>
                   <button
-                    onClick={() => setCurrentStep(index)}
-                    className={`ml-2 text-sm font-medium transition-colors duration-200 hover:opacity-80 cursor-pointer whitespace-nowrap ${
-                      index === currentStep
-                        ? "text-[var(--red-normal)]"
-                        : "text-gray-500 hover:text-gray-700"
+                    onClick={() => handleSetCurrentStep(index)}
+                    className={`ml-2 text-sm font-medium transition-colors duration-200 whitespace-nowrap ${
+                      isAnalyzing
+                        ? "cursor-not-allowed text-gray-400"
+                        : index === currentStep
+                        ? "text-[var(--red-normal)] cursor-pointer"
+                        : index <= highestCompletedStep + 1 ||
+                          isEditingCompletedCV
+                        ? "text-gray-700 hover:text-gray-900 cursor-pointer"
+                        : "text-gray-400 cursor-not-allowed"
                     }`}
-                    title={`Go to ${t(step.title, lang)}`}
+                    title={
+                      isAnalyzing
+                        ? "Analisis sedang berjalan"
+                        : `Go to ${t(step.title, lang)}`
+                    }
+                    disabled={
+                      isAnalyzing ||
+                      !(
+                        index <= highestCompletedStep + 1 ||
+                        isEditingCompletedCV
+                      )
+                    }
                   >
                     {t(step.title, lang)}
                   </button>
                   {index < steps.length - 1 && (
                     <div
                       className={`mx-4 h-px flex-1 transition-colors duration-300 ${
-                        index < currentStep
+                        index < currentStep &&
+                        (index <= highestCompletedStep || isEditingCompletedCV)
                           ? "bg-[var(--success)]"
                           : "bg-gray-200"
                       }`}
@@ -308,9 +399,8 @@ export function CVBuilderPage({
           <Progress value={progressPercentage} className="h-2" />
         </div>
       </div>
-
       <div className="max-w-7xl mx-auto p-6">
-        <div className="grid lg:grid-cols-2 gap-8 min-h-[600px]">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div className="space-y-6">
             <Card className="border border-[var(--border-color)]">
               <CardContent>
@@ -326,52 +416,63 @@ export function CVBuilderPage({
               </CardContent>
             </Card>
 
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center space-x-4">
                 <div className="text-sm text-gray-500">
                   {t("stepOf", lang)} {currentStep + 1} {t("of", lang)}{" "}
                   {steps.length}
                 </div>
-                {/* --- PERUBAHAN DI SINI (TOMBOL SAVE DRAFT/UPDATE) --- */}
                 <Button
                   variant="outline"
-                  onClick={handleSaveDraft}
+                  onClick={handleSaveDraftOrUpdate}
                   className="border-gray-300 text-gray-600 hover:bg-gray-50"
+                  disabled={isSaving || isAnalyzing}
                 >
-                  {isEditMode ? (
+                  {isSaving &&
+                  (saveAction === "draft" ||
+                    (isEditingCompletedCV && saveAction === "completed")) ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : isEditMode ? (
                     <RefreshCw className="w-4 h-4 mr-2" />
                   ) : (
                     <Save className="w-4 h-4 mr-2" />
                   )}
-                  {isEditMode ? "Perbarui Draf" : t("saveDraftButton", lang)}
+                  {isEditingCompletedCV
+                    ? t("updateCvButton", lang)
+                    : isEditMode
+                    ? t("updateDraftButton", lang)
+                    : t("saveDraftButton", lang)}
                 </Button>
-                {/* --- AKHIR PERUBAHAN --- */}
               </div>
-              <div className="flex items-center space-x-3">
+
+              <div className="flex w-full gap-3 sm:w-auto">
                 <Button
                   variant="outline"
                   onClick={prevStep}
-                  disabled={currentStep === 0}
-                  className="border-[var(--border-color)] bg-transparent"
+                  disabled={currentStep === 0 || isSaving || isAnalyzing}
+                  className="border-[var(--border-color)] bg-transparent flex-1 sm:flex-none sm:w-auto"
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   {t("previousButton", lang)}
                 </Button>
                 {currentStep === steps.length - 1 ? (
-                  <div className="flex items-center space-x-3">
-                    {/* --- PERUBAHAN DI SINI (TOMBOL SAVE/UPDATE) --- */}
-                    <Button
-                      onClick={handleSave}
-                      className="bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white"
-                    >
-                      {isEditMode ? "Perbarui CV" : t("saveCvButton", lang)}
-                    </Button>
-                    {/* --- AKHIR PERUBAHAN --- */}
-                  </div>
+                  <Button
+                    onClick={handleSave}
+                    className="bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white flex-1 sm:flex-none sm:w-auto"
+                    disabled={isSaving || isAnalyzing}
+                  >
+                    {isSaving && saveAction === "completed" && (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    )}
+                    {isEditMode && initialCvStatus !== "Draft"
+                      ? t("updateCvButton", lang)
+                      : t("saveCvButton", lang)}
+                  </Button>
                 ) : (
                   <Button
                     onClick={nextStep}
-                    className="bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white"
+                    className="bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white flex-1 sm:flex-none sm:w-auto"
+                    disabled={isSaving || isAnalyzing}
                   >
                     {t("nextButton", lang)}
                     <ArrowRight className="w-4 h-4 ml-2" />

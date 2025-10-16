@@ -26,7 +26,7 @@ import {
   DropdownMenuRadioItem,
 } from "../ui/dropdown-menu";
 import { type CVScoringData } from "../../app/page";
-import { Education, WorkExperience } from "../cvbuilder/types";
+import { CVGrade, Education, WorkExperience } from "../cvbuilder/types";
 import { downloadCV } from "@/lib/utils";
 
 export interface CVData extends Partial<Omit<CVScoringData, "fileName">> {
@@ -55,6 +55,7 @@ export interface CVData extends Partial<Omit<CVScoringData, "fileName">> {
   website?: string;
   description?: string;
   jobTitle?: string;
+  analysis?: CVGrade | null;
 }
 
 interface CVCardProps {
@@ -128,7 +129,7 @@ export function CVCard({
             )}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm">
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                   <MoreHorizontal className="w-4 h-4" />
                 </Button>
               </DropdownMenuTrigger>
@@ -139,13 +140,13 @@ export function CVCard({
                   ) : (
                     <BarChart3 className="w-4 h-4 mr-2" />
                   )}
-                  {isDraft ? "Lihat CV" : "Lihat Analisis CV"}
+                  {isDraft ? "Lihat Pratinjau" : "Lihat Analisis"}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onUpdate("update", cv)}>
                   <Edit className="w-4 h-4 mr-2" />
                   Edit
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => downloadCV(cv.id, cv.name)}>
+                <DropdownMenuItem onClick={() => onDownload("download", cv)}>
                   <Download className="w-4 h-4 mr-2" />
                   Unduh
                 </DropdownMenuItem>

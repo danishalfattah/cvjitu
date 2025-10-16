@@ -43,8 +43,8 @@ export function StatTile({ title, value, icon: Icon, change }: StatTileProps) {
               <p
                 className={`text-xs sm:text-sm ${getChangeColor(change.type)}`}
               >
-                {change.type === "increase" && "↗ "}
-                {change.type === "decrease" && "↘ "}
+                {change.type === "increase"}
+                {change.type === "decrease"}
                 {change.value}
               </p>
             )}

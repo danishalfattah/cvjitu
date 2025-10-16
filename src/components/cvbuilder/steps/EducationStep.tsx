@@ -6,7 +6,7 @@ import { Checkbox } from "../../ui/checkbox";
 import { Card, CardContent, CardHeader } from "../../ui/card";
 import { Plus, Trash2, Calendar } from "lucide-react";
 import { CVBuilderData, Education } from "../types";
-import { t, type Language } from "@/src/lib/translations";
+import { t, type Language } from "@/lib/translations";
 
 interface EducationStepProps {
   data: CVBuilderData;
@@ -112,7 +112,8 @@ export function EducationStep({
                 htmlFor={`location-${education.id}`}
                 className="text-sm font-medium"
               >
-                {t("locationLabel", lang)}
+                {t("locationLabel", lang)}{" "}
+                <span className="text-red-500">*</span>
               </Label>
               <Input
                 id={`location-${education.id}`}
@@ -131,7 +132,8 @@ export function EducationStep({
                   htmlFor={`startDate-${education.id}`}
                   className="text-sm font-medium"
                 >
-                  {t("startDateLabel", lang)}
+                  {t("startDateLabel", lang)}{" "}
+                  <span className="text-red-500">*</span>
                 </Label>
                 <div className="relative">
                   <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -155,6 +157,7 @@ export function EducationStep({
                   className="text-sm font-medium"
                 >
                   {t("endDateLabel", lang)}
+                  <span className="text-red-500">*</span>
                 </Label>
                 <div className="relative">
                   <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -176,6 +179,7 @@ export function EducationStep({
 
             <div className="flex items-center space-x-2">
               <Checkbox
+                className="border-2 border-gray-300"
                 id={`current-${education.id}`}
                 checked={education.current}
                 onCheckedChange={(checked) =>

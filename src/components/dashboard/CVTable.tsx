@@ -37,11 +37,11 @@ import { downloadCV } from "@/lib/utils";
 
 interface CVTableProps {
   cvs: CVData[];
-  onPreview: (action: "preview", cv: CVData) => void;
-  onDownload: (action: "download", cv: CVData) => void;
-  onUpdate: (action: "update", cv: CVData) => void;
-  onDelete: (action: "delete", cv: CVData) => void;
-  onShare: (action: "share", cv: CVData) => void;
+  onPreview: (action: string, cv: CVData) => void;
+  onDownload: (action: string, cv: CVData) => void;
+  onUpdate: (action: string, cv: CVData) => void;
+  onDelete: (action: string, cv: CVData) => void;
+  onShare: (action: string, cv: CVData) => void;
   onVisibilityChange: (cvId: string, visibility: "public" | "private") => void;
 }
 
@@ -137,7 +137,11 @@ export function CVTable({
                   <TableCell className="text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                        >
                           <MoreHorizontal className="w-4 h-4" />
                         </Button>
                       </DropdownMenuTrigger>
@@ -150,7 +154,7 @@ export function CVTable({
                           ) : (
                             <BarChart3 className="w-4 h-4 mr-2" />
                           )}
-                          {isDraft ? "Lihat CV" : "Lihat Analisis"}
+                          {isDraft ? "Lihat Pratinjau" : "Lihat Analisis"}
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => onUpdate("update", cv)}
@@ -159,7 +163,7 @@ export function CVTable({
                           Edit
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                          onClick={() => downloadCV(cv.id, cv.name)}
+                          onClick={() => onDownload("download", cv)}
                         >
                           <Download className="w-4 h-4 mr-2" />
                           Unduh

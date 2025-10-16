@@ -20,99 +20,78 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   const userId = await getUserId();
-  const id = params.id;
-
-  try {
-    // Coba ambil dari koleksi 'cvs' (builder) terlebih dahulu
-    let docRef = adminDb.collection('cvs').doc(id);
-    let doc = await docRef.get();
-
-    // Jika tidak ditemukan, coba dari koleksi 'scored_cvs'
-    if (!doc.exists) {
-      docRef = adminDb.collection('scored_cvs').doc(id);
-      doc = await docRef.get();
-    }
-
-    if (!doc.exists) {
-      return NextResponse.json({ error: 'CV not found' }, { status: 404 });
-    }
-
-    const cvData = doc.data();
-
-    // Untuk link publik, kita tidak perlu verifikasi user
-    // Tapi untuk edit, user harus terverifikasi
-    const isPublicLink = cvData?.visibility === 'public';
-    const isOwner = cvData?.userId === userId;
-
-    // Jika ini bukan link publik dan user bukan pemilik, tolak akses
-    if (!isPublicLink && !isOwner) {
-       return NextResponse.json({ error: 'CV tidak ditemukan atau Anda tidak memiliki akses.' }, { status: 403 });
-    }
-    
-    // Jika link publik atau user adalah pemilik, kirim data
-    return NextResponse.json({ id: doc.id, ...cvData }, { status: 200 });
-
-  } catch (error: any) {
-    console.error("Error fetching CV by ID:", error.message);
-    return NextResponse.json({ error: 'Failed to fetch CV' }, { status: 500 });
-  }
-}
-
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  const userId = await getUserId();
-  const id = params.id;
-  const cvData = await request.json();
+  const id = params.id; // Tidak perlu 'await', params sudah menjadi objek biasa di sini
 
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  if (!id) {
-    return NextResponse.json({ error: "CV ID is required" }, { status: 400 });
-  }
-
   try {
-    // Tentukan nama koleksi berdasarkan 'type' dari data yang dikirim
-    const collectionName = cvData.type === 'uploaded' ? 'scored_cvs' : 'cvs';
-    const docRef = adminDb.collection(collectionName).doc(id);
-    
-    const doc = await docRef.get();
+    const cvDoc = await adminDb.collection("cvs").doc(id).get();
 
-    // Jika dokumen tidak ada, kirim error
-    if (!doc.exists) {
+    if (!cvDoc.exists) {
       return NextResponse.json({ error: "CV not found" }, { status: 404 });
     }
 
-    // Verifikasi bahwa pengguna yang mencoba mengedit adalah pemilik dokumen
-    const existingData = doc.data();
-    if (existingData?.userId !== userId) {
-      return NextResponse.json({ error: "Access denied" }, { status: 403 });
+    const cvData = cvDoc.data();
+    if (cvData?.userId !== userId) {
+      return NextResponse.json(
+        { error: "Forbidden. You do not own this CV." },
+        { status: 403 }
+      );
     }
 
-    // Lakukan pembaruan pada dokumen
-    const dataToUpdate = {
+    return NextResponse.json({ id: cvDoc.id, ...cvData }, { status: 200 });
+  } catch (error) {
+    console.error("Failed to fetch CV:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch CV" },
+      { status: 500 }
+    );
+  }
+}
+
+// **PERBAIKAN DIMULAI DI SINI (PUT Handler)**
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const userId = await getUserId();
+  const id = params.id; // Tidak perlu 'await'
+
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const cvRef = adminDb.collection("cvs").doc(id);
+    const cvDoc = await cvRef.get();
+
+    if (!cvDoc.exists) {
+      return NextResponse.json({ error: "CV not found" }, { status: 404 });
+    }
+
+    const currentCvData = cvDoc.data();
+    if (currentCvData?.userId !== userId) {
+      return NextResponse.json(
+        { error: "Forbidden. You do not own this CV." },
+        { status: 403 }
+      );
+    }
+
+    const cvData = await request.json();
+    const updatedCvData = {
       ...cvData,
       updatedAt: new Date().toISOString(),
     };
 
-    // Jika 'jobTitle' diperbarui, salin nilainya ke 'name' untuk konsistensi tampilan
-    if (cvData.jobTitle) {
-      dataToUpdate.name = cvData.jobTitle;
-    }
-    // --- AKHIR PERBAIKAN ---
-
-    // Lakukan pembaruan pada dokumen menggunakan objek yang sudah disiapkan
-    await docRef.update(dataToUpdate);
-
-    return NextResponse.json({
-      message: "CV updated successfully",
-      cvId: id,
-    });
+    await cvRef.update(updatedCvData);
+    return NextResponse.json(
+      { id: cvRef.id, ...updatedCvData },
+      { status: 200 }
+    );
   } catch (error) {
-    console.error("Error updating CV:", error);
+    console.error("Failed to update CV:", error);
     return NextResponse.json(
       { error: "Failed to update CV" },
       { status: 500 }
@@ -120,35 +99,37 @@ export async function PUT(
   }
 }
 
-// HANDLER DELETE (Tetap sama)
+// **PERBAIKAN DIMULAI DI SINI (DELETE Handler)**
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   const userId = await getUserId();
+  const id = params.id; // Tidak perlu 'await'
+
   if (!userId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
-    const id = params.id;
-    const { searchParams } = new URL(request.url);
-    const type = searchParams.get('type');
-    
-    const collectionName = type === 'uploaded' ? 'scored_cvs' : 'cvs';
-
-    const docRef = adminDb.collection(collectionName).doc(id);
+    const docRef = adminDb.collection("cvs").doc(id);
     const doc = await docRef.get();
 
-    if (!doc.exists || doc.data()?.userId !== userId) {
-      return NextResponse.json({ error: 'CV not found or access denied' }, { status: 404 });
+    if (!doc.exists) {
+      return NextResponse.json({ error: "CV not found" }, { status: 404 });
     }
-    
-    await docRef.delete();
 
-    return NextResponse.json({ message: 'CV deleted successfully' }, { status: 200 });
-  } catch (error: any) {
-    console.error("Error deleting CV:", error.message);
-    return NextResponse.json({ error: 'Failed to delete CV' }, { status: 500 });
+    if (doc.data()?.userId !== userId) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    await docRef.delete();
+    return NextResponse.json({ message: "CV deleted" }, { status: 200 });
+  } catch (error) {
+    console.error("Failed to delete CV:", error);
+    return NextResponse.json(
+      { error: "Failed to delete CV" },
+      { status: 500 }
+    );
   }
 }

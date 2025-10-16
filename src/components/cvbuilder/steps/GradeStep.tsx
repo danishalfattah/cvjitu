@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "../../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
 import { Badge } from "../../ui/badge";
@@ -12,39 +12,42 @@ import {
   AlertTriangle,
   XCircle,
 } from "lucide-react";
-import { CVBuilderData } from "../types";
+import { CVBuilderData, CVGrade } from "../types";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
-// Definisikan tipe untuk hasil analisis
-interface CVGrade {
-  overallScore: number;
-  atsCompatibility: number;
-  keywordMatch: number;
-  readabilityScore: number;
-  sections: {
-    name: string;
-    score: number;
-    feedback: string;
-    status: "excellent" | "good" | "average" | "needs_improvement";
-  }[];
-  suggestions: string[];
+// 1. Perbarui interface props untuk menerima onAnalysisChange
+interface GradeStepProps {
+  data: CVBuilderData;
+  onAnalysisChange: (isAnalyzing: boolean) => void;
+  initialGrade?: CVGrade | null; // Prop baru untuk data analisis awal
+  onAnalysisComplete: (grade: CVGrade | null) => void; // Prop baru untuk mengirim hasil
 }
 
-export function GradeStep({ data }: { data: CVBuilderData }) {
+export function GradeStep({
+  data,
+  onAnalysisChange,
+  initialGrade,
+  onAnalysisComplete,
+}: GradeStepProps) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [grade, setGrade] = useState<CVGrade | null>(null);
 
+  useEffect(() => {
+    if (initialGrade) {
+      setGrade(initialGrade);
+    }
+  }, [initialGrade]);
+
   const analyzeCV = async () => {
     setIsAnalyzing(true);
-    setGrade(null);
+    onAnalysisChange(true);
+    setGrade(null); // Reset tampilan sebelum analisis baru
 
     try {
       const response = await fetch("/api/score-builder", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
 
@@ -55,16 +58,19 @@ export function GradeStep({ data }: { data: CVBuilderData }) {
 
       const result: CVGrade = await response.json();
       setGrade(result);
+      onAnalysisComplete(result); // **PERBAIKAN 2: Kirim hasil ke parent**
       toast.success("Analisis CV berhasil!");
     } catch (error: any) {
       console.error("Analysis Error:", error);
       toast.error(error.message || "Terjadi kesalahan saat menganalisis CV.");
+      onAnalysisComplete(null); // Kirim null jika gagal
     } finally {
       setIsAnalyzing(false);
+      onAnalysisChange(false);
     }
   };
 
-  // Helper Functions untuk UI (Mirip CVScoringResult)
+  // Helper Functions untuk UI
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "excellent":
