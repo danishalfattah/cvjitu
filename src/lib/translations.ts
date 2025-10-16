@@ -99,6 +99,8 @@ const translations: { [key: string]: TranslationEntry } = {
   previewSkills: { id: "Keahlian", en: "Skills" },
   previewNow: { id: "Sekarang", en: "Now" },
   previewGpa: { id: "Nilai", en: "Grade" },
+  previewTitlePlaceholder: { id: "Pratinjau CV", en: "CV Preview" },
+  previewSubtitlePlaceholder: { id: "Isi formulir untuk melihat pratinjau CV Anda", en: "Fill out the form to see your CV preview" },
   
   //CVPreviewPage
   previewLangID: { id: "Bahasa Indonesia", en: "Indonesian" },

@@ -335,7 +335,7 @@ export function WorkExperienceStep({
 
               {experience.achievements.map((achievement, achIndex) => (
                 <div key={achIndex} className="flex items-start space-x-2">
-                  <Badge variant="outline" className="mt-3 text-xs">
+                  <Badge variant="outline" className="mt-3 text-xs  ">
                     {achIndex + 1}
                   </Badge>
                   <div className="flex-1">
