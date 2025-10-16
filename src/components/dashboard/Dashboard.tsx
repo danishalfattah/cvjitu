@@ -44,6 +44,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { toast } from "sonner";
+import { downloadCV } from "@/lib/utils";
 
 interface DashboardProps {
   onCreateCVAction?: (lang: "id" | "en") => void;
@@ -154,7 +155,7 @@ export function Dashboard({ onCreateCVAction }: DashboardProps) {
     return filtered;
   }, [cvs, searchQuery, filters]);
 
-  const handleCVAction = (action: string, cv: CVData) => {
+  const handleCVAction = async (action: string, cv: CVData) => {
     switch (action) {
       case "preview":
         if (cv.status === "Draft") {
@@ -182,6 +183,14 @@ export function Dashboard({ onCreateCVAction }: DashboardProps) {
         }
         break;
       case "download":
+        try {
+          await downloadCV(cv.id);
+        } catch (error) {
+          // Anda bisa menambahkan penanganan error di sini jika diperlukan,
+          // misalnya menampilkan pesan di konsol.
+          console.error("Gagal mengunduh CV:", error);
+        }
+        break;
         toast.info("Fitur download akan segera hadir!");
         break;
       case "update":

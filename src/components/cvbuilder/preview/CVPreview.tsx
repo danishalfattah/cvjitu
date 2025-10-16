@@ -251,7 +251,7 @@ export function CVPreview({ data, lang }: CVPreviewProps) {
         </div>
       </CardContent>
 
-      <style jsx global>{`
+      {/* <style jsx global>{`
         @media print {
           body * {
             visibility: hidden;
@@ -331,7 +331,7 @@ export function CVPreview({ data, lang }: CVPreviewProps) {
             margin: 1in;
           }
         }
-      `}</style>
+      `}</style> */}
     </Card>
   );
 }
