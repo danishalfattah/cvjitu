@@ -78,7 +78,9 @@ export function CVScoringResult({
   };
 
   return (
-    <div className="min-h-screen bg-[var(--surface)] py-8 px-6">
+    <div className="min-h-screen bg-[var(--surface)] py-8 px-4 sm:px-6">
+      {" "}
+      {/* Penyesuaian padding */}
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
           <div className="flex items-center space-x-4 min-w-0">
@@ -111,14 +113,12 @@ export function CVScoringResult({
           )}
         </div>
 
-        {/* --- PERBAIKAN DI SINI --- */}
         <div
           className={cn(
             "grid gap-8 items-start",
-            showPreview && "lg:grid-cols-2"
+            showPreview ? "lg:grid-cols-2" : "grid-cols-1" // **PERBAIKAN DI SINI**
           )}
         >
-          {/* --- AKHIR PERBAIKAN --- */}
           {showPreview && (
             <div className="lg:sticky lg:top-8 h-fit">
               {cvBuilderData ? (
@@ -138,7 +138,8 @@ export function CVScoringResult({
                   Skor Keseluruhan
                 </CardTitle>
               </CardHeader>
-              <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+              {/* **PERBAIKAN DI SINI** */}
+              <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-8 items-center">
                 <div className="flex justify-center">
                   <RadialScore
                     score={data.overallScore}
@@ -196,14 +197,18 @@ export function CVScoringResult({
                       key={index}
                       className="border border-[var(--border-color)] rounded-lg p-4"
                     >
-                      <div className="flex items-center justify-between mb-3">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                        {" "}
+                        {/* **PERBAIKAN** */}
                         <div className="flex items-center space-x-3">
                           {getStatusIcon(section.status)}
                           <h3 className="font-medium text-[var(--neutral-ink)]">
                             {section.name}
                           </h3>
                         </div>
-                        <div className="flex items-center space-x-3">
+                        <div className="flex items-center space-x-3 self-end sm:self-center">
+                          {" "}
+                          {/* **PERBAIKAN** */}
                           <Badge className={getStatusColor(section.status)}>
                             {getStatusText(section.status)}
                           </Badge>
@@ -215,7 +220,9 @@ export function CVScoringResult({
                           </div>
                         </div>
                       </div>
-                      <p className="text-gray-600 text-sm">
+                      <p className="text-gray-600 text-sm mt-3">
+                        {" "}
+                        {/* **PERBAIKAN** */}
                         {section.feedback}
                       </p>
                     </div>

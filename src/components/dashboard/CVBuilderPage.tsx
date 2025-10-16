@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react"; // Tambahkan useEffect
+import { useState, useEffect } from "react";
 import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
 import { Progress } from "../ui/progress";
-import { ArrowLeft, ArrowRight, Download, Save, RefreshCw } from "lucide-react"; // Tambahkan RefreshCw
+import { ArrowLeft, ArrowRight, Download, Save, RefreshCw } from "lucide-react";
 import { GeneralInfoStep } from "../cvbuilder/steps/GeneralInfoStep";
 import { PersonalInfoStep } from "../cvbuilder/steps/PersonalInfoStep";
 import { WorkExperienceStep } from "../cvbuilder/steps/WorkExperienceStep";
@@ -20,8 +20,8 @@ import { t, type Language } from "@/lib/translations";
 import { downloadCV } from "@/lib/utils";
 
 interface CVBuilderPageProps {
-  initialData?: CVBuilderData | null; // Buat opsional
-  cvId?: string | null; // Tambahkan prop cvId
+  initialData?: CVBuilderData | null;
+  cvId?: string | null;
   onBack: () => void;
   onSave: (data: CVBuilderData) => void;
   onSaveDraft: (data: CVBuilderData) => void;
@@ -40,7 +40,7 @@ const steps = [
 
 export function CVBuilderPage({
   initialData,
-  cvId, // Terima prop cvId
+  cvId,
   onBack,
   onSave,
   onSaveDraft,
@@ -65,15 +65,13 @@ export function CVBuilderPage({
     summary: "",
   });
 
-  // --- PERUBAHAN UTAMA: Gunakan useEffect untuk mengisi form saat data tiba ---
   useEffect(() => {
     if (initialData) {
       setCvData(initialData);
     }
   }, [initialData]);
-  // --- AKHIR PERUBAHAN ---
 
-  const isEditMode = !!cvId; // Tentukan mode edit berdasarkan keberadaan cvId
+  const isEditMode = !!cvId;
 
   const updateCvData = (updates: Partial<CVBuilderData>) => {
     setCvData((prev) => ({ ...prev, ...updates }));
@@ -171,7 +169,6 @@ export function CVBuilderPage({
   };
 
   const handleExportPDF = async () => {
-    // 1. Pastikan CV memiliki ID (sudah disimpan) sebelum diekspor
     if (!cvId) {
       alert("Harap simpan CV Anda terlebih dahulu sebelum mengekspor ke PDF.");
       return;
@@ -179,11 +176,8 @@ export function CVBuilderPage({
 
     setIsExporting(true);
     try {
-      // 2. Buat nama file yang deskriptif dari data CV
       const fullName = `${cvData.firstName} ${cvData.lastName}`.trim();
       const fileName = `${fullName}-${cvData.jobTitle}_CV`.replace(/\s+/g, "-");
-
-      // 3. Panggil fungsi downloadCV yang sudah diimpor
       await downloadCV(cvId, fileName);
     } catch (error) {
       console.error("Gagal mengekspor PDF:", error);
@@ -239,29 +233,29 @@ export function CVBuilderPage({
 
   return (
     <div className="min-h-screen bg-[var(--surface)]">
-      {/* ... (Header dan Progress Bar tetap sama) ... */}
+      {/* **PERBAIKAN TOP BAR DIMULAI DI SINI** */}
       <div className="bg-white border-b border-[var(--border-color)] px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onBack}
-              className="text-gray-500 hover:text-[var(--red-normal)]"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              {t("backToDashboard", lang)}
-            </Button>
-            <div className="h-6 w-px bg-[var(--border-color)]" />
-            <div>
-              <h1 className="text-xl font-poppins font-semibold text-[var(--neutral-ink)]">
-                {t("designYourResume", lang)}
-              </h1>
-              <p className="text-sm text-gray-600">{t("followSteps", lang)}</p>
-            </div>
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:justify-start">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onBack}
+            className="text-gray-500 hover:text-[var(--red-normal)] flex-shrink-0"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            {t("backToDashboard", lang)}
+          </Button>
+          <div className="h-6 w-px bg-[var(--border-color)] hidden md:block md:ml-4" />
+          <div className="flex-grow md:ml-4">
+            <h1 className="text-xl font-poppins font-semibold text-[var(--neutral-ink)]">
+              {t("designYourResume", lang)}
+            </h1>
+            <p className="text-sm text-gray-600">{t("followSteps", lang)}</p>
           </div>
         </div>
       </div>
+      {/* **PERBAIKAN TOP BAR SELESAI** */}
+
       <div className="bg-white border-b border-[var(--border-color)] px-6 py-4">
         <div className="max-w-7xl mx-auto">
           <div className="overflow-x-auto horizontal-scroll-hidden">
@@ -310,7 +304,7 @@ export function CVBuilderPage({
       </div>
 
       <div className="max-w-7xl mx-auto p-6">
-        <div className="grid lg:grid-cols-2 gap-8 min-h-[600px]">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div className="space-y-6">
             <Card className="border border-[var(--border-color)]">
               <CardContent>
@@ -326,13 +320,13 @@ export function CVBuilderPage({
               </CardContent>
             </Card>
 
-            <div className="flex items-center justify-between">
+            {/* **PERBAIKAN TOMBOL AKSI DIMULAI DI SINI** */}
+            <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center space-x-4">
                 <div className="text-sm text-gray-500">
                   {t("stepOf", lang)} {currentStep + 1} {t("of", lang)}{" "}
                   {steps.length}
                 </div>
-                {/* --- PERUBAHAN DI SINI (TOMBOL SAVE DRAFT/UPDATE) --- */}
                 <Button
                   variant="outline"
                   onClick={handleSaveDraft}
@@ -345,33 +339,28 @@ export function CVBuilderPage({
                   )}
                   {isEditMode ? "Perbarui Draf" : t("saveDraftButton", lang)}
                 </Button>
-                {/* --- AKHIR PERUBAHAN --- */}
               </div>
-              <div className="flex items-center space-x-3">
+              <div className="flex w-full gap-3 sm:w-auto">
                 <Button
                   variant="outline"
                   onClick={prevStep}
                   disabled={currentStep === 0}
-                  className="border-[var(--border-color)] bg-transparent"
+                  className="border-[var(--border-color)] bg-transparent flex-1 sm:flex-none sm:w-auto"
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   {t("previousButton", lang)}
                 </Button>
                 {currentStep === steps.length - 1 ? (
-                  <div className="flex items-center space-x-3">
-                    {/* --- PERUBAHAN DI SINI (TOMBOL SAVE/UPDATE) --- */}
-                    <Button
-                      onClick={handleSave}
-                      className="bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white"
-                    >
-                      {isEditMode ? "Perbarui CV" : t("saveCvButton", lang)}
-                    </Button>
-                    {/* --- AKHIR PERUBAHAN --- */}
-                  </div>
+                  <Button
+                    onClick={handleSave}
+                    className="bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white flex-1 sm:flex-none sm:w-auto"
+                  >
+                    {isEditMode ? "Perbarui CV" : t("saveCvButton", lang)}
+                  </Button>
                 ) : (
                   <Button
                     onClick={nextStep}
-                    className="bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white"
+                    className="bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white flex-1 sm:flex-none sm:w-auto"
                   >
                     {t("nextButton", lang)}
                     <ArrowRight className="w-4 h-4 ml-2" />
@@ -379,6 +368,7 @@ export function CVBuilderPage({
                 )}
               </div>
             </div>
+            {/* **PERBAIKAN TOMBOL AKSI SELESAI** */}
           </div>
           <div className="lg:sticky lg:top-6 h-fit">
             <CVPreview data={cvData} lang={lang} />
