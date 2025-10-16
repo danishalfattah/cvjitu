@@ -31,21 +31,19 @@ interface CVGrade {
   suggestions: string[];
 }
 
-// **PERBAIKAN 1: Tambahkan onAnalysisStart ke props**
 interface GradeStepProps {
   data: CVBuilderData;
-  onAnalysisStart: () => void;
+  onAnalysisChange: (isAnalyzing: boolean) => void;
 }
 
-export function GradeStep({ data, onAnalysisStart }: GradeStepProps) {
+export function GradeStep({ data, onAnalysisChange }: GradeStepProps) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [grade, setGrade] = useState<CVGrade | null>(null);
 
   const analyzeCV = async () => {
     setIsAnalyzing(true);
     setGrade(null);
-    // **PERBAIKAN 2: Panggil prop saat analisis dimulai**
-    onAnalysisStart();
+    onAnalysisChange(true); // Beri tahu parent bahwa analisis dimulai
 
     try {
       const response = await fetch("/api/score-builder", {
@@ -69,6 +67,7 @@ export function GradeStep({ data, onAnalysisStart }: GradeStepProps) {
       toast.error(error.message || "Terjadi kesalahan saat menganalisis CV.");
     } finally {
       setIsAnalyzing(false);
+      onAnalysisChange(false);
     }
   };
 

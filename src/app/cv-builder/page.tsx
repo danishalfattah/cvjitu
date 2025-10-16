@@ -19,6 +19,7 @@ export default function Page() {
     useState<CVBuilderData | null>(null);
   const [cvStatus, setCvStatus] = useState<string | undefined>();
   const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     document.title = cvId ? "Edit CV - CVJitu" : "CV Builder - CVJitu";
@@ -74,29 +75,24 @@ export default function Page() {
     data: CVBuilderData,
     status: "Completed" | "Draft"
   ) => {
+    setIsSaving(true); // Mulai loading
     try {
       const url = cvId ? `/api/cv/${cvId}` : "/api/cv";
       const method = cvId ? "PUT" : "POST";
-
       const dataToSave = {
         ...data,
         type: "builder",
-        // **PERBAIKAN 3: Gunakan state status yang sudah dipisah**
         status: cvStatus === "Completed" ? "Completed" : status,
         lang: lang,
       };
 
       const response = await fetch(url, {
-        method: method,
-        headers: {
-          "Content-Type": "application/json",
-        },
+        method,
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(dataToSave),
       });
 
-      if (!response.ok) {
-        throw new Error("Gagal menyimpan CV");
-      }
+      if (!response.ok) throw new Error("Gagal menyimpan CV");
 
       toast.success(
         status === "Completed" || cvStatus === "Completed"
@@ -110,6 +106,8 @@ export default function Page() {
     } catch (error) {
       console.error(error);
       toast.error("Gagal menyimpan CV. Silakan coba lagi.");
+    } finally {
+      setIsSaving(false); // Selesaikan loading
     }
   };
 
@@ -139,6 +137,7 @@ export default function Page() {
       onSave={handleSave}
       onSaveDraft={handleSaveDraft}
       lang={lang}
+      isSaving={isSaving}
     />
   );
 }
