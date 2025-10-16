@@ -138,17 +138,14 @@
   * {
     @apply border-border outline-ring/50;
   }
-  html {
-    overflow-y: scroll;
-  }
   body {
     @apply bg-background text-foreground;
     overflow-x: hidden;
   }
 }
 
-/* Typography: keep original mapping – Poppins for headings, Inter for body */
-@layer base {
+typography: keep original mapping – Poppins for headings,
+  Inter for body @layer base {
   :where(:not(:has([class*=" text-"]), :not(:has([class^="text-"])))) {
     h1,
     h2,
@@ -190,3 +187,12 @@
     display: none; /* Safari and Chrome */
   }
 }
+
+/* body {
+  overflow: auto !important;
+  overflow-y: overlay !important;
+}
+
+body[data-radix-scroll-area-viewport] {
+  overflow: hidden !important;
+} */

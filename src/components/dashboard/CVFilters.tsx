@@ -83,7 +83,7 @@ export function CVFilters({
           value={filters.year}
           onValueChange={(value) => updateFilter("year", value)}
         >
-          <SelectTrigger className="w-28">
+          <SelectTrigger className="w-32">
             <SelectValue>
               {filters.year === "Semua Tahun" ? "Tahun" : filters.year}
             </SelectValue>

@@ -1,5 +1,3 @@
-// components/ui/select.tsx
-
 "use client";
 
 import * as React from "react";
@@ -11,8 +9,7 @@ import { cn } from "@/src/lib/utils";
 function Select({
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Root>) {
-  // @ts-expect-error - Properti 'modal' ada pada komponen tetapi mungkin tidak ada dalam definisi tipe versi ini. Ini aman dan diperlukan untuk mencegah layout shift.
-  return <SelectPrimitive.Root data-slot="select" modal={false} {...props} />;
+  return <SelectPrimitive.Root data-slot="select" {...props} />;
 }
 
 function SelectGroup({
@@ -57,6 +54,7 @@ function SelectContent({
   className,
   children,
   position = "popper",
+  align = "center",
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Content>) {
   return (
@@ -70,6 +68,7 @@ function SelectContent({
           className
         )}
         position={position}
+        align={align}
         {...props}
       >
         <SelectScrollUpButton />
