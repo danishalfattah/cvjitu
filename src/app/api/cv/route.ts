@@ -76,13 +76,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ id: docRef.id, ...scoredCvData }, { status: 201 });
 
     } else {
-      // **PERUBAHAN DI SINI**
       const isDraft = cvData.status === 'Draft';
       const newCvData = {
         ...cvData,
         name: cvData.jobTitle || cvData.name || "CV Tanpa Judul",
         status: cvData.status || "Draft",
-        // Jika status adalah 'Draft', skor diatur ke 0. Jika tidak, berikan skor.
         score: isDraft ? 0 : (cvData.score || Math.floor(Math.random() * (75 - 50 + 1)) + 50),
         year: cvData.year || new Date().getFullYear(),
         userId,
@@ -90,6 +88,8 @@ export async function POST(request: NextRequest) {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         type: 'builder',
+        // **PERBAIKAN DI SINI**
+        visibility: 'private', // Menambahkan nilai default 'private' untuk visibilitas
       };
       
       const docRef = await adminDb.collection('cvs').add(newCvData);
