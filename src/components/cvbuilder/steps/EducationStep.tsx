@@ -6,7 +6,7 @@ import { Checkbox } from "../../ui/checkbox";
 import { Card, CardContent, CardHeader } from "../../ui/card";
 import { Plus, Trash2, Calendar } from "lucide-react";
 import { CVBuilderData, Education } from "../types";
-import { t, type Language } from "@/src/lib/translations";
+import { t, type Language } from "@/lib/translations";
 
 interface EducationStepProps {
   data: CVBuilderData;
