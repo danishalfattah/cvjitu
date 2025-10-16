@@ -574,7 +574,7 @@ export function Dashboard({ onCreateCVAction }: DashboardProps) {
             <Button
               variant="outline"
               onClick={() => handleLanguageSelect("id")}
-              className="w-full sm:w-auto"
+              className="w-full sm:w-auto  border-[var(--red-normal)] text-[var(--red-normal)] hover:bg-[var(--red-light)] "
             >
               Bahasa Indonesia
             </Button>
@@ -585,9 +585,6 @@ export function Dashboard({ onCreateCVAction }: DashboardProps) {
               English
             </Button>
           </div>
-          <AlertDialogFooter className="sm:hidden mt-2">
-            <AlertDialogCancel className="w-full">Batal</AlertDialogCancel>
-          </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </div>
