@@ -74,7 +74,6 @@ export function Dashboard({ onCreateCVAction }: DashboardProps) {
   const [selectedCvForPreview, setSelectedCvForPreview] =
     useState<CVData | null>(null);
   const [draftPreviewData, setDraftPreviewData] = useState<CVData | null>(null);
-  const [viewingAnalysis, setViewingAnalysis] = useState<CVData | null>(null);
   const [activeTab, setActiveTab] = useState("cv-repo");
 
   useEffect(() => {
@@ -161,31 +160,25 @@ export function Dashboard({ onCreateCVAction }: DashboardProps) {
         if (cv.status === "Draft") {
           setDraftPreviewData(cv);
         } else {
-          const mockResult: CVScoringData = {
-            fileName: cv.name,
-            overallScore: cv.score,
-            atsCompatibility: Math.min(cv.score + 5, 100),
-            keywordMatch: Math.max(cv.score - 3, 0),
-            readabilityScore: Math.min(cv.score + 2, 100),
-            sections: [
-              {
-                name: "Pengalaman Kerja",
-                score: cv.score + 10,
-                status: "excellent",
-                feedback: "Sangat relevan.",
-              },
-              {
-                name: "Pendidikan",
-                score: cv.score - 5,
-                status: "good",
-                feedback: "Latar belakang baik.",
-              },
-            ],
-            suggestions: ["Tambahkan kata kunci.", "Kuantifikasi pencapaian."],
-            isCv: true, // isCv ditambahkan di sini juga
-          };
-          setSelectedCvForPreview(cv);
-          setScoringResult(mockResult);
+          // **PERBAIKAN UTAMA: Gunakan data analisis asli, bukan mock data**
+          if (cv.analysis) {
+            const analysisData: CVScoringData = {
+              fileName: cv.name,
+              isCv: true, // Pastikan properti ini ada untuk memenuhi tipe
+              overallScore: cv.analysis.overallScore,
+              atsCompatibility: cv.analysis.atsCompatibility,
+              keywordMatch: cv.analysis.keywordMatch,
+              readabilityScore: cv.analysis.readabilityScore,
+              sections: cv.analysis.sections,
+              suggestions: cv.analysis.suggestions,
+            };
+            setSelectedCvForPreview(cv);
+            setScoringResult(analysisData);
+          } else {
+            toast.info("CV ini belum memiliki data analisis.", {
+              description: "Anda bisa menganalisisnya ulang di halaman edit.",
+            });
+          }
         }
         break;
       case "download":
@@ -237,38 +230,6 @@ export function Dashboard({ onCreateCVAction }: DashboardProps) {
       toast.error("Gagal mengubah visibilitas CV.");
     }
   };
-
-  const handleViewAnalysis = (cv: CVData) => {
-    if (cv.analysis) {
-      setViewingAnalysis(cv);
-    } else {
-      toast.info("Tidak ada data analisis.", {
-        description: "Harap analisis CV ini terlebih dahulu di CV Builder.",
-      });
-    }
-  };
-
-  if (viewingAnalysis && viewingAnalysis.analysis) {
-    // **PERBAIKAN UTAMA DI SINI**
-    const analysisDataForDisplay: CVScoringData = {
-      fileName: viewingAnalysis.name,
-      isCv: true, // Properti 'isCv' yang wajib diisi ditambahkan di sini
-      overallScore: viewingAnalysis.analysis.overallScore,
-      atsCompatibility: viewingAnalysis.analysis.atsCompatibility,
-      keywordMatch: viewingAnalysis.analysis.keywordMatch,
-      readabilityScore: viewingAnalysis.analysis.readabilityScore,
-      sections: viewingAnalysis.analysis.sections,
-      suggestions: viewingAnalysis.analysis.suggestions,
-    };
-
-    return (
-      <CVScoringResult
-        data={analysisDataForDisplay}
-        onBack={() => setViewingAnalysis(null)}
-        showPreview={false}
-      />
-    );
-  }
 
   const handleDeleteConfirm = async () => {
     if (deleteModal.cv) {
@@ -505,13 +466,12 @@ export function Dashboard({ onCreateCVAction }: DashboardProps) {
                 <CVCard
                   key={cv.id}
                   cv={cv}
-                  onPreview={() => handleCVAction("preview", cv)}
-                  onDownload={() => handleCVAction("download", cv)}
-                  onUpdate={() => handleCVAction("update", cv)}
-                  onDelete={() => handleCVAction("delete", cv)}
-                  onShare={() => handleCVAction("share", cv)}
+                  onPreview={handleCVAction}
+                  onDownload={handleCVAction}
+                  onUpdate={handleCVAction}
+                  onDelete={handleCVAction}
+                  onShare={handleCVAction}
                   onVisibilityChange={handleVisibilityChange}
-                  onViewAnalysis={() => handleViewAnalysis(cv)}
                 />
               ))}
             </div>
@@ -524,7 +484,6 @@ export function Dashboard({ onCreateCVAction }: DashboardProps) {
               onDelete={handleCVAction}
               onShare={handleCVAction}
               onVisibilityChange={handleVisibilityChange}
-              onViewAnalysis={handleViewAnalysis}
             />
           )}
           {totalPages > 1 && (

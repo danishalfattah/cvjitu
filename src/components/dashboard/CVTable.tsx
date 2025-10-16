@@ -37,13 +37,12 @@ import { downloadCV } from "@/lib/utils";
 
 interface CVTableProps {
   cvs: CVData[];
-  onPreview: (action: "preview", cv: CVData) => void;
-  onDownload: (action: "download", cv: CVData) => void;
-  onUpdate: (action: "update", cv: CVData) => void;
-  onDelete: (action: "delete", cv: CVData) => void;
-  onShare: (action: "share", cv: CVData) => void;
+  onPreview: (action: string, cv: CVData) => void;
+  onDownload: (action: string, cv: CVData) => void;
+  onUpdate: (action: string, cv: CVData) => void;
+  onDelete: (action: string, cv: CVData) => void;
+  onShare: (action: string, cv: CVData) => void;
   onVisibilityChange: (cvId: string, visibility: "public" | "private") => void;
-  onViewAnalysis: (cv: CVData) => void;
 }
 
 export function CVTable({
@@ -54,7 +53,6 @@ export function CVTable({
   onDelete,
   onShare,
   onVisibilityChange,
-  onViewAnalysis, // Terima prop di sini
 }: CVTableProps) {
   const getStatusColor = (status: CVData["status"]) => {
     if (status === "Completed") return "bg-[var(--success)] text-white";
@@ -148,21 +146,16 @@ export function CVTable({
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        {/* **PERBAIKAN 2: Pisahkan menu "Lihat Pratinjau" dan "Lihat Analisis"** */}
                         <DropdownMenuItem
                           onClick={() => onPreview("preview", cv)}
                         >
-                          <Eye className="w-4 h-4 mr-2" />
-                          Lihat Pratinjau
+                          {isDraft ? (
+                            <Eye className="w-4 h-4 mr-2" />
+                          ) : (
+                            <BarChart3 className="w-4 h-4 mr-2" />
+                          )}
+                          {isDraft ? "Lihat Pratinjau" : "Lihat Analisis"}
                         </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => onViewAnalysis(cv)}
-                          disabled={isDraft}
-                        >
-                          <BarChart3 className="w-4 h-4 mr-2" />
-                          Lihat Analisis
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
                         <DropdownMenuItem
                           onClick={() => onUpdate("update", cv)}
                         >

@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils";
 
 interface CVScoringResultProps {
   data: CVScoringData;
+  // **PERBAIKAN 1: Jadikan cvBuilderData opsional**
   cvBuilderData?: CVBuilderData | null;
   onBack: () => void;
   onSaveToRepository?: (() => void) | null;
@@ -78,8 +79,6 @@ export function CVScoringResult({
 
   return (
     <div className="min-h-screen bg-[var(--surface)] py-8 px-4 sm:px-6">
-      {" "}
-      {/* Penyesuaian padding */}
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
           <div className="flex items-center space-x-4 min-w-0">
@@ -112,21 +111,16 @@ export function CVScoringResult({
           )}
         </div>
 
+        {/* **PERBAIKAN 2: Logika grid yang lebih cerdas** */}
         <div
           className={cn(
             "grid gap-8 items-start",
-            showPreview ? "lg:grid-cols-2" : "grid-cols-1" // **PERBAIKAN DI SINI**
+            showPreview && cvBuilderData ? "lg:grid-cols-2" : "grid-cols-1"
           )}
         >
-          {showPreview && (
+          {showPreview && cvBuilderData && (
             <div className="lg:sticky lg:top-8 h-fit">
-              {cvBuilderData ? (
-                <CVPreview data={cvBuilderData} lang="id" />
-              ) : (
-                <div className="w-full aspect-[210/297] bg-gray-100 rounded-lg flex items-center justify-center">
-                  <p className="text-gray-500">Preview tidak tersedia.</p>
-                </div>
-              )}
+              <CVPreview data={cvBuilderData} lang="id" />
             </div>
           )}
 
@@ -137,7 +131,6 @@ export function CVScoringResult({
                   Skor Keseluruhan
                 </CardTitle>
               </CardHeader>
-              {/* **PERBAIKAN DI SINI** */}
               <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-8 items-center">
                 <div className="flex justify-center">
                   <RadialScore
@@ -197,8 +190,6 @@ export function CVScoringResult({
                       className="border border-[var(--border-color)] rounded-lg p-4"
                     >
                       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                        {" "}
-                        {/* **PERBAIKAN** */}
                         <div className="flex items-center space-x-3">
                           {getStatusIcon(section.status)}
                           <h3 className="font-medium text-[var(--neutral-ink)]">
@@ -206,8 +197,6 @@ export function CVScoringResult({
                           </h3>
                         </div>
                         <div className="flex items-center space-x-3 self-end sm:self-center">
-                          {" "}
-                          {/* **PERBAIKAN** */}
                           <Badge className={getStatusColor(section.status)}>
                             {getStatusText(section.status)}
                           </Badge>
@@ -220,8 +209,6 @@ export function CVScoringResult({
                         </div>
                       </div>
                       <p className="text-gray-600 text-sm mt-3">
-                        {" "}
-                        {/* **PERBAIKAN** */}
                         {section.feedback}
                       </p>
                     </div>

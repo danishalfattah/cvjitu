@@ -28,9 +28,7 @@ import {
 import { type CVScoringData } from "../../app/page";
 import { CVGrade, Education, WorkExperience } from "../cvbuilder/types";
 import { downloadCV } from "@/lib/utils";
-import { toast } from "sonner";
 
-// Tipe data ini sudah sangat lengkap dan bagus.
 export interface CVData extends Partial<Omit<CVScoringData, "fileName">> {
   id: string;
   name: string;
@@ -68,15 +66,12 @@ interface CVCardProps {
   onDelete: (action: "delete", cv: CVData) => void;
   onShare: (action: "share", cv: CVData) => void;
   onVisibilityChange: (cvId: string, visibility: "public" | "private") => void;
-  // **PERBAIKAN 1: Tambahkan prop onViewAnalysis**
-  onViewAnalysis: (cv: CVData) => void;
 }
 
 export function CVCard({
   cv,
   onPreview,
-  onDownload, // Pastikan prop ini diterima
-  onViewAnalysis, // Terima prop di sini
+  onDownload,
   onUpdate,
   onDelete,
   onShare,
@@ -99,15 +94,6 @@ export function CVCard({
   };
 
   const isDraft = cv.status === "Draft";
-
-  // **PERBAIKAN 2: Buat handler khusus untuk tombol utama**
-  const handleMainAction = () => {
-    if (isDraft) {
-      onPreview("preview", cv); // Jika draf, lakukan pratinjau
-    } else {
-      onViewAnalysis(cv); // Jika selesai, lihat analisis
-    }
-  };
 
   return (
     <Card className="border border-[var(--border-color)] hover:shadow-md transition-shadow flex flex-col">
@@ -148,19 +134,14 @@ export function CVCard({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                {/* **PERBAIKAN 3: Pisahkan logika Lihat CV dan Lihat Analisis** */}
                 <DropdownMenuItem onClick={() => onPreview("preview", cv)}>
-                  <Eye className="w-4 h-4 mr-2" />
-                  Lihat Pratinjau
+                  {isDraft ? (
+                    <Eye className="w-4 h-4 mr-2" />
+                  ) : (
+                    <BarChart3 className="w-4 h-4 mr-2" />
+                  )}
+                  {isDraft ? "Lihat Pratinjau" : "Lihat Analisis"}
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => onViewAnalysis(cv)}
-                  disabled={isDraft}
-                >
-                  <BarChart3 className="w-4 h-4 mr-2" />
-                  Lihat Analisis
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => onUpdate("update", cv)}>
                   <Edit className="w-4 h-4 mr-2" />
                   Edit
@@ -217,7 +198,7 @@ export function CVCard({
           <p>Diperbarui: {formatDate(cv.updatedAt)}</p>
         </div>
         <Button
-          onClick={handleMainAction} // Gunakan handler yang sudah dibuat
+          onClick={() => onPreview("preview", cv)}
           className="w-full bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white text-sm sm:text-base py-2 sm:py-2.5"
         >
           {isDraft ? (

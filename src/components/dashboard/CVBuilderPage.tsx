@@ -403,7 +403,7 @@ export function CVBuilderPage({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div className="space-y-6">
             <Card className="border border-[var(--border-color)]">
-              <CardContent className="pt-6">
+              <CardContent>
                 <div className="mb-6">
                   <h2 className="text-lg font-poppins font-semibold text-[var(--neutral-ink)] mb-2">
                     {t(`${steps[currentStep].id}Title`, lang)}
