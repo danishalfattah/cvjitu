@@ -31,13 +31,21 @@ interface CVGrade {
   suggestions: string[];
 }
 
-export function GradeStep({ data }: { data: CVBuilderData }) {
+// **PERBAIKAN 1: Tambahkan onAnalysisStart ke props**
+interface GradeStepProps {
+  data: CVBuilderData;
+  onAnalysisStart: () => void;
+}
+
+export function GradeStep({ data, onAnalysisStart }: GradeStepProps) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [grade, setGrade] = useState<CVGrade | null>(null);
 
   const analyzeCV = async () => {
     setIsAnalyzing(true);
     setGrade(null);
+    // **PERBAIKAN 2: Panggil prop saat analisis dimulai**
+    onAnalysisStart();
 
     try {
       const response = await fetch("/api/score-builder", {

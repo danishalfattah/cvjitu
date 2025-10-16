@@ -17,7 +17,8 @@ import type {
   Education,
 } from "../cvbuilder/types";
 import { t, type Language } from "@/lib/translations";
-import { downloadCV } from "@/lib/utils";
+import { validateStep } from "@/lib/validation";
+import { toast } from "sonner";
 
 interface CVBuilderPageProps {
   initialData?: CVBuilderData | null;
@@ -65,17 +66,51 @@ export function CVBuilderPage({
     summary: "",
   });
 
-  useEffect(() => {
-    if (initialData) {
-      setCvData(initialData);
-    }
-  }, [initialData]);
+  const [highestCompletedStep, setHighestCompletedStep] = useState(-1);
+  const [hasBeenAnalyzed, setHasBeenAnalyzed] = useState(false);
 
   const isEditMode = !!cvId;
   const isEditingCompletedCV = isEditMode && initialCvStatus === "Completed";
 
+  useEffect(() => {
+    if (initialData) {
+      setCvData(initialData);
+      // Jika CV sudah selesai, user bisa akses semua step
+      if (isEditingCompletedCV) {
+        setHighestCompletedStep(steps.length - 1);
+        setHasBeenAnalyzed(true); // Anggap sudah dianalisis awalnya
+      } else {
+        // Untuk draf, hitung step tertinggi yang sudah valid
+        let lastValidStep = -1;
+        for (let i = 0; i < steps.length - 1; i++) {
+          if (validateStep(steps[i].id, initialData)) {
+            lastValidStep = i;
+          } else {
+            break; // Berhenti jika menemukan step yang tidak valid
+          }
+        }
+        setHighestCompletedStep(lastValidStep);
+      }
+    }
+  }, [initialData, isEditingCompletedCV]);
+
   const updateCvData = (updates: Partial<CVBuilderData>) => {
     setCvData((prev) => ({ ...prev, ...updates }));
+    // Jika CV yg sudah selesai diubah, wajib analisis ulang
+    if (isEditingCompletedCV) {
+      setHasBeenAnalyzed(false);
+    }
+  };
+
+  const handleSetCurrentStep = (index: number) => {
+    // User hanya bisa pindah ke step yang sudah diselesaikan
+    if (index <= highestCompletedStep + 1 || isEditingCompletedCV) {
+      setCurrentStep(index);
+      // Jika user ke step analisis, tandai sudah dianalisis
+      if (steps[index].id === "grade") {
+        setHasBeenAnalyzed(true);
+      }
+    }
   };
 
   const addWorkExperience = () => {
@@ -150,22 +185,45 @@ export function CVBuilderPage({
   };
 
   const nextStep = () => {
-    if (currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1);
+    // **PERBAIKAN LOGIKA VALIDASI**
+    const validationResult = validateStep(steps[currentStep].id, cvData);
+
+    if (validationResult.isValid) {
+      if (currentStep < steps.length - 1) {
+        setHighestCompletedStep(Math.max(highestCompletedStep, currentStep));
+        handleSetCurrentStep(currentStep + 1);
+      }
+    } else {
+      // Tampilkan pesan error yang lebih spesifik
+      toast.error(t("validationErrorTitle", lang), {
+        description: t(
+          validationResult.errorKey || "validationErrorDesc",
+          lang
+        ),
+      });
     }
   };
 
   const prevStep = () => {
     if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
+      handleSetCurrentStep(currentStep - 1);
     }
   };
 
-  const handleSave = () => onSave(cvData);
-
+  const handleSave = () => {
+    if (!hasBeenAnalyzed) {
+      toast.error(t("analysisRequiredTitle", lang), {
+        description: isEditingCompletedCV
+          ? t("analysisReRequiredDesc", lang)
+          : t("analysisRequiredDesc", lang),
+      });
+      return;
+    }
+    onSave(cvData);
+  };
   const handleSaveDraftOrUpdate = () => {
     if (isEditingCompletedCV) {
-      onSave(cvData);
+      handleSave(); // Jika CV selesai, tombol ini berfungsi seperti simpan biasa
     } else {
       onSaveDraft(cvData);
     }
@@ -209,7 +267,12 @@ export function CVBuilderPage({
           <SummaryStep data={cvData} onUpdate={updateCvData} lang={lang} />
         );
       case "grade":
-        return <GradeStep data={cvData} />;
+        return (
+          <GradeStep
+            data={cvData}
+            onAnalysisStart={() => setHasBeenAnalyzed(true)}
+          />
+        );
       default:
         return null;
     }
@@ -247,7 +310,7 @@ export function CVBuilderPage({
               {steps.map((step, index) => (
                 <div key={step.id} className="flex items-center">
                   <button
-                    onClick={() => setCurrentStep(index)}
+                    onClick={() => handleSetCurrentStep(index)}
                     className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium transition-all duration-200 hover:scale-105 cursor-pointer flex-shrink-0 ${
                       index < currentStep
                         ? "bg-[var(--success)] text-white hover:bg-green-600"
@@ -260,7 +323,7 @@ export function CVBuilderPage({
                     {index < currentStep ? "✓" : index + 1}
                   </button>
                   <button
-                    onClick={() => setCurrentStep(index)}
+                    onClick={() => handleSetCurrentStep(index)}
                     className={`ml-2 text-sm font-medium transition-colors duration-200 hover:opacity-80 cursor-pointer whitespace-nowrap ${
                       index === currentStep
                         ? "text-[var(--red-normal)]"

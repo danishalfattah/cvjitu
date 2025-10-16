@@ -64,7 +64,8 @@ export function SummaryStep({ data, onUpdate, lang }: SummaryStepProps) {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <Label htmlFor="summary" className="text-sm font-medium">
-            {t("professionalSummaryLabel", lang)}
+            {t("professionalSummaryLabel", lang)}{" "}
+            <span className="text-red-500">*</span>
           </Label>
           <Button
             type="button"

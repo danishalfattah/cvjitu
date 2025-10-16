@@ -200,7 +200,8 @@ export function WorkExperienceStep({
                 htmlFor={`location-${experience.id}`}
                 className="text-sm font-medium"
               >
-                {t("locationLabel", lang)}
+                {t("locationLabel", lang)}{" "}
+                <span className="text-red-500">*</span>
               </Label>
               <Input
                 id={`location-${experience.id}`}
@@ -221,7 +222,8 @@ export function WorkExperienceStep({
                   htmlFor={`startDate-${experience.id}`}
                   className="text-sm font-medium"
                 >
-                  {t("startDateLabel", lang)}
+                  {t("startDateLabel", lang)}{" "}
+                  <span className="text-red-500">*</span>
                 </Label>
                 <div className="relative">
                   <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -244,7 +246,8 @@ export function WorkExperienceStep({
                   htmlFor={`endDate-${experience.id}`}
                   className="text-sm font-medium"
                 >
-                  {t("endDateLabel", lang)}
+                  {t("endDateLabel", lang)}{" "}
+                  <span className="text-red-500">*</span>
                 </Label>
                 <div className="relative">
                   <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -266,6 +269,7 @@ export function WorkExperienceStep({
 
             <div className="flex items-center space-x-2">
               <Checkbox
+                className="border-2 border-gray-300"
                 id={`current-${experience.id}`}
                 checked={experience.current}
                 onCheckedChange={(checked) =>
