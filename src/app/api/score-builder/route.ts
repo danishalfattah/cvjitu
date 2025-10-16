@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { CVBuilderData } from "@/src/components/cvbuilder/types";
+import { CVBuilderData } from "@/components/cvbuilder/types";
 
 const API_KEY = process.env.GEMINI_API_KEY;
 

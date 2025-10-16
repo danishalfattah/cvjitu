@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { PrivacyPolicyPage } from "@/src/components/PrivacyPolicyPage";
+import { PrivacyPolicyPage } from "@/components/PrivacyPolicyPage";
 import { useEffect } from "react";
 
 export default function PrivacyPage() {

@@ -5,7 +5,7 @@ import { Button } from "../../ui/button";
 import { Badge } from "../../ui/badge";
 import { Plus, X } from "lucide-react";
 import { CVBuilderData } from "../types";
-import { t, type Language } from "@/src/lib/translations";
+import { t, type Language } from "@/lib/translations";
 
 interface SkillsStepProps {
   data: CVBuilderData;

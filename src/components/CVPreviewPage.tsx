@@ -6,15 +6,10 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { useAuth } from "@/src/context/AuthContext";
-import { CVPreview } from "@/src/components/cvbuilder/preview/CVPreview";
-import { Button } from "@/src/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/src/components/ui/card";
+import { useAuth } from "@/context/AuthContext";
+import { CVPreview } from "@/components/cvbuilder/preview/CVPreview";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Download,
   User as UserIcon,
@@ -23,11 +18,11 @@ import {
   Loader2,
   Lock,
 } from "lucide-react";
-import { CVData } from "@/src/components/dashboard/CVCard";
+import { CVData } from "@/components/dashboard/CVCard";
 import { CVBuilderData } from "./cvbuilder/types";
-import { t } from "@/src/lib/translations";
-import { Footer } from "@/src/components/Footer";
-import { downloadCV } from "@/src/lib/utils";
+import { t } from "@/lib/translations";
+import { Footer } from "@/components/Footer";
+import { downloadCV } from "@/lib/utils";
 
 export function CVPreviewPage() {
   const router = useRouter();

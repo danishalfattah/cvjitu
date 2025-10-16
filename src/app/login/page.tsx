@@ -2,12 +2,12 @@
 
 "use client";
 
-import { useAuth } from "@/src/context/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { LoginPage } from "@/src/components/LoginPage";
+import { LoginPage } from "@/components/LoginPage";
 import { useEffect } from "react";
-import { Toaster } from "@/src/components/ui/sonner"; // Pastikan Toaster diimpor jika belum ada
+import { Toaster } from "@/components/ui/sonner";
 import { Loader2Icon } from "lucide-react";
 
 export default function Login() {
@@ -69,7 +69,7 @@ export default function Login() {
         isLoading={isLoading}
       />
       {/* Pastikan komponen Toaster ada di layout atau di sini */}
-      <Toaster position="top-center" richColors />
+      <Toaster position="bottom-right" richColors />
     </>
   );
 }

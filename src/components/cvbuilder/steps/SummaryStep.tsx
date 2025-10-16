@@ -4,7 +4,7 @@ import { Textarea } from "../../ui/textarea";
 import { Button } from "../../ui/button";
 import { Sparkles } from "lucide-react";
 import { CVBuilderData } from "../types";
-import { t, type Language } from "@/src/lib/translations";
+import { t, type Language } from "@/lib/translations";
 
 interface SummaryStepProps {
   data: CVBuilderData;

@@ -2,7 +2,7 @@ import { Card, CardContent } from "../../ui/card";
 import { Separator } from "../../ui/separator";
 import { FileText } from "lucide-react";
 import { CVBuilderData } from "../types";
-import { t, type Language } from "@/src/lib/translations";
+import { t, type Language } from "@/lib/translations";
 
 interface CVPreviewProps {
   data: CVBuilderData;

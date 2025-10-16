@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader } from "../../ui/card";
 import { Badge } from "../../ui/badge";
 import { Plus, Trash2, Sparkles, Calendar } from "lucide-react";
 import { CVBuilderData, WorkExperience } from "../types";
-import { t, type Language } from "@/src/lib/translations";
+import { t, type Language } from "@/lib/translations";
 import { toast } from "sonner";
 
 interface WorkExperienceStepProps {

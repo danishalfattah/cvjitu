@@ -1,9 +1,9 @@
 "use client";
 
-import { useAuth } from "@/src/context/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { RegisterPage } from "@/src/components/RegisterPage";
+import { RegisterPage } from "@/components/RegisterPage";
 import { useEffect } from "react";
 
 export default function Register() {

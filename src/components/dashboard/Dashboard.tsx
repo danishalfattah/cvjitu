@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import {
@@ -21,7 +20,7 @@ import { EmptyState } from "../EmptyState";
 import { DeleteConfirmModal } from "../DeleteConfirmModal";
 import { CVScoringResult } from "./CVScoringResult";
 import { CVPreview } from "../cvbuilder/preview/CVPreview";
-import { type CVScoringData } from "@/src/app/page";
+import { type CVScoringData } from "@/app/page";
 import { CVBuilderData } from "../cvbuilder/types";
 import {
   AlertDialog,
@@ -44,6 +43,7 @@ import {
   Loader2,
   ArrowLeft,
 } from "lucide-react";
+import { toast } from "sonner";
 
 interface DashboardProps {
   onCreateCVAction?: (lang: "id" | "en") => void;

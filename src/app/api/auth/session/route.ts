@@ -2,7 +2,7 @@
 
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { adminAuth } from '@/src/lib/firebase-admin';
+import { adminAuth } from '@/lib/firebase-admin';
 
 // HANDLER UNTUK MEMBUAT SESI (LOGIN)
 export async function POST(request: Request) {

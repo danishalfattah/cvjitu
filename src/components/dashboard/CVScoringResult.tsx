@@ -15,7 +15,7 @@ import {
   Save,
 } from "lucide-react";
 import { type CVScoringData } from "../../app/page";
-import { cn } from "@/src/lib/utils";
+import { cn } from "@/lib/utils";
 
 interface CVScoringResultProps {
   data: CVScoringData;
