@@ -19,6 +19,7 @@ import type {
 import { t, type Language } from "@/lib/translations";
 import { validateStep } from "@/lib/validation";
 import { toast } from "sonner";
+import { type CVGrade } from "../cvbuilder/types"; // Import CVGrade
 
 interface CVBuilderPageProps {
   initialData?: CVBuilderData | null;
@@ -29,6 +30,8 @@ interface CVBuilderPageProps {
   onSaveDraft: (data: CVBuilderData) => void;
   lang: Language;
   isSaving?: boolean;
+  initialAnalysisData?: CVGrade | null; // Prop baru
+  onAnalysisComplete: (grade: CVGrade | null) => void; // Prop baru
 }
 
 const steps = [
@@ -50,6 +53,8 @@ export function CVBuilderPage({
   onSaveDraft,
   lang,
   isSaving = false,
+  initialAnalysisData,
+  onAnalysisComplete,
 }: CVBuilderPageProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [cvData, setCvData] = useState<CVBuilderData>({
@@ -276,7 +281,14 @@ export function CVBuilderPage({
           <SummaryStep data={cvData} onUpdate={updateCvData} lang={lang} />
         );
       case "grade":
-        return <GradeStep data={cvData} onAnalysisChange={setIsAnalyzing} />;
+        return (
+          <GradeStep
+            data={cvData}
+            onAnalysisChange={setIsAnalyzing}
+            initialGrade={initialAnalysisData}
+            onAnalysisComplete={onAnalysisComplete}
+          />
+        );
       default:
         return null;
     }

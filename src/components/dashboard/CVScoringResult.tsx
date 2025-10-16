@@ -19,12 +19,11 @@ import { cn } from "@/lib/utils";
 
 interface CVScoringResultProps {
   data: CVScoringData;
-  cvBuilderData: CVBuilderData | null;
+  cvBuilderData?: CVBuilderData | null;
   onBack: () => void;
   onSaveToRepository?: (() => void) | null;
   showPreview?: boolean;
 }
-
 export function CVScoringResult({
   data,
   cvBuilderData,

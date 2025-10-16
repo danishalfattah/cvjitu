@@ -3,7 +3,7 @@
 import { useSearchParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { CVBuilderPage } from "@/components/dashboard/CVBuilderPage";
-import { type CVBuilderData } from "@/components/cvbuilder/types";
+import { type CVBuilderData, type CVGrade } from "@/components/cvbuilder/types"; // Import CVGrade
 import { type Language } from "@/lib/translations";
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
@@ -14,29 +14,27 @@ export default function Page() {
   const lang = (searchParams.get("lang") as Language) || "id";
   const cvId = searchParams.get("id");
 
-  // **PERBAIKAN 1: Pisahkan state untuk form data dan metadata**
   const [initialBuilderData, setInitialBuilderData] =
     useState<CVBuilderData | null>(null);
   const [cvStatus, setCvStatus] = useState<string | undefined>();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  // **PERBAIKAN 1: State untuk menyimpan hasil analisis**
+  const [analysisResult, setAnalysisResult] = useState<CVGrade | null>(null);
+  const [initialAnalysis, setInitialAnalysis] = useState<CVGrade | null>(null);
 
   useEffect(() => {
     document.title = cvId ? "Edit CV - CVJitu" : "CV Builder - CVJitu";
-
     if (cvId) {
       const fetchCvData = async () => {
+        setIsLoading(true);
         try {
           const response = await fetch(`/api/cv/${cvId}`);
-          if (!response.ok) {
+          if (!response.ok)
             throw new Error(
               "CV tidak ditemukan atau Anda tidak memiliki akses."
             );
-          }
           const data = await response.json();
-
-          // **PERBAIKAN 2: "Sanitize" data ke dalam state yang sesuai**
-          // State ini hanya berisi data yang dibutuhkan oleh form (tipe CVBuilderData)
           setInitialBuilderData({
             jobTitle: data.jobTitle || "",
             description: data.description || "",
@@ -52,8 +50,12 @@ export default function Page() {
             skills: data.skills || [],
             summary: data.summary || "",
           });
-          // State ini menyimpan status secara terpisah
           setCvStatus(data.status);
+          // **PERBAIKAN 2: Simpan data analisis awal jika ada**
+          if (data.analysis) {
+            setInitialAnalysis(data.analysis);
+            setAnalysisResult(data.analysis);
+          }
         } catch (error: any) {
           toast.error(error.message);
           router.replace("/dashboard");
@@ -75,7 +77,7 @@ export default function Page() {
     data: CVBuilderData,
     status: "Completed" | "Draft"
   ) => {
-    setIsSaving(true); // Mulai loading
+    setIsSaving(true);
     try {
       const url = cvId ? `/api/cv/${cvId}` : "/api/cv";
       const method = cvId ? "PUT" : "POST";
@@ -84,6 +86,10 @@ export default function Page() {
         type: "builder",
         status: cvStatus === "Completed" ? "Completed" : status,
         lang: lang,
+        // **PERBAIKAN 3: Sertakan hasil analisis saat menyimpan**
+        analysis: analysisResult,
+        // Sertakan skor keseluruhan dari analisis jika ada
+        score: analysisResult ? analysisResult.overallScore : 0,
       };
 
       const response = await fetch(url, {
@@ -107,17 +113,12 @@ export default function Page() {
       console.error(error);
       toast.error("Gagal menyimpan CV. Silakan coba lagi.");
     } finally {
-      setIsSaving(false); // Selesaikan loading
+      setIsSaving(false);
     }
   };
 
-  const handleSave = (data: CVBuilderData) => {
-    executeSave(data, "Completed");
-  };
-
-  const handleSaveDraft = (data: CVBuilderData) => {
-    executeSave(data, "Draft");
-  };
+  const handleSave = (data: CVBuilderData) => executeSave(data, "Completed");
+  const handleSaveDraft = (data: CVBuilderData) => executeSave(data, "Draft");
 
   if (isLoading) {
     return (
@@ -129,7 +130,6 @@ export default function Page() {
 
   return (
     <CVBuilderPage
-      // **PERBAIKAN 4: Kirim state yang sudah benar tipenya**
       initialData={initialBuilderData}
       cvId={cvId}
       initialCvStatus={cvStatus}
@@ -138,6 +138,9 @@ export default function Page() {
       onSaveDraft={handleSaveDraft}
       lang={lang}
       isSaving={isSaving}
+      // **PERBAIKAN 4: Kirim data analisis dan handler ke CVBuilderPage**
+      initialAnalysisData={initialAnalysis}
+      onAnalysisComplete={setAnalysisResult}
     />
   );
 }

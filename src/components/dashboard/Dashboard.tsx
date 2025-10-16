@@ -59,7 +59,7 @@ export function Dashboard({ onCreateCVAction }: DashboardProps) {
     status: "Semua Status",
     year: "Semua Tahun",
     scoreRange: [1, 100],
-    sortBy: "newest" as "newest" | "oldest", // Tambahkan state sortBy
+    sortBy: "newest" as "newest" | "oldest",
   });
   const [deleteModal, setDeleteModal] = useState<{
     isOpen: boolean;
@@ -74,6 +74,8 @@ export function Dashboard({ onCreateCVAction }: DashboardProps) {
   const [selectedCvForPreview, setSelectedCvForPreview] =
     useState<CVData | null>(null);
   const [draftPreviewData, setDraftPreviewData] = useState<CVData | null>(null);
+  const [viewingAnalysis, setViewingAnalysis] = useState<CVData | null>(null);
+  const [activeTab, setActiveTab] = useState("cv-repo");
 
   useEffect(() => {
     const fetchCVs = async () => {
@@ -105,13 +107,10 @@ export function Dashboard({ onCreateCVAction }: DashboardProps) {
   const stats = useMemo(() => {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
     const completedCvs = cvs.filter((cv) => cv.status !== "Draft");
-
     const cvsThisMonth = completedCvs.filter(
       (cv) => new Date(cv.createdAt) > thirtyDaysAgo
     );
-
     const total = cvs.length;
     const avgScore = Math.round(
       completedCvs.reduce((sum, cv) => sum + (cv.score || 0), 0) /
@@ -119,7 +118,6 @@ export function Dashboard({ onCreateCVAction }: DashboardProps) {
     );
     const completed = completedCvs.length;
     const drafted = total - completed;
-
     return {
       total,
       avgScore,
@@ -131,40 +129,31 @@ export function Dashboard({ onCreateCVAction }: DashboardProps) {
     };
   }, [cvs]);
 
-  // --- PERBAIKAN UTAMA DI SINI ---
   const filteredAndSortedCVs = useMemo(() => {
     let filtered = cvs.filter((cv) => {
       const matchesSearch = (cv.name || "")
         .toLowerCase()
         .includes(searchQuery.toLowerCase());
-
       const matchesStatus =
         filters.status === "Semua Status" ||
         (filters.status === "Selesai" && cv.status === "Completed") ||
         (filters.status === "Draf" && cv.status === "Draft");
-
       const matchesYear =
         filters.year === "Semua Tahun" ||
         (cv.year ? cv.year.toString() === filters.year : false);
-
       const matchesScore =
         cv.status === "Draft" ||
         ((cv.score || 0) >= filters.scoreRange[0] &&
           (cv.score || 0) <= filters.scoreRange[1]);
-
       return matchesSearch && matchesStatus && matchesYear && matchesScore;
     });
-
-    // Terapkan pengurutan
     filtered.sort((a, b) => {
       const dateA = new Date(a.updatedAt).getTime();
       const dateB = new Date(b.updatedAt).getTime();
       return filters.sortBy === "newest" ? dateB - dateA : dateA - dateB;
     });
-
     return filtered;
   }, [cvs, searchQuery, filters]);
-  // --- AKHIR PERBAIKAN ---
 
   const handleCVAction = (action: string, cv: CVData) => {
     switch (action) {
@@ -193,7 +182,7 @@ export function Dashboard({ onCreateCVAction }: DashboardProps) {
               },
             ],
             suggestions: ["Tambahkan kata kunci.", "Kuantifikasi pencapaian."],
-            isCv: false,
+            isCv: true, // isCv ditambahkan di sini juga
           };
           setSelectedCvForPreview(cv);
           setScoringResult(mockResult);
@@ -249,6 +238,38 @@ export function Dashboard({ onCreateCVAction }: DashboardProps) {
     }
   };
 
+  const handleViewAnalysis = (cv: CVData) => {
+    if (cv.analysis) {
+      setViewingAnalysis(cv);
+    } else {
+      toast.info("Tidak ada data analisis.", {
+        description: "Harap analisis CV ini terlebih dahulu di CV Builder.",
+      });
+    }
+  };
+
+  if (viewingAnalysis && viewingAnalysis.analysis) {
+    // **PERBAIKAN UTAMA DI SINI**
+    const analysisDataForDisplay: CVScoringData = {
+      fileName: viewingAnalysis.name,
+      isCv: true, // Properti 'isCv' yang wajib diisi ditambahkan di sini
+      overallScore: viewingAnalysis.analysis.overallScore,
+      atsCompatibility: viewingAnalysis.analysis.atsCompatibility,
+      keywordMatch: viewingAnalysis.analysis.keywordMatch,
+      readabilityScore: viewingAnalysis.analysis.readabilityScore,
+      sections: viewingAnalysis.analysis.sections,
+      suggestions: viewingAnalysis.analysis.suggestions,
+    };
+
+    return (
+      <CVScoringResult
+        data={analysisDataForDisplay}
+        onBack={() => setViewingAnalysis(null)}
+        showPreview={false}
+      />
+    );
+  }
+
   const handleDeleteConfirm = async () => {
     if (deleteModal.cv) {
       try {
@@ -274,7 +295,7 @@ export function Dashboard({ onCreateCVAction }: DashboardProps) {
       status: "Semua Status",
       year: "Semua Tahun",
       scoreRange: [1, 100],
-      sortBy: "newest", // Reset juga sortBy
+      sortBy: "newest",
     });
     setCurrentPage(1);
   };
@@ -291,6 +312,7 @@ export function Dashboard({ onCreateCVAction }: DashboardProps) {
       ? onCreateCVAction(lang)
       : router.push(`/cv-builder?lang=${lang}`);
   };
+
   const totalPages = Math.ceil(filteredAndSortedCVs.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedCVs = filteredAndSortedCVs.slice(
@@ -413,7 +435,7 @@ export function Dashboard({ onCreateCVAction }: DashboardProps) {
         </h2>
         <CVFilters
           filters={filters}
-          years={availableYears} // Kirim tahun dinamis ke CVFilters
+          years={availableYears}
           onFiltersChange={setFilters}
           onReset={resetFilters}
         />
@@ -489,6 +511,7 @@ export function Dashboard({ onCreateCVAction }: DashboardProps) {
                   onDelete={() => handleCVAction("delete", cv)}
                   onShare={() => handleCVAction("share", cv)}
                   onVisibilityChange={handleVisibilityChange}
+                  onViewAnalysis={() => handleViewAnalysis(cv)}
                 />
               ))}
             </div>
@@ -501,6 +524,7 @@ export function Dashboard({ onCreateCVAction }: DashboardProps) {
               onDelete={handleCVAction}
               onShare={handleCVAction}
               onVisibilityChange={handleVisibilityChange}
+              onViewAnalysis={handleViewAnalysis}
             />
           )}
           {totalPages > 1 && (
