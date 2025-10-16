@@ -1,5 +1,3 @@
-// src/app/cv-builder/page.tsx (UPDATED)
-
 "use client";
 
 import { useSearchParams, useRouter } from "next/navigation";
@@ -16,7 +14,10 @@ export default function Page() {
   const lang = (searchParams.get("lang") as Language) || "id";
   const cvId = searchParams.get("id");
 
-  const [initialData, setInitialData] = useState<CVBuilderData | null>(null);
+  // **PERBAIKAN 1: Pisahkan state untuk form data dan metadata**
+  const [initialBuilderData, setInitialBuilderData] =
+    useState<CVBuilderData | null>(null);
+  const [cvStatus, setCvStatus] = useState<string | undefined>();
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -32,7 +33,26 @@ export default function Page() {
             );
           }
           const data = await response.json();
-          setInitialData(data);
+
+          // **PERBAIKAN 2: "Sanitize" data ke dalam state yang sesuai**
+          // State ini hanya berisi data yang dibutuhkan oleh form (tipe CVBuilderData)
+          setInitialBuilderData({
+            jobTitle: data.jobTitle || "",
+            description: data.description || "",
+            firstName: data.firstName || "",
+            lastName: data.lastName || "",
+            email: data.email || "",
+            phone: data.phone || "",
+            location: data.location || "",
+            linkedin: data.linkedin || "",
+            website: data.website || "",
+            workExperiences: data.workExperiences || [],
+            educations: data.educations || [],
+            skills: data.skills || [],
+            summary: data.summary || "",
+          });
+          // State ini menyimpan status secara terpisah
+          setCvStatus(data.status);
         } catch (error: any) {
           toast.error(error.message);
           router.replace("/dashboard");
@@ -58,14 +78,13 @@ export default function Page() {
       const url = cvId ? `/api/cv/${cvId}` : "/api/cv";
       const method = cvId ? "PUT" : "POST";
 
-      // --- PERBAIKAN DI SINI ---
       const dataToSave = {
         ...data,
         type: "builder",
-        status: status,
+        // **PERBAIKAN 3: Gunakan state status yang sudah dipisah**
+        status: cvStatus === "Completed" ? "Completed" : status,
         lang: lang,
       };
-      // --- AKHIR PERBAIKAN ---
 
       const response = await fetch(url, {
         method: method,
@@ -80,7 +99,7 @@ export default function Page() {
       }
 
       toast.success(
-        status === "Completed"
+        status === "Completed" || cvStatus === "Completed"
           ? cvId
             ? "CV berhasil diperbarui!"
             : "CV Anda berhasil disimpan!"
@@ -112,8 +131,10 @@ export default function Page() {
 
   return (
     <CVBuilderPage
-      initialData={initialData}
+      // **PERBAIKAN 4: Kirim state yang sudah benar tipenya**
+      initialData={initialBuilderData}
       cvId={cvId}
+      initialCvStatus={cvStatus}
       onBack={handleBack}
       onSave={handleSave}
       onSaveDraft={handleSaveDraft}

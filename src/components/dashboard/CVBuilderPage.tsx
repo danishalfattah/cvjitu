@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
 import { Progress } from "../ui/progress";
-import { ArrowLeft, ArrowRight, Download, Save, RefreshCw } from "lucide-react";
+import { ArrowLeft, ArrowRight, Save, RefreshCw } from "lucide-react";
 import { GeneralInfoStep } from "../cvbuilder/steps/GeneralInfoStep";
 import { PersonalInfoStep } from "../cvbuilder/steps/PersonalInfoStep";
 import { WorkExperienceStep } from "../cvbuilder/steps/WorkExperienceStep";
@@ -22,6 +22,7 @@ import { downloadCV } from "@/lib/utils";
 interface CVBuilderPageProps {
   initialData?: CVBuilderData | null;
   cvId?: string | null;
+  initialCvStatus?: string; // Prop untuk status
   onBack: () => void;
   onSave: (data: CVBuilderData) => void;
   onSaveDraft: (data: CVBuilderData) => void;
@@ -41,14 +42,13 @@ const steps = [
 export function CVBuilderPage({
   initialData,
   cvId,
+  initialCvStatus,
   onBack,
   onSave,
   onSaveDraft,
   lang,
 }: CVBuilderPageProps) {
-  const [isExporting, setIsExporting] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
-  // Inisialisasi state dengan struktur data kosong
   const [cvData, setCvData] = useState<CVBuilderData>({
     jobTitle: "",
     description: "",
@@ -72,6 +72,7 @@ export function CVBuilderPage({
   }, [initialData]);
 
   const isEditMode = !!cvId;
+  const isEditingCompletedCV = isEditMode && initialCvStatus === "Completed";
 
   const updateCvData = (updates: Partial<CVBuilderData>) => {
     setCvData((prev) => ({ ...prev, ...updates }));
@@ -160,33 +161,18 @@ export function CVBuilderPage({
     }
   };
 
-  const handleSave = () => {
-    onSave(cvData);
-  };
+  const handleSave = () => onSave(cvData);
 
-  const handleSaveDraft = () => {
-    onSaveDraft(cvData);
-  };
-
-  const handleExportPDF = async () => {
-    if (!cvId) {
-      alert("Harap simpan CV Anda terlebih dahulu sebelum mengekspor ke PDF.");
-      return;
-    }
-
-    setIsExporting(true);
-    try {
-      const fullName = `${cvData.firstName} ${cvData.lastName}`.trim();
-      const fileName = `${fullName}-${cvData.jobTitle}_CV`.replace(/\s+/g, "-");
-      await downloadCV(cvId, fileName);
-    } catch (error) {
-      console.error("Gagal mengekspor PDF:", error);
-    } finally {
-      setIsExporting(false);
+  const handleSaveDraftOrUpdate = () => {
+    if (isEditingCompletedCV) {
+      onSave(cvData);
+    } else {
+      onSaveDraft(cvData);
     }
   };
 
   const renderCurrentStep = () => {
+    // ... (render step logic tidak berubah)
     switch (steps[currentStep].id) {
       case "general":
         return (
@@ -233,7 +219,7 @@ export function CVBuilderPage({
 
   return (
     <div className="min-h-screen bg-[var(--surface)]">
-      {/* **PERBAIKAN TOP BAR DIMULAI DI SINI** */}
+      {/* ... (Top Bar & Progress Bar tidak berubah) ... */}
       <div className="bg-white border-b border-[var(--border-color)] px-6 py-4">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:justify-start">
           <Button
@@ -254,8 +240,6 @@ export function CVBuilderPage({
           </div>
         </div>
       </div>
-      {/* **PERBAIKAN TOP BAR SELESAI** */}
-
       <div className="bg-white border-b border-[var(--border-color)] px-6 py-4">
         <div className="max-w-7xl mx-auto">
           <div className="overflow-x-auto horizontal-scroll-hidden">
@@ -302,7 +286,6 @@ export function CVBuilderPage({
           <Progress value={progressPercentage} className="h-2" />
         </div>
       </div>
-
       <div className="max-w-7xl mx-auto p-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div className="space-y-6">
@@ -320,7 +303,6 @@ export function CVBuilderPage({
               </CardContent>
             </Card>
 
-            {/* **PERBAIKAN TOMBOL AKSI DIMULAI DI SINI** */}
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center space-x-4">
                 <div className="text-sm text-gray-500">
@@ -329,7 +311,7 @@ export function CVBuilderPage({
                 </div>
                 <Button
                   variant="outline"
-                  onClick={handleSaveDraft}
+                  onClick={handleSaveDraftOrUpdate}
                   className="border-gray-300 text-gray-600 hover:bg-gray-50"
                 >
                   {isEditMode ? (
@@ -337,9 +319,14 @@ export function CVBuilderPage({
                   ) : (
                     <Save className="w-4 h-4 mr-2" />
                   )}
-                  {isEditMode ? "Perbarui Draf" : t("saveDraftButton", lang)}
+                  {isEditingCompletedCV
+                    ? t("updateCvButton", lang)
+                    : isEditMode
+                    ? t("saveDraftButton", lang)
+                    : t("saveDraftButton", lang)}
                 </Button>
               </div>
+
               <div className="flex w-full gap-3 sm:w-auto">
                 <Button
                   variant="outline"
@@ -351,11 +338,14 @@ export function CVBuilderPage({
                   {t("previousButton", lang)}
                 </Button>
                 {currentStep === steps.length - 1 ? (
+                  // **PERBAIKAN LOGIKA TOMBOL FINAL DI SINI**
                   <Button
                     onClick={handleSave}
                     className="bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white flex-1 sm:flex-none sm:w-auto"
                   >
-                    {isEditMode ? "Perbarui CV" : t("saveCvButton", lang)}
+                    {isEditMode && initialCvStatus !== "Draft"
+                      ? t("updateCvButton", lang)
+                      : t("saveCvButton", lang)}
                   </Button>
                 ) : (
                   <Button
@@ -368,7 +358,6 @@ export function CVBuilderPage({
                 )}
               </div>
             </div>
-            {/* **PERBAIKAN TOMBOL AKSI SELESAI** */}
           </div>
           <div className="lg:sticky lg:top-6 h-fit">
             <CVPreview data={cvData} lang={lang} />

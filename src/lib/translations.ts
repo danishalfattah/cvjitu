@@ -15,6 +15,14 @@ const translations: { [key: string]: TranslationEntry } = {
   nextButton: { id: 'Selanjutnya', en: 'Next' },
   saveCvButton: { id: 'Simpan CV', en: 'Save CV' },
   saveDraftButton: { id: 'Simpan Draf', en: 'Save Draft' },
+  updateDraftButton: {
+    id: "Perbarui Draf",
+    en: "Update Draft",
+  },
+  updateCvButton: {
+    id: "Perbarui CV",
+    en: "Update CV",
+  },
   
   // GeneralInfoStep.tsx
   generalTitle: { id: 'Info Umum', en: 'General Info' },
