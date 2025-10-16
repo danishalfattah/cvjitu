@@ -2,15 +2,16 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { NavBar, type User as NavBarUser } from "@/src/components/NavBar";
-import { HeroSection } from "@/src/components/landing-page/HeroSection";
-import { FeaturesSection } from "@/src/components/landing-page/FeaturesSection";
-import { HowItWorksSection } from "@/src/components/landing-page/HowItWorksSection";
-import { WhyUsSection } from "@/src/components/landing-page/WhyUsSection";
-import { PricingSection } from "@/src/components/landing-page/PricingSection";
-import { FAQSection } from "@/src/components/landing-page/FAQSection";
-import { Footer } from "@/src/components/Footer";
-import { useAuth } from "@/src/context/AuthContext";
+import { NavBar, type User as NavBarUser } from "@/components/NavBar";
+import { HeroSection } from "@/components/landing-page/HeroSection";
+import { FeaturesSection } from "@/components/landing-page/FeaturesSection";
+import { HowItWorksSection } from "@/components/landing-page/HowItWorksSection";
+import { WhyUsSection } from "@/components/landing-page/WhyUsSection";
+import { PricingSection } from "@/components/landing-page/PricingSection";
+import { FAQSection } from "@/components/landing-page/FAQSection";
+import { Footer } from "@/components/Footer";
+import { useAuth } from "@/context/AuthContext";
+import { Button } from "@/components/ui/button";
 
 // Definisikan tipe data untuk hasil scoring di sini
 export interface CVScoringData {
@@ -59,7 +60,7 @@ export default function Page() {
         ...results,
       });
     } catch (error: any) {
-      console.error("[v0] Error analyzing CV:", error);
+      console.error("Error analyzing CV:", error);
       toast.error(
         error.message ||
           "Terjadi kesalahan saat menganalisis CV. Silakan coba lagi."
@@ -117,6 +118,7 @@ export default function Page() {
           onAuthAction={handleAuthAction}
           simplifiedView={true}
         />
+
         <FeaturesSection />
         <HowItWorksSection />
         <WhyUsSection />

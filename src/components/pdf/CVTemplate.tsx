@@ -12,7 +12,7 @@ import {
   CVBuilderData,
   WorkExperience,
   Education,
-} from "@/src/components/cvbuilder/types";
+} from "@/components/cvbuilder/types";
 
 const formatDate = (dateString: string) => {
   if (!dateString) return "";

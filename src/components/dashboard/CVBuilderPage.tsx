@@ -16,8 +16,8 @@ import type {
   WorkExperience,
   Education,
 } from "../cvbuilder/types";
-import { t, type Language } from "@/src/lib/translations";
-import { downloadCV } from "@/src/lib/utils";
+import { t, type Language } from "@/lib/translations";
+import { downloadCV } from "@/lib/utils";
 
 interface CVBuilderPageProps {
   initialData?: CVBuilderData | null; // Buat opsional

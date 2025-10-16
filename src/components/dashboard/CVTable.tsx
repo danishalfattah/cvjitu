@@ -33,7 +33,7 @@ import {
   DropdownMenuRadioItem,
 } from "../ui/dropdown-menu";
 import { CVData } from "./CVCard";
-import { downloadCV } from "@/src/lib/utils";
+import { downloadCV } from "@/lib/utils";
 
 interface CVTableProps {
   cvs: CVData[];

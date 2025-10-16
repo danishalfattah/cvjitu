@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { TermsOfServicePage } from "@/src/components/TermsOfServicePage";
+import { TermsOfServicePage } from "@/components/TermsOfServicePage";
 import { useEffect } from "react";
 
 export default function TermsPage() {

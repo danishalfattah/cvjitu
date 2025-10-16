@@ -5,7 +5,7 @@ import { Badge } from "../ui/badge";
 import { Progress } from "../ui/progress";
 import { Label } from "../ui/label";
 import Image from "next/image";
-import { User } from "@/src/context/AuthContext";
+import { User } from "@/context/AuthContext";
 
 interface DashboardSidebarProps {
   activeTab: string;

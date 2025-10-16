@@ -27,7 +27,7 @@ import {
 } from "../ui/dropdown-menu";
 import { type CVScoringData } from "../../app/page";
 import { Education, WorkExperience } from "../cvbuilder/types";
-import { downloadCV } from "@/src/lib/utils";
+import { downloadCV } from "@/lib/utils";
 
 export interface CVData extends Partial<Omit<CVScoringData, "fileName">> {
   id: string;

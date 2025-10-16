@@ -2,8 +2,8 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/src/context/AuthContext";
-import { DashboardLayout } from "@/src/components/dashboard/DashboardLayout";
+import { useAuth } from "@/context/AuthContext";
+import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { toast } from "sonner";
 
 export default function DashboardPage() {

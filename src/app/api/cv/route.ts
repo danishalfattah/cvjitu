@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { cookies } from 'next/headers';
-import { adminAuth, adminDb } from '@/src/lib/firebase-admin';
+import { adminAuth, adminDb } from '@/lib/firebase-admin';
 
 async function getUserId() {
   const sessionCookie = (await cookies()).get('session')?.value;

@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { CVBuilderData } from "../types";
 import { toast } from "sonner";
-import { cn } from "@/src/lib/utils";
+import { cn } from "@/lib/utils";
 
 // Definisikan tipe untuk hasil analisis
 interface CVGrade {

@@ -8,7 +8,7 @@ import { Button } from "../ui/button";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import { User } from "@/src/context/AuthContext";
+import { User } from "@/context/AuthContext";
 
 interface DashboardLayoutProps {
   onLogout?: () => void;

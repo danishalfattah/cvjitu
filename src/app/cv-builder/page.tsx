@@ -4,9 +4,9 @@
 
 import { useSearchParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { CVBuilderPage } from "@/src/components/dashboard/CVBuilderPage";
-import { type CVBuilderData } from "@/src/components/cvbuilder/types";
-import { type Language } from "@/src/lib/translations";
+import { CVBuilderPage } from "@/components/dashboard/CVBuilderPage";
+import { type CVBuilderData } from "@/components/cvbuilder/types";
+import { type Language } from "@/lib/translations";
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 

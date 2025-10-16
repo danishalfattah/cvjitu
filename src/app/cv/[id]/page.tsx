@@ -2,7 +2,7 @@
 "use client";
 
 import { Suspense } from "react";
-import { CVPreviewPage } from "@/src/components/CVPreviewPage";
+import { CVPreviewPage } from "@/components/CVPreviewPage";
 
 function CVPreview() {
   return <CVPreviewPage />;

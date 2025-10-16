@@ -1,8 +1,8 @@
 "use client";
 
-import { ThemeProvider } from "@/src/components/theme-provider";
-import { AuthProvider } from "@/src/context/AuthContext";
-import { Toaster } from "@/src/components/ui/sonner";
+import { ThemeProvider } from "@/components/theme-provider";
+import { AuthProvider } from "@/context/AuthContext";
+import { Toaster } from "@/components/ui/sonner";
 import type { ReactNode } from "react";
 
 export function Providers({ children }: { children: ReactNode }) {
@@ -15,7 +15,7 @@ export function Providers({ children }: { children: ReactNode }) {
     >
       <AuthProvider>
         {children}
-        <Toaster position="top-center" richColors closeButton />
+        <Toaster position="bottom-right" richColors />
       </AuthProvider>
     </ThemeProvider>
   );

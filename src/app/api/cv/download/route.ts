@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import React from 'react';
 import { renderToStream } from '@react-pdf/renderer';
-import { CVBuilderData } from '@/src/components/cvbuilder/types';
-import { adminDb } from '@/src/lib/firebase-admin'; 
-import { CVTemplate } from '@/src/components/pdf/CVTemplate';
+import { CVBuilderData } from '@/components/cvbuilder/types';
+import { adminDb } from '@/lib/firebase-admin'; 
+import { CVTemplate } from '@/components/pdf/CVTemplate';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);

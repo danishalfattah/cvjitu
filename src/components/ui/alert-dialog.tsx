@@ -5,8 +5,8 @@ import { X } from "lucide-react";
 
 import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog";
 
-import { cn } from "@/src/lib/utils";
-import { buttonVariants } from "@/src/components/ui/button";
+import { cn } from "@/lib/utils";
+import { buttonVariants } from "@/components/ui/button";
 
 function AlertDialog({
   ...props

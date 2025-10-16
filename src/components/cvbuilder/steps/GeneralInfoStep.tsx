@@ -2,7 +2,7 @@ import { Input } from "../../ui/input";
 import { Label } from "../../ui/label";
 import { Textarea } from "../../ui/textarea";
 import { CVBuilderData } from "../types";
-import { t, type Language } from "@/src/lib/translations";
+import { t, type Language } from "@/lib/translations";
 
 interface GeneralInfoStepProps {
   data: CVBuilderData;
