@@ -17,13 +17,15 @@ import {
 import { type CVScoringData } from "../../app/page";
 import { cn } from "@/lib/utils";
 
+import { Language, t } from "@/lib/translations"; // Import Language dan t
+
 interface CVScoringResultProps {
   data: CVScoringData;
-  // **PERBAIKAN 1: Jadikan cvBuilderData opsional**
   cvBuilderData?: CVBuilderData | null;
   onBack: () => void;
   onSaveToRepository?: (() => void) | null;
   showPreview?: boolean;
+  lang: Language; // Tambahkan prop lang
 }
 export function CVScoringResult({
   data,
@@ -31,6 +33,7 @@ export function CVScoringResult({
   onBack,
   onSaveToRepository,
   showPreview = true,
+  lang,
 }: CVScoringResultProps) {
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -65,13 +68,13 @@ export function CVScoringResult({
   const getStatusText = (status: string) => {
     switch (status) {
       case "excellent":
-        return "Sangat Baik";
+        return t("gradeStatusExcellent", lang);
       case "good":
-        return "Baik";
-      case "average": // Tambahkan terjemahan untuk 'average'
-        return "Cukup";
+        return t("gradeStatusGood", lang);
+      case "average":
+        return t("gradeStatusAverage", lang);
       case "needs_improvement":
-        return "Perlu Perbaikan";
+        return t("gradeStatusNeedsImprovement", lang);
       default:
         return status; // Fallback jika ada status lain
     }
@@ -120,15 +123,15 @@ export function CVScoringResult({
         >
           {showPreview && cvBuilderData && (
             <div className="lg:sticky lg:top-8 h-fit">
-              <CVPreview data={cvBuilderData} lang="id" />
+              <CVPreview data={cvBuilderData} lang="en" />
             </div>
           )}
 
           <div className="space-y-6">
-            <Card className="border border-[var(--border-color)]">
+            <Card className="border border-[var(--border-color)] ">
               <CardHeader className="">
                 <CardTitle className="text-xl font-poppins text-[var(--neutral-ink)]">
-                  Skor Keseluruhan
+                  {t("gradeOverallScore", lang)}
                 </CardTitle>
               </CardHeader>
               <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-8 items-center">
@@ -137,13 +140,14 @@ export function CVScoringResult({
                     score={data.overallScore}
                     size="lg"
                     showLabel={true}
+                    lang={lang}
                   />
                 </div>
                 <div className="space-y-4">
                   <div>
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-sm font-medium text-gray-700">
-                        Kompatibilitas ATS
+                        {t("gradeAtsCompatibility", lang)}
                       </span>
                       <span className="text-sm font-bold text-[var(--neutral-ink)]">
                         {data.atsCompatibility}%
@@ -154,7 +158,7 @@ export function CVScoringResult({
                   <div>
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-sm font-medium text-gray-700">
-                        Pencocokan Kata Kunci
+                        {t("gradeKeywordMatch", lang)}
                       </span>
                       <span className="text-sm font-bold text-[var(--neutral-ink)]">
                         {data.keywordMatch}%
@@ -165,7 +169,7 @@ export function CVScoringResult({
                   <div>
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-sm font-medium text-gray-700">
-                        Keterbacaan
+                        {t("gradeReadability", lang)}
                       </span>
                       <span className="text-sm font-bold text-[var(--neutral-ink)]">
                         {data.readabilityScore}%
@@ -179,7 +183,7 @@ export function CVScoringResult({
             <Card className="border border-[var(--border-color)]">
               <CardHeader>
                 <CardTitle className="text-xl font-poppins text-[var(--neutral-ink)]">
-                  Analisis per Bagian
+                  {t("gradeSectionAnalysis", lang)}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -219,7 +223,7 @@ export function CVScoringResult({
             <Card className="border border-[var(--border-color)]">
               <CardHeader>
                 <CardTitle className="text-xl font-poppins text-[var(--neutral-ink)]">
-                  Saran Perbaikan
+                  {t("gradeSuggestions", lang)}
                 </CardTitle>
               </CardHeader>
               <CardContent>

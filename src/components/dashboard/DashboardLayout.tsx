@@ -9,17 +9,22 @@ import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { User } from "@/context/AuthContext";
+import { Language } from "@/lib/translations"; // Import Language
 
 interface DashboardLayoutProps {
   onLogout?: () => void;
   user?: User | null;
   onCreateCV?: (lang: "id" | "en") => void;
+  lang: Language;
+  onLangChange: (lang: Language) => void;
 }
 
 export function DashboardLayout({
   onLogout,
   user,
   onCreateCV,
+  lang,
+  onLangChange,
 }: DashboardLayoutProps) {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -56,11 +61,11 @@ export function DashboardLayout({
   const renderContent = () => {
     switch (activeTab) {
       case "dashboard":
-        return <Dashboard onCreateCVAction={onCreateCV} />;
+        return <Dashboard onCreateCVAction={onCreateCV} lang={lang} />;
       case "scoring":
-        return <CVScoringPage />;
+        return <CVScoringPage lang={lang} />;
       default:
-        return <Dashboard onCreateCVAction={onCreateCV} />;
+        return <Dashboard onCreateCVAction={onCreateCV} lang={lang} />;
     }
   };
 

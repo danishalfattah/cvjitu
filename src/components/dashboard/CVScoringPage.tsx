@@ -14,8 +14,13 @@ import { DeleteConfirmModal } from "../DeleteConfirmModal";
 import { Search, Grid, List, Loader2 } from "lucide-react";
 import { CVData } from "./CVCard";
 import { type CVScoringData } from "../../app/page";
+import { Language, t } from "@/lib/translations";
 
-export function CVScoringPage() {
+interface CVScoringPageProps {
+  lang: Language; // Tambahkan prop lang
+}
+
+export function CVScoringPage({ lang }: CVScoringPageProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
   const [cvs, setCvs] = useState<CVData[]>([]);
@@ -207,6 +212,7 @@ export function CVScoringPage() {
           newlyScoredCv && !newlyScoredCv.id ? handleSaveToRepository : null
         }
         showPreview={false}
+        lang={lang}
       />
     );
   }

@@ -40,10 +40,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${poppins.variable} ${inter.variable}  scroll-smooth `}
-    >
+    <html className={`${poppins.variable} ${inter.variable}  scroll-smooth `}>
       <body>
         <Suspense>
           <Providers>{children}</Providers>

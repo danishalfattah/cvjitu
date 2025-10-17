@@ -15,6 +15,7 @@ import {
 import { CVBuilderData, CVGrade } from "../types";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { Language, t } from "@/lib/translations"; // Import t dan Language
 
 // 1. Perbarui interface props untuk menerima onAnalysisChange
 interface GradeStepProps {
@@ -22,6 +23,7 @@ interface GradeStepProps {
   onAnalysisChange: (isAnalyzing: boolean) => void;
   initialGrade?: CVGrade | null; // Prop baru untuk data analisis awal
   onAnalysisComplete: (grade: CVGrade | null) => void; // Prop baru untuk mengirim hasil
+  lang: Language;
 }
 
 export function GradeStep({
@@ -29,6 +31,7 @@ export function GradeStep({
   onAnalysisChange,
   initialGrade,
   onAnalysisComplete,
+  lang,
 }: GradeStepProps) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [grade, setGrade] = useState<CVGrade | null>(null);
@@ -48,21 +51,21 @@ export function GradeStep({
       const response = await fetch("/api/score-builder", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ ...data, lang }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "Analisis AI gagal.");
+        throw new Error(errorData.error || t("toastAnalysisFailed", lang));
       }
 
       const result: CVGrade = await response.json();
       setGrade(result);
       onAnalysisComplete(result); // **PERBAIKAN 2: Kirim hasil ke parent**
-      toast.success("Analisis CV berhasil!");
+      toast.success(t("toastAnalysisSuccess", lang));
     } catch (error: any) {
       console.error("Analysis Error:", error);
-      toast.error(error.message || "Terjadi kesalahan saat menganalisis CV.");
+      toast.error(error.message || t("toastAnalysisError", lang));
       onAnalysisComplete(null); // Kirim null jika gagal
     } finally {
       setIsAnalyzing(false);
@@ -104,13 +107,13 @@ export function GradeStep({
   const getStatusText = (status: string) => {
     switch (status) {
       case "excellent":
-        return "Sangat Baik";
+        return t("gradeStatusExcellent", lang);
       case "good":
-        return "Baik";
+        return t("gradeStatusGood", lang);
       case "average":
-        return "Cukup";
+        return t("gradeStatusAverage", lang);
       case "needs_improvement":
-        return "Perlu Perbaikan";
+        return t("gradeStatusNeedsImprovement", lang);
       default:
         return status;
     }
@@ -124,11 +127,10 @@ export function GradeStep({
             <Bot className="w-10 h-10 text-[var(--red-normal)]" />
           </div>
           <h3 className="text-xl font-semibold text-[var(--neutral-ink)] mb-2">
-            Analisis CV AI
+            {t("gradeAiAnalysisTitle", lang)}
           </h3>
           <p className="text-gray-600 mb-6 max-w-md mx-auto">
-            Dapatkan feedback instan untuk CV Anda dengan analisis bertenaga AI.
-            Terima rekomendasi personal untuk meningkatkan efektivitas CV Anda.
+            {t("gradeAiAnalysisDesc", lang)}
           </p>
           <Button
             onClick={analyzeCV}
@@ -136,7 +138,7 @@ export function GradeStep({
             size="lg"
           >
             <Bot className="w-5 h-5 mr-2" />
-            Analisis CV Saya
+            {t("gradeAnalyzeButton", lang)}
           </Button>
         </div>
       </div>
@@ -151,12 +153,9 @@ export function GradeStep({
             <RefreshCw className="w-10 h-10 text-[var(--red-normal)] animate-spin" />
           </div>
           <h3 className="text-xl font-semibold text-[var(--neutral-ink)] mb-2">
-            Menganalisis CV Anda...
+            {t("gradeAnalyzingTitle", lang)}
           </h3>
-          <p className="text-gray-600 mb-6">
-            AI kami sedang meninjau konten dan struktur CV Anda. Mohon tunggu
-            sebentar.
-          </p>
+          <p className="text-gray-600 mb-6">{t("gradeAnalyzingDesc", lang)}</p>
           <Progress value={66} className="w-64 mx-auto" />
         </div>
       </div>
@@ -168,7 +167,7 @@ export function GradeStep({
       <Card className="border border-[var(--border-color)]">
         <CardHeader>
           <CardTitle className="text-xl font-poppins text-[var(--neutral-ink)]">
-            Skor Keseluruhan
+            {t("gradeOverallScore", lang)}
           </CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
@@ -177,13 +176,14 @@ export function GradeStep({
               score={grade.overallScore}
               size="lg"
               showLabel={true}
+              lang={lang}
             />
           </div>
           <div className="space-y-4">
             <div>
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm font-medium text-gray-700">
-                  Kompatibilitas ATS
+                  {t("gradeAtsCompatibility", lang)}
                 </span>
                 <span className="text-sm font-bold text-[var(--neutral-ink)]">
                   {grade.atsCompatibility}%
@@ -194,7 +194,7 @@ export function GradeStep({
             <div>
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm font-medium text-gray-700">
-                  Pencocokan Kata Kunci
+                  {t("gradeKeywordMatch", lang)}
                 </span>
                 <span className="text-sm font-bold text-[var(--neutral-ink)]">
                   {grade.keywordMatch}%
@@ -205,7 +205,7 @@ export function GradeStep({
             <div>
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm font-medium text-gray-700">
-                  Keterbacaan
+                  {t("gradeReadability", lang)}
                 </span>
                 <span className="text-sm font-bold text-[var(--neutral-ink)]">
                   {grade.readabilityScore}%
@@ -220,7 +220,7 @@ export function GradeStep({
       <Card className="border border-[var(--border-color)]">
         <CardHeader>
           <CardTitle className="text-xl font-poppins text-[var(--neutral-ink)]">
-            Analisis per Bagian
+            {t("gradeSectionAnalysis", lang)}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -264,7 +264,7 @@ export function GradeStep({
       <Card className="border border-[var(--border-color)]">
         <CardHeader>
           <CardTitle className="text-xl font-poppins text-[var(--neutral-ink)]">
-            Saran Perbaikan
+            {t("gradeSuggestions", lang)}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -291,7 +291,7 @@ export function GradeStep({
           className="border-[var(--red-normal)] text-[var(--red-normal)] hover:bg-[var(--red-light)]"
         >
           <RefreshCw className="w-4 h-4 mr-2" />
-          Analisis Ulang CV
+          {t("gradeReanalyzeButton", lang)}
         </Button>
       </div>
     </div>

@@ -171,6 +171,38 @@ export const translations: { [key: string]: TranslationEntry } = {
   degreePlaceholder: { id: 'Contoh: S1 Teknik Informatika', en: 'e.g., Bachelor of Computer Science' },
   institutionPlaceholder: { id: 'Contoh: Universitas Gadjah Mada', en: 'e.g., Stanford University' },
   gradeGpaPlaceholder: { id: 'Contoh: 3.82 atau Rata-rata: 88', en: 'e.g., 3.82 or Average: 88' },
+
+  // GradeStep.tsx - Teks Dinamis
+  gradeAiAnalysisTitle: { id: 'Analisis CV AI', en: 'AI CV Analysis' },
+  gradeAiAnalysisDesc: { id: 'Dapatkan feedback instan untuk CV Anda dengan analisis bertenaga AI. Terima rekomendasi personal untuk meningkatkan efektivitas CV Anda.', en: 'Get instant feedback on your CV with AI-powered analysis. Receive personalized recommendations to improve your CV\'s effectiveness.' },
+  gradeAnalyzeButton: { id: 'Analisis CV Saya', en: 'Analyze My CV' },
+  gradeAnalyzingTitle: { id: 'Menganalisis CV Anda...', en: 'Analyzing Your CV...' },
+  gradeAnalyzingDesc: { id: 'AI kami sedang meninjau konten dan struktur CV Anda. Mohon tunggu sebentar.', en: 'Our AI is reviewing your CV\'s content and structure. Please wait a moment.' },
+  gradeOverallScore: { id: 'Skor Keseluruhan', en: 'Overall Score' },
+  gradeAtsCompatibility: { id: 'Kompatibilitas ATS', en: 'ATS Compatibility' },
+  gradeKeywordMatch: { id: 'Pencocokan Kata Kunci', en: 'Keyword Match' },
+  gradeReadability: { id: 'Keterbacaan', en: 'Readability' },
+  gradeSectionAnalysis: { id: 'Analisis per Bagian', en: 'Section Analysis' },
+  gradeSuggestions: { id: 'Saran Perbaikan', en: 'Improvement Suggestions' },
+  gradeReanalyzeButton: { id: 'Analisis Ulang CV', en: 'Re-analyze CV' },
+  gradeStatusExcellent: { id: 'Sangat Baik', en: 'Excellent' },
+  gradeStatusGood: { id: 'Baik', en: 'Good' },
+  gradeStatusAverage: { id: 'Cukup', en: 'Average' },
+  gradeStatusNeedsImprovement: { id: 'Perlu Perbaikan', en: 'Needs Improvement' },
+  
+  // GradeStep.tsx - Pesan Toast
+  toastAnalysisSuccess: { id: 'Analisis CV berhasil!', en: 'CV analysis successful!' },
+  toastAnalysisError: { id: 'Terjadi kesalahan saat menganalisis CV.', en: 'An error occurred while analyzing the CV.' },
+  toastAnalysisFailed: { id: 'Analisis AI gagal.', en: 'AI analysis failed.' },
+
+  scoreLabelExcellent: { id: 'Sangat Baik', en: 'Excellent' },
+  scoreLabelGood: { id: 'Baik', en: 'Good' },
+  scoreLabelAverage: { id: 'Cukup', en: 'Average' },
+  scoreLabelPoor: { id: 'Kurang', en: 'Poor' },
+
+   analysisResultTitle: { id: 'Hasil Analisis CV', en: 'CV Analysis Result' },
+  saveToRepoButton: { id: 'Simpan ke Repositori', en: 'Save to Repository' },
+
 };
 
 export const t = (

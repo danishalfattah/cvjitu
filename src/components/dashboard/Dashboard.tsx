@@ -45,12 +45,14 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { downloadCV } from "@/lib/utils";
+import { Language } from "@/lib/translations";
 
 interface DashboardProps {
   onCreateCVAction?: (lang: "id" | "en") => void;
+  lang: Language;
 }
 
-export function Dashboard({ onCreateCVAction }: DashboardProps) {
+export function Dashboard({ onCreateCVAction, lang }: DashboardProps) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
@@ -191,8 +193,6 @@ export function Dashboard({ onCreateCVAction }: DashboardProps) {
           console.error("Gagal mengunduh CV:", error);
         }
         break;
-        toast.info("Fitur download akan segera hadir!");
-        break;
       case "update":
         router.push(`/cv-builder?id=${cv.id}&lang=${cv.lang || "id"}`);
         break;
@@ -321,6 +321,11 @@ export function Dashboard({ onCreateCVAction }: DashboardProps) {
         onBack={handleBackToDashboard}
         onSaveToRepository={null}
         showPreview={true}
+        lang={
+          selectedCvForPreview.lang && selectedCvForPreview.lang !== "unknown"
+            ? selectedCvForPreview.lang
+            : "id"
+        }
       />
     );
   }
