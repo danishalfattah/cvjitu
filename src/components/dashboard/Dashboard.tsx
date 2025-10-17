@@ -81,7 +81,6 @@ export function Dashboard({ onCreateCVAction, lang }: DashboardProps) {
 
   useEffect(() => {
     const fetchCVs = async () => {
-      setIsLoading(true);
       try {
         const response = await fetch("/api/cv?type=builder");
         if (!response.ok) throw new Error("Gagal mengambil data CV");
@@ -89,8 +88,6 @@ export function Dashboard({ onCreateCVAction, lang }: DashboardProps) {
         setCvs(data);
       } catch (error) {
         toast.error("Gagal memuat data CV Anda.");
-      } finally {
-        setIsLoading(false);
       }
     };
     fetchCVs();
@@ -292,13 +289,13 @@ export function Dashboard({ onCreateCVAction, lang }: DashboardProps) {
     startIndex + itemsPerPage
   );
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <Loader2 className="w-8 h-8 animate-spin text-[var(--red-normal)]" />
-      </div>
-    );
-  }
+  // if (isLoading) {
+  //   return (
+  //     <div className="flex items-center justify-center h-screen">
+  //       <Loader2 className="w-8 h-8 animate-spin text-[var(--red-normal)]" />
+  //     </div>
+  //   );
+  // }
 
   if (scoringResult && selectedCvForPreview) {
     const cvBuilderDataFromCv: CVBuilderData = {
