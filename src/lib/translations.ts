@@ -144,7 +144,7 @@ export const translations: { [key: string]: TranslationEntry } = {
   previewExperience: { id: "Pengalaman", en: "Experience" },
   previewEducation: { id: "Pendidikan", en: "Education" },
   previewSkills: { id: "Keahlian", en: "Skills" },
-  previewNow: { id: "Sekarang", en: "Now" },
+  previewNow: { id: "Sekarang", en: "Present" },
   previewGpa: { id: "Nilai", en: "Grade" },
   previewTitlePlaceholder: { id: "Pratinjau CV", en: "CV Preview" },
   previewSubtitlePlaceholder: { id: "Isi formulir untuk melihat pratinjau CV Anda", en: "Fill out the form to see your CV preview" },
@@ -202,6 +202,13 @@ export const translations: { [key: string]: TranslationEntry } = {
 
    analysisResultTitle: { id: 'Hasil Analisis CV', en: 'CV Analysis Result' },
   saveToRepoButton: { id: 'Simpan ke Repositori', en: 'Save to Repository' },
+
+  summary: { id: "Ringkasan", en: "Summary" },
+  experience: { id: "Pengalaman Kerja", en: "Work Experience" },
+  education: { id: "Pendidikan", en: "Education" },
+  skills: { id: "Keahlian", en: "Skills" },
+  now: { id: "Sekarang", en: "Present" },
+  gpa: { id: "IPK", en: "GPA" },
 
 };
 

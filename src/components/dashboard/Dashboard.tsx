@@ -46,10 +46,53 @@ import {
 import { toast } from "sonner";
 import { downloadCV } from "@/lib/utils";
 import { Language } from "@/lib/translations";
+import { Card, CardContent } from "../ui/card";
+import { Skeleton } from "../ui/skeleton";
 
 interface DashboardProps {
   onCreateCVAction?: (lang: "id" | "en") => void;
   lang: Language;
+}
+
+function StatTileSkeleton() {
+  return (
+    <Card className="border border-[var(--border-color)]">
+      <CardContent>
+        <div className="flex items-center justify-between">
+          <div className="flex-1 min-w-0 space-y-2">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-7 w-12" />
+            <Skeleton className="h-3 w-32" />
+          </div>
+          <Skeleton className="w-12 h-12 rounded-lg flex-shrink-0 ml-3" />
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function CVCardSkeleton() {
+  return (
+    <Card className="border border-[var(--border-color)] flex flex-col">
+      <CardContent className="flex flex-col flex-grow space-y-4">
+        <div className="flex items-start justify-between">
+          <div className="flex-1 min-w-0 space-y-3">
+            <Skeleton className="h-5 w-4/5" />
+            <div className="flex flex-wrap items-center gap-2">
+              <Skeleton className="h-5 w-16 rounded-full" />
+              <Skeleton className="h-5 w-12 rounded-full" />
+            </div>
+          </div>
+          <Skeleton className="h-8 w-8 rounded-full" />
+        </div>
+        <div className="space-y-2 flex-grow">
+          <Skeleton className="h-4 w-3/4" />
+          <Skeleton className="h-4 w-3/4" />
+        </div>
+        <Skeleton className="h-10 w-full rounded-md" />
+      </CardContent>
+    </Card>
+  );
 }
 
 export function Dashboard({ onCreateCVAction, lang }: DashboardProps) {
@@ -81,7 +124,7 @@ export function Dashboard({ onCreateCVAction, lang }: DashboardProps) {
 
   useEffect(() => {
     const fetchCVs = async () => {
-      setIsLoading(true);
+      setIsLoading(true); //
       try {
         const response = await fetch("/api/cv?type=builder");
         if (!response.ok) throw new Error("Gagal mengambil data CV");
@@ -186,10 +229,12 @@ export function Dashboard({ onCreateCVAction, lang }: DashboardProps) {
         break;
       case "download":
         try {
-          await downloadCV(cv.id);
+          await downloadCV(
+            cv.id,
+            cv.name,
+            cv.lang === "unknown" ? "id" : cv.lang
+          );
         } catch (error) {
-          // Anda bisa menambahkan penanganan error di sini jika diperlukan,
-          // misalnya menampilkan pesan di konsol.
           console.error("Gagal mengunduh CV:", error);
         }
         break;
@@ -292,8 +337,30 @@ export function Dashboard({ onCreateCVAction, lang }: DashboardProps) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <Loader2 className="w-8 h-8 animate-spin text-[var(--red-normal)]" />
+      <div className="flex-1 p-4 sm:p-6 bg-[var(--surface)] min-h-screen min-w-0">
+        <div className="mb-6 sm:mb-8">
+          <Skeleton className="h-5 w-48 mb-2" />
+          <Skeleton className="h-9 w-64" />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+          <StatTileSkeleton />
+          <StatTileSkeleton />
+          <StatTileSkeleton />
+          <StatTileSkeleton />
+        </div>
+        <div className="mb-8">
+          <Skeleton className="h-8 w-56 mb-4" />
+          <Skeleton className="h-24 w-full rounded-lg" />
+        </div>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mb-6">
+          <Skeleton className="h-9 w-full sm:w-md" />
+          <Skeleton className="h-9 w-full sm:w-32" />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-6">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <CVCardSkeleton key={i} />
+          ))}
+        </div>
       </div>
     );
   }
