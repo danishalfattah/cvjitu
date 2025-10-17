@@ -6,7 +6,7 @@ CVJitu adalah platform untuk membuat CV profesional dengan penilaian otomatis da
 
 ## Fitur
 
-* **Pembuat CV dengan Bantuan AI**: Buat CV profesional dengan mudah menggunakan template yang dioptimalkan untuk ATS. Ditenagai oleh **Google Gemini **.
+* **Pembuat CV dengan Bantuan AI**: Buat CV profesional dengan mudah menggunakan template yang dioptimalkan untuk ATS. Ditenagai oleh **Google Gemini**.
 * **Penilaian CV Otomatis**: Dapatkan skor CV dari 1-100 beserta analisis dan saran perbaikan dari AI.
 * **Repositori CV**: Simpan dan kelola semua versi CV Anda di satu tempat.
 * **Template ATS-Friendly**: Gunakan template yang telah terbukti lolos sistem ATS.
@@ -16,12 +16,11 @@ CVJitu adalah platform untuk membuat CV profesional dengan penilaian otomatis da
 ## Teknologi yang Digunakan
 
 * **Framework**: [Next.js](https://nextjs.org/)
-* **AI Engine**: [Google Gemini Pro](https://ai.google.dev/)
+* **AI Engine**: [Google Gemini](https://ai.google.dev/)
 * **Bahasa**: [TypeScript](https://www.typescriptlang.org/)
 * **Styling**: [Tailwind CSS](https://tailwindcss.com/)
 * **UI Components**: [Shadcn UI](https://ui.shadcn.com/)
 * **Autentikasi & Database**: [Firebase](https://firebase.google.com/)
-* **Manajemen State**: React Context API
 * **Deployment**: [Vercel](https://vercel.com/)
 
 ## Memulai
