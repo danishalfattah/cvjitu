@@ -33,7 +33,7 @@ export default function Login() {
   const handleLogin = async (email: string, password: string) => {
     try {
       await login(email, password);
-      toast.success("Berhasil masuk! Selamat datang kembali.");
+      toast.success("Berhasil masuk! Selamat datang.");
       // --- PERBAIKAN 2: Hapus router.replace() dari sini ---
       // Redirection akan ditangani oleh useEffect di atas.
     } catch (error) {

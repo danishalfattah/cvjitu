@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { cookies } from 'next/headers';
 import { adminAuth, adminDb } from '@/lib/firebase-admin';
+import { CVBuilderData } from "@/components/cvbuilder/types";
 
 async function getUserId() {
   const cookieStore = await cookies(); // Await cookies() to get the cookie store
@@ -19,33 +20,52 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const userId = await getUserId();
-  const id = params.id; // Tidak perlu 'await', params sudah menjadi objek biasa di sini
-
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const cvId = params.id;
+  const sessionCookie = (await cookies()).get("session")?.value;
+  let decodedToken = null;
+  if (sessionCookie) {
+    try {
+      decodedToken = await adminAuth.verifySessionCookie(sessionCookie, true);
+    } catch (error) {
+      decodedToken = null;
+    }
   }
 
   try {
-    const cvDoc = await adminDb.collection("cvs").doc(id).get();
+    const cvDocRef = adminDb.collection("cvs").doc(cvId);
+    const cvDoc = await cvDocRef.get();
 
     if (!cvDoc.exists) {
       return NextResponse.json({ error: "CV not found" }, { status: 404 });
     }
 
-    const cvData = cvDoc.data();
-    if (cvData?.userId !== userId) {
-      return NextResponse.json(
-        { error: "Forbidden. You do not own this CV." },
-        { status: 403 }
-      );
+    const cvData = cvDoc.data() as CVBuilderData & {
+      userId: string;
+      visibility: "public" | "private";
+    };
+
+    // --- PERBAIKAN UTAMA DI SINI ---
+    // Jika ada pengguna yang login dan dia adalah pemilik CV, izinkan akses
+    if (decodedToken && decodedToken.uid === cvData.userId) {
+      return NextResponse.json(cvData);
     }
 
-    return NextResponse.json({ id: cvDoc.id, ...cvData }, { status: 200 });
+    // Jika tidak ada pengguna yang login ATAU bukan pemilik,
+    // periksa apakah CV bersifat publik
+    if (cvData.visibility === "public") {
+      return NextResponse.json(cvData);
+    }
+    // --- AKHIR PERBAIKAN ---
+
+    // Jika semua kondisi di atas tidak terpenuhi, berarti akses ditolak
+    return NextResponse.json(
+      { error: "Forbidden: You do not have access to this CV" },
+      { status: 403 }
+    );
   } catch (error) {
     console.error("Failed to fetch CV:", error);
     return NextResponse.json(
-      { error: "Failed to fetch CV" },
+      { error: "Internal Server Error" },
       { status: 500 }
     );
   }
