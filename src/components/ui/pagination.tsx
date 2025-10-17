@@ -55,9 +55,14 @@ function PaginationLink({
       data-active={isActive}
       className={cn(
         buttonVariants({
-          variant: isActive ? "outline" : "ghost",
+          variant: "ghost", // Selalu gunakan variant ghost sebagai dasar
           size,
         }),
+        "hover:bg-[var(--red-light)] hover:text-[var(--red-normal)]", // Efek hover umum
+        {
+          "bg-[var(--red-light)] text-[var(--red-normal)] border border-[var(--red-normal)]":
+            isActive, // Style untuk state aktif
+        },
         className
       )}
       {...props}
@@ -76,7 +81,7 @@ function PaginationPrevious({
       className={cn("gap-1 px-2.5 sm:pl-2.5", className)}
       {...props}
     >
-      <ChevronLeftIcon />
+      <ChevronLeftIcon className="size-4" />
       <span className="hidden sm:block">Sebelumnya</span>
     </PaginationLink>
   );
@@ -94,7 +99,7 @@ function PaginationNext({
       {...props}
     >
       <span className="hidden sm:block">Selanjutnya</span>
-      <ChevronRightIcon />
+      <ChevronRightIcon className="size-4" />
     </PaginationLink>
   );
 }
