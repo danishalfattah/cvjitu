@@ -235,6 +235,13 @@ export function CVBuilderPage({
     onSave(cvData);
   };
 
+  const handleAnalysisCompleted = (grade: CVGrade | null) => {
+    if (grade) {
+      setHasBeenAnalyzed(true); // <-- KUNCI PERBAIKAN: Set status analisis di sini
+    }
+    onAnalysisComplete(grade); // Teruskan data ke parent component
+  };
+
   const handleSaveDraftOrUpdate = () => {
     if (isEditingCompletedCV) {
       handleSave();
@@ -286,7 +293,7 @@ export function CVBuilderPage({
             data={cvData}
             onAnalysisChange={setIsAnalyzing}
             initialGrade={initialAnalysisData}
-            onAnalysisComplete={onAnalysisComplete}
+            onAnalysisComplete={handleAnalysisCompleted}
             lang={lang}
           />
         );
