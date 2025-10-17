@@ -13,6 +13,7 @@ import {
   WorkExperience,
   Education,
 } from "@/components/cvbuilder/types";
+import { t, Language } from "@/lib/translations";
 
 const formatDate = (dateString: string) => {
   if (!dateString) return "";
@@ -162,18 +163,6 @@ interface CVTemplateProps {
 export const CVTemplate: React.FC<CVTemplateProps> = ({ cvData, lang }) => {
   const fullName = `${cvData.firstName || ""} ${cvData.lastName || ""}`.trim();
 
-  const t = (id: string) => {
-    const map = {
-      summary: { id: "Ringkasan", en: "Summary" },
-      experience: { id: "Pengalaman Kerja", en: "Work Experience" },
-      education: { id: "Pendidikan", en: "Education" },
-      skills: { id: "Keahlian", en: "Skills" },
-      now: { id: "Sekarang", en: "Present" },
-      gpa: { id: "IPK", en: "GPA" },
-    };
-    return map[id as keyof typeof map][lang];
-  };
-
   return (
     <Document author={fullName} title={`CV - ${fullName}`}>
       <Page size="A4" style={styles.page}>
@@ -226,7 +215,7 @@ export const CVTemplate: React.FC<CVTemplateProps> = ({ cvData, lang }) => {
         {/* === RINGKASAN === */}
         {cvData.summary && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{t("summary")}</Text>
+            <Text style={styles.sectionTitle}>{t("summary", lang)}</Text>
             <View style={styles.separatorLine} />
             <Text style={styles.summaryText}>{cvData.summary}</Text>
           </View>
@@ -235,7 +224,7 @@ export const CVTemplate: React.FC<CVTemplateProps> = ({ cvData, lang }) => {
         {/* === PENGALAMAN KERJA === */}
         {cvData.workExperiences.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{t("experience")}</Text>
+            <Text style={styles.sectionTitle}>{t("experience", lang)}</Text>
             <View style={styles.separatorLine} />
             {cvData.workExperiences.map((job: WorkExperience) => (
               <View key={job.id} style={styles.entryContainer}>
@@ -248,7 +237,7 @@ export const CVTemplate: React.FC<CVTemplateProps> = ({ cvData, lang }) => {
                   <View style={styles.entrySide}>
                     <Text style={styles.entryDate}>
                       {formatDate(job.startDate)} -{" "}
-                      {job.current ? t("now") : formatDate(job.endDate)}
+                      {job.current ? t("now", lang) : formatDate(job.endDate)}
                     </Text>
                     {job.location && (
                       <Text style={styles.entryLocation}>{job.location}</Text>
@@ -280,7 +269,7 @@ export const CVTemplate: React.FC<CVTemplateProps> = ({ cvData, lang }) => {
         {/* === PENDIDIKAN === */}
         {cvData.educations.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{t("education")}</Text>
+            <Text style={styles.sectionTitle}>{t("education", lang)}</Text>
             <View style={styles.separatorLine} />
             {cvData.educations.map((edu: Education) => (
               <View key={edu.id} style={styles.entryContainer}>
@@ -291,7 +280,7 @@ export const CVTemplate: React.FC<CVTemplateProps> = ({ cvData, lang }) => {
                   <View style={styles.entrySide}>
                     <Text style={styles.entryDate}>
                       {formatDate(edu.startDate)} -{" "}
-                      {edu.current ? t("now") : formatDate(edu.endDate)}
+                      {edu.current ? t("now", lang) : formatDate(edu.endDate)}
                     </Text>
                     {edu.location && (
                       <Text style={styles.entryLocation}>{edu.location}</Text>
@@ -300,7 +289,7 @@ export const CVTemplate: React.FC<CVTemplateProps> = ({ cvData, lang }) => {
                 </View>
                 <Text style={styles.degreeText}>
                   {edu.degree}
-                  {edu.gpa && ` (${t("gpa")}: ${edu.gpa})`}
+                  {edu.gpa && ` (${t("gpa", lang)}: ${edu.gpa})`}
                 </Text>
               </View>
             ))}
@@ -310,7 +299,7 @@ export const CVTemplate: React.FC<CVTemplateProps> = ({ cvData, lang }) => {
         {/* === KEAHLIAN === */}
         {cvData.skills.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{t("skills")}</Text>
+            <Text style={styles.sectionTitle}>{t("skills", lang)}</Text>
             <View style={styles.separatorLine} />
             <Text style={styles.skillsText}>{cvData.skills.join(", ")}</Text>
           </View>

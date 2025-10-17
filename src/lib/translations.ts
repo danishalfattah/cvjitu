@@ -203,6 +203,13 @@ export const translations: { [key: string]: TranslationEntry } = {
    analysisResultTitle: { id: 'Hasil Analisis CV', en: 'CV Analysis Result' },
   saveToRepoButton: { id: 'Simpan ke Repositori', en: 'Save to Repository' },
 
+  summary: { id: "Ringkasan", en: "Summary" },
+  experience: { id: "Pengalaman Kerja", en: "Work Experience" },
+  education: { id: "Pendidikan", en: "Education" },
+  skills: { id: "Keahlian", en: "Skills" },
+  now: { id: "Sekarang", en: "Present" },
+  gpa: { id: "IPK", en: "GPA" },
+
 };
 
 export const t = (
