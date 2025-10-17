@@ -2,7 +2,7 @@
 
 CVJitu adalah platform untuk membuat CV profesional dengan penilaian otomatis dan saran optimasi yang didukung oleh AI. Proyek ini dibuat dengan Next.js, Firebase, dan Shadcn UI.
 
-![CVJitu](https://raw.githubusercontent.com/danishalfattah/cvjitu/main/public/cvjitu-ss.png)
+![CVJitu](https://cvjitu.vercel.app/logo.svg)
 
 ## Fitur
 
