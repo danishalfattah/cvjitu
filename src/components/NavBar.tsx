@@ -36,7 +36,8 @@ export function NavBar({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { isLoading } = useAuth(); // --- PERBAIKAN: Ambil isLoading dari context ---
 
-  const toggleMobileMenu = () => {
+  const toggleMobileMenu = (e: React.MouseEvent) => {
+    e.stopPropagation();
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
@@ -206,9 +207,9 @@ export function NavBar({
             {/* Mobile Menu Dropdown Panel */}
             <motion.div
               className="fixed top-[75px] left-0 right-0 bg-white/95 backdrop-blur-md z-50 lg:hidden shadow-2xl border-b border-[var(--border-color)]"
-              initial={{ y: "-100%", opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: "-100%", opacity: 0 }}
+              initial={{ y: "-100%", opacity: 0, pointerEvents: "none" }}
+              animate={{ y: 0, opacity: 1, pointerEvents: "auto" }}
+              exit={{ y: "-100%", opacity: 0, pointerEvents: "none" }}
               transition={{
                 duration: 0.4,
                 ease: [0.23, 1, 0.32, 1],
@@ -217,71 +218,41 @@ export function NavBar({
               <div className="max-w-7xl mx-auto px-6 py-6">
                 {/* Navigation Links */}
                 <div className="space-y-1 mb-6">
-                  <motion.a
+                  <a
                     href="#features"
                     onClick={closeMobileMenu}
                     className="block py-3 px-4 text-[var(--neutral-ink)] hover:text-[var(--red-normal)] hover:bg-[var(--red-light)] rounded-lg transition-all font-medium"
-                    whileHover={{ x: 8 }}
-                    transition={{ duration: 0.2 }}
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    style={{ transitionDelay: "0.1s" }}
                   >
                     Fitur
-                  </motion.a>
-                  <motion.a
+                  </a>
+                  <a
                     href="#how-it-works"
                     onClick={closeMobileMenu}
                     className="block py-3 px-4 text-[var(--neutral-ink)] hover:text-[var(--red-normal)] hover:bg-[var(--red-light)] rounded-lg transition-all font-medium"
-                    whileHover={{ x: 8 }}
-                    transition={{ duration: 0.2 }}
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    style={{ transitionDelay: "0.15s" }}
                   >
                     Cara Kerja
-                  </motion.a>
-                  <motion.a
+                  </a>
+                  <a
                     href="#why-us"
                     onClick={closeMobileMenu}
                     className="block py-3 px-4 text-[var(--neutral-ink)] hover:text-[var(--red-normal)] hover:bg-[var(--red-light)] rounded-lg transition-all font-medium"
-                    whileHover={{ x: 8 }}
-                    transition={{ duration: 0.2 }}
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    style={{ transitionDelay: "0.2s" }}
                   >
                     Keunggulan
-                  </motion.a>
-                  <motion.a
+                  </a>
+                  <a
                     href="#pricing"
                     onClick={closeMobileMenu}
                     className="block py-3 px-4 text-[var(--neutral-ink)] hover:text-[var(--red-normal)] hover:bg-[var(--red-light)] rounded-lg transition-all font-medium"
-                    whileHover={{ x: 8 }}
-                    transition={{ duration: 0.2 }}
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    style={{ transitionDelay: "0.25s" }}
                   >
                     Harga
-                  </motion.a>
-                  <motion.a
+                  </a>
+                  <a
                     href="#faq"
                     onClick={closeMobileMenu}
                     className="block py-3 px-4 text-[var(--neutral-ink)] hover:text-[var(--red-normal)] hover:bg-[var(--red-light)] rounded-lg transition-all font-medium"
-                    whileHover={{ x: 8 }}
-                    transition={{ duration: 0.2 }}
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    style={{ transitionDelay: "0.3s" }}
                   >
                     FAQ
-                  </motion.a>
+                  </a>
                 </div>
                 {/* Divider */}
                 <div className="h-px bg-gradient-to-r from-transparent via-[var(--border-color)] to-transparent mb-6"></div>
