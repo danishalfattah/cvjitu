@@ -12,7 +12,7 @@ interface EmptyStateProps {
 
 export function EmptyState({ title, description, action }: EmptyStateProps) {
   return (
-    <div className="text-center py-16 px-6 bg-white rounded-lg border border-dashed border-[var(--border-color)]">
+    <div className="text-center py-16 px-6  rounded-lg border border-dashed border-[var(--border-color)]">
       <h3 className="text-lg font-poppins font-semibold text-[var(--neutral-ink)]">
         {title}
       </h3>
