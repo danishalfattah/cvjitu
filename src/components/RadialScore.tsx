@@ -1,13 +1,17 @@
+import { Language, t } from "@/lib/translations";
+
 interface RadialScoreProps {
   score: number;
   size?: "sm" | "md" | "lg";
   showLabel?: boolean;
+  lang: Language;
 }
 
 export function RadialScore({
   score,
   size = "md",
   showLabel = true,
+  lang,
 }: RadialScoreProps) {
   const sizeMap = {
     sm: { width: 60, height: 60, strokeWidth: 4, fontSize: "text-sm" },
@@ -27,10 +31,10 @@ export function RadialScore({
   };
 
   const getScoreLabel = (score: number) => {
-    if (score >= 80) return "Sangat Baik";
-    if (score >= 60) return "Baik";
-    if (score >= 40) return "Cukup";
-    return "Poor";
+    if (score >= 80) return t("scoreLabelExcellent", lang);
+    if (score >= 60) return t("scoreLabelGood", lang);
+    if (score >= 40) return t("scoreLabelAverage", lang);
+    return t("scoreLabelPoor", lang);
   };
 
   return (

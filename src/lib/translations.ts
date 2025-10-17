@@ -194,6 +194,15 @@ export const translations: { [key: string]: TranslationEntry } = {
   toastAnalysisSuccess: { id: 'Analisis CV berhasil!', en: 'CV analysis successful!' },
   toastAnalysisError: { id: 'Terjadi kesalahan saat menganalisis CV.', en: 'An error occurred while analyzing the CV.' },
   toastAnalysisFailed: { id: 'Analisis AI gagal.', en: 'AI analysis failed.' },
+
+  scoreLabelExcellent: { id: 'Sangat Baik', en: 'Excellent' },
+  scoreLabelGood: { id: 'Baik', en: 'Good' },
+  scoreLabelAverage: { id: 'Cukup', en: 'Average' },
+  scoreLabelPoor: { id: 'Kurang', en: 'Poor' },
+
+   analysisResultTitle: { id: 'Hasil Analisis CV', en: 'CV Analysis Result' },
+  saveToRepoButton: { id: 'Simpan ke Repositori', en: 'Save to Repository' },
+
 };
 
 export const t = (

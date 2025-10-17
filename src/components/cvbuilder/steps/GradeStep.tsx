@@ -51,7 +51,7 @@ export function GradeStep({
       const response = await fetch("/api/score-builder", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ ...data, lang }),
       });
 
       if (!response.ok) {
@@ -176,6 +176,7 @@ export function GradeStep({
               score={grade.overallScore}
               size="lg"
               showLabel={true}
+              lang={lang}
             />
           </div>
           <div className="space-y-4">

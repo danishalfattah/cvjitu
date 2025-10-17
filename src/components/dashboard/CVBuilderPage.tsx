@@ -287,6 +287,7 @@ export function CVBuilderPage({
             onAnalysisChange={setIsAnalyzing}
             initialGrade={initialAnalysisData}
             onAnalysisComplete={onAnalysisComplete}
+            lang={lang}
           />
         );
       default:
