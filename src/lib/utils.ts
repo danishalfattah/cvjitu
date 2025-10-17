@@ -1,12 +1,13 @@
 import { clsx, type ClassValue } from 'clsx'
 import { toast } from 'sonner';
 import { twMerge } from 'tailwind-merge'
+import { type Language } from './translations';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export const downloadCV = async (cvId: string, cvName: string = 'cv') => { 
+export const downloadCV = async (cvId: string, cvName: string = 'cv', lang: Language = 'id') => { 
   if (!cvId) {
     toast.error("Gagal mengunduh: ID CV tidak ditemukan.");
     return;
@@ -15,7 +16,7 @@ export const downloadCV = async (cvId: string, cvName: string = 'cv') => {
   toast.loading("Mempersiapkan PDF...", { id: "download-pdf" });
 
   try {
-    const response = await fetch(`/api/cv/download?id=${cvId}`);
+    const response = await fetch(`/api/cv/download?id=${cvId}&lang=${lang}`);
 
     if (!response.ok) {
       // Coba baca pesan error dari API jika ada

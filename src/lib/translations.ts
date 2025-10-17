@@ -144,7 +144,7 @@ export const translations: { [key: string]: TranslationEntry } = {
   previewExperience: { id: "Pengalaman", en: "Experience" },
   previewEducation: { id: "Pendidikan", en: "Education" },
   previewSkills: { id: "Keahlian", en: "Skills" },
-  previewNow: { id: "Sekarang", en: "Now" },
+  previewNow: { id: "Sekarang", en: "Present" },
   previewGpa: { id: "Nilai", en: "Grade" },
   previewTitlePlaceholder: { id: "Pratinjau CV", en: "CV Preview" },
   previewSubtitlePlaceholder: { id: "Isi formulir untuk melihat pratinjau CV Anda", en: "Fill out the form to see your CV preview" },

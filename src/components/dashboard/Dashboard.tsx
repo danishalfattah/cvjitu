@@ -186,10 +186,12 @@ export function Dashboard({ onCreateCVAction, lang }: DashboardProps) {
         break;
       case "download":
         try {
-          await downloadCV(cv.id);
+          await downloadCV(
+            cv.id,
+            cv.name,
+            cv.lang === "unknown" ? "id" : cv.lang
+          );
         } catch (error) {
-          // Anda bisa menambahkan penanganan error di sini jika diperlukan,
-          // misalnya menampilkan pesan di konsol.
           console.error("Gagal mengunduh CV:", error);
         }
         break;
