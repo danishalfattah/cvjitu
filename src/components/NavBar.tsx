@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { useAuth } from "../context/AuthContext"; // --- Impor useAuth ---
 import { Skeleton } from "./ui/skeleton"; // --- Impor Skeleton ---
+import Link from "next/link";
 
 // ... (interface User dan NavBarProps tetap sama) ...
 export interface User {
@@ -95,14 +96,16 @@ export function NavBar({
       <nav className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-md border-b border-[var(--border-color)] px-6 py-4 z-50">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="">
-            <Image
-              src="/logo.svg"
-              width={100}
-              height={100}
-              quality={100}
-              alt="logo"
-              className=" "
-            />
+            <Link href="/">
+              <Image
+                src="/logo.svg"
+                width={100}
+                height={100}
+                quality={100}
+                alt="logo"
+                className=" "
+              />
+            </Link>
           </div>
 
           <div className="hidden lg:flex items-center space-x-8">

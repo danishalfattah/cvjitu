@@ -1,15 +1,26 @@
 import { useState } from "react";
-import { Input } from "../../ui/input";
-import { Label } from "../../ui/label";
-import { Textarea } from "../../ui/textarea";
-import { Button } from "../../ui/button";
-import { Checkbox } from "../../ui/checkbox";
-import { Card, CardContent, CardHeader } from "../../ui/card";
-import { Badge } from "../../ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Plus, Trash2, Sparkles, Calendar } from "lucide-react";
 import { CVBuilderData, WorkExperience } from "../types";
 import { t, type Language } from "@/lib/translations";
 import { toast } from "sonner";
+
+// --- Impor tambahan untuk Kalender ---
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { format, parse } from "date-fns";
+import { cn } from "@/lib/utils";
+// --- Akhir Impor ---
 
 interface WorkExperienceStepProps {
   data: CVBuilderData;
@@ -225,20 +236,51 @@ export function WorkExperienceStep({
                   {t("startDateLabel", lang)}{" "}
                   <span className="text-red-500">*</span>
                 </Label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <Input
-                    id={`startDate-${experience.id}`}
-                    type="month"
-                    value={experience.startDate}
-                    onChange={(e) =>
-                      onUpdateExperience(experience.id, {
-                        startDate: e.target.value,
-                      })
-                    }
-                    className="pl-10 border-2 border-gray-300 focus:border-[var(--red-normal)] transition-colors cursor-pointer"
-                  />
-                </div>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      id={`startDate-${experience.id}`}
+                      variant={"outline"}
+                      className={cn(
+                        "w-full justify-start text-left font-normal pl-10 border-2 border-gray-300 focus:border-[var(--red-normal)] transition-colors",
+                        !experience.startDate && "text-muted-foreground"
+                      )}
+                    >
+                      <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      {experience.startDate ? (
+                        format(
+                          parse(experience.startDate, "yyyy-MM", new Date()),
+                          "MMMM yyyy"
+                        )
+                      ) : (
+                        <span>
+                          {lang === "id"
+                            ? "Pilih bulan & tahun"
+                            : "Pick month & year"}
+                        </span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <CalendarComponent
+                      mode="single"
+                      selected={
+                        experience.startDate
+                          ? parse(experience.startDate, "yyyy-MM", new Date())
+                          : undefined
+                      }
+                      onSelect={(date) =>
+                        onUpdateExperience(experience.id, {
+                          startDate: date ? format(date, "yyyy-MM") : "",
+                        })
+                      }
+                      captionLayout="dropdown"
+                      fromYear={1980}
+                      toYear={new Date().getFullYear()}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
 
               <div className="space-y-2">
@@ -249,21 +291,52 @@ export function WorkExperienceStep({
                   {t("endDateLabel", lang)}{" "}
                   <span className="text-red-500">*</span>
                 </Label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <Input
-                    id={`endDate-${experience.id}`}
-                    type="month"
-                    value={experience.endDate}
-                    onChange={(e) =>
-                      onUpdateExperience(experience.id, {
-                        endDate: e.target.value,
-                      })
-                    }
-                    disabled={experience.current}
-                    className="pl-10 border-2 border-gray-300 focus:border-[var(--red-normal)] transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
-                  />
-                </div>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      id={`endDate-${experience.id}`}
+                      variant={"outline"}
+                      disabled={experience.current}
+                      className={cn(
+                        "w-full justify-start text-left font-normal pl-10 border-2 border-gray-300 focus:border-[var(--red-normal)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
+                        !experience.endDate && "text-muted-foreground"
+                      )}
+                    >
+                      <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      {experience.endDate ? (
+                        format(
+                          parse(experience.endDate, "yyyy-MM", new Date()),
+                          "MMMM yyyy"
+                        )
+                      ) : (
+                        <span>
+                          {lang === "id"
+                            ? "Pilih bulan & tahun"
+                            : "Pick month & year"}
+                        </span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <CalendarComponent
+                      mode="single"
+                      selected={
+                        experience.endDate
+                          ? parse(experience.endDate, "yyyy-MM", new Date())
+                          : undefined
+                      }
+                      onSelect={(date) =>
+                        onUpdateExperience(experience.id, {
+                          endDate: date ? format(date, "yyyy-MM") : "",
+                        })
+                      }
+                      captionLayout="dropdown"
+                      fromYear={1980}
+                      toYear={new Date().getFullYear() + 5}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
 

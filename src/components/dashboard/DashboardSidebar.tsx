@@ -6,6 +6,7 @@ import { Progress } from "../ui/progress";
 import { Label } from "../ui/label";
 import Image from "next/image";
 import { User } from "@/context/AuthContext";
+import Link from "next/link";
 
 interface DashboardSidebarProps {
   activeTab: string;
@@ -48,13 +49,15 @@ export function DashboardSidebar({
         <div className="p-4 sm:p-6 border-b border-[var(--border-color)]">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <Image
-                src="/logo.svg"
-                width={100}
-                height={100}
-                quality={100}
-                alt="logo"
-              />
+              <Link href="/">
+                <Image
+                  src="/logo.svg"
+                  width={100}
+                  height={100}
+                  quality={100}
+                  alt="logo"
+                />
+              </Link>
             </div>
             {isMobile && onClose && (
               <Button

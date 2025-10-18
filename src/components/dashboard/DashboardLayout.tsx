@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { User } from "@/context/AuthContext";
 import { Language } from "@/lib/translations"; // Import Language
+import Link from "next/link";
 
 interface DashboardLayoutProps {
   onLogout?: () => void;
@@ -133,14 +134,16 @@ export function DashboardLayout({
                 <Menu className="w-5 h-5" />
               </Button>
               <div className="">
-                <Image
-                  src="/logo.svg"
-                  width={80}
-                  height={80}
-                  quality={100}
-                  alt="CVJitu Logo"
-                  className=""
-                />
+                <Link href="/">
+                  <Image
+                    src="/logo.svg"
+                    width={80}
+                    height={80}
+                    quality={100}
+                    alt="CVJitu Logo"
+                    className=""
+                  />
+                </Link>
               </div>
             </div>
             {user && (
