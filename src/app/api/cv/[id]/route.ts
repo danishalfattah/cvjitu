@@ -18,55 +18,90 @@ async function getUserId() {
 // --- PERBAIKAN 1: TAMBAHKAN HANDLER GET ---
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } } 
 ) {
-  await request.text();
-  const cvId = params.id;
+  let cvId: string | undefined;
+
+  try {
+    const url = new URL(request.url);
+    const pathSegments = url.pathname.split('/');
+    cvId = pathSegments[pathSegments.length - 1];
+
+    if (!cvId) {
+      console.error("[GET /api/cv/[id]] CV ID not found in URL path:", url.pathname);
+      return NextResponse.json({ error: "CV ID not found in URL path" }, { status: 400 });
+    }
+    console.log(`[GET /api/cv/[id]] Extracted cvId from URL: ${cvId}`); // Logging untuk debug
+  } catch (urlError) {
+     console.error("[GET /api/cv/[id]] Error parsing URL or extracting ID:", urlError);
+     // Fallback ke params jika URL parsing gagal (meskipun ini yang error sebelumnya)
+     if (params && params.id) {
+       cvId = params.id;
+       console.log(`[GET /api/cv/[id]] Falling back to params.id: ${cvId}`);
+     } else {
+       return NextResponse.json({ error: "Could not determine CV ID" }, { status: 400 });
+     }
+  }
+
+
+  // Ambil session cookie dan verifikasi pengguna (jika ada)
   const sessionCookie = (await cookies()).get("session")?.value;
   let decodedToken = null;
   if (sessionCookie) {
     try {
       decodedToken = await adminAuth.verifySessionCookie(sessionCookie, true);
     } catch (error) {
+      // Tidak masalah jika cookie tidak valid, anggap sebagai pengguna anonim
+      console.warn("Session cookie verification failed (might be expired or invalid):", error);
       decodedToken = null;
     }
   }
 
+  // Coba ambil data CV dari Firestore
   try {
     const cvDocRef = adminDb.collection("cvs").doc(cvId);
     const cvDoc = await cvDocRef.get();
 
     if (!cvDoc.exists) {
+      console.log(`[GET /api/cv/${cvId}] CV not found in Firestore.`);
       return NextResponse.json({ error: "CV not found" }, { status: 404 });
     }
 
+    // Lakukan type assertion dengan hati-hati
     const cvData = cvDoc.data() as CVBuilderData & {
-      userId: string;
-      visibility: "public" | "private";
+      userId?: string; // Jadikan userId opsional untuk keamanan
+      visibility?: "public" | "private"; // Jadikan visibility opsional
     };
 
-    // --- PERBAIKAN UTAMA DI SINI ---
-    // Jika ada pengguna yang login dan dia adalah pemilik CV, izinkan akses
-    if (decodedToken && decodedToken.uid === cvData.userId) {
+    // Pastikan properti yang diperlukan ada
+    const ownerId = cvData.userId;
+    const visibility = cvData.visibility || "private"; // Default ke private jika tidak ada
+
+    // Logika Otorisasi:
+    // 1. Jika pengguna terautentikasi DAN merupakan pemilik CV
+    if (decodedToken && ownerId && decodedToken.uid === ownerId) {
+      console.log(`[GET /api/cv/${cvId}] Access granted: User is owner.`);
       return NextResponse.json(cvData);
     }
 
-    // Jika tidak ada pengguna yang login ATAU bukan pemilik,
-    // periksa apakah CV bersifat publik
-    if (cvData.visibility === "public") {
+    // 2. Jika CV bersifat publik (tidak perlu login)
+    if (visibility === "public") {
+      console.log(`[GET /api/cv/${cvId}] Access granted: CV is public.`);
       return NextResponse.json(cvData);
     }
-    // --- AKHIR PERBAIKAN ---
 
-    // Jika semua kondisi di atas tidak terpenuhi, berarti akses ditolak
+    // 3. Jika tidak memenuhi kondisi di atas, akses ditolak
+    console.log(`[GET /api/cv/${cvId}] Access denied: User (UID: ${decodedToken?.uid || 'none'}) is not owner and CV is private.`);
     return NextResponse.json(
       { error: "Forbidden: You do not have access to this CV" },
       { status: 403 }
     );
+
   } catch (error) {
-    console.error("Failed to fetch CV:", error);
+    console.error(`[GET /api/cv/${cvId}] Failed to fetch CV:`, error);
+    // Hindari membocorkan detail error internal
     return NextResponse.json(
-      { error: "Internal Server Error" },
+      { error: "Internal Server Error while fetching CV data" },
       { status: 500 }
     );
   }
@@ -126,7 +161,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   const userId = await getUserId();
-  const id = params.id; // Tidak perlu 'await'
+  const id = params.id; 
 
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
