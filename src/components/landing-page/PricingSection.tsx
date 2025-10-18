@@ -30,7 +30,7 @@ const pricingPlans = [
     features: [
       "Buat CV hingga 10 CV per akun",
       "Scoring CV hingga 30x / bulan",
-      "Ekspor PDF & DOCX Tanpa Watermark",
+      "Ekspor PDF Tanpa Watermark",
       "Saran perbaikan detail",
       "Buat CV Multi-bahasa (ID/EN)",
     ],
@@ -46,7 +46,7 @@ const pricingPlans = [
     features: [
       "Buat CV tanpa batas",
       "Scoring CV tanpa batas",
-      "Ekspor PDF & DOCX Tanpa Watermark",
+      "Ekspor PDF Tanpa Watermark",
       "Saran perbaikan Sangat detail",
       "Multi-bahasa (ID/EN)",
     ],
