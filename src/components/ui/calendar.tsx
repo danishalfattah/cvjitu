@@ -3,7 +3,9 @@
 import * as React from "react";
 import {
   ChevronDownIcon,
+  ChevronLeft,
   ChevronLeftIcon,
+  ChevronRight,
   ChevronRightIcon,
 } from "lucide-react";
 import { DayButton, DayPicker, getDefaultClassNames } from "react-day-picker";
