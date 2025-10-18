@@ -20,6 +20,7 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  await request.text();
   const cvId = params.id;
   const sessionCookie = (await cookies()).get("session")?.value;
   let decodedToken = null;
