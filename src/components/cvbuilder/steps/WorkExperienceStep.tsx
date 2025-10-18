@@ -277,6 +277,8 @@ export function WorkExperienceStep({
                       captionLayout="dropdown"
                       fromYear={1980}
                       toYear={new Date().getFullYear()}
+                      toDate={new Date()}
+                      toMonth={new Date()}
                       initialFocus
                     />
                   </PopoverContent>
@@ -333,6 +335,7 @@ export function WorkExperienceStep({
                       captionLayout="dropdown"
                       fromYear={1980}
                       toYear={new Date().getFullYear() + 5}
+                      toDate={new Date()}
                       initialFocus
                     />
                   </PopoverContent>
