@@ -1,12 +1,22 @@
-import { Input } from "../../ui/input";
-import { Label } from "../../ui/label";
-import { Textarea } from "../../ui/textarea";
-import { Button } from "../../ui/button";
-import { Checkbox } from "../../ui/checkbox";
-import { Card, CardContent, CardHeader } from "../../ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Plus, Trash2, Calendar } from "lucide-react";
 import { CVBuilderData, Education } from "../types";
 import { t, type Language } from "@/lib/translations";
+
+// --- Impor tambahan untuk Kalender ---
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { format, parse } from "date-fns";
+import { cn } from "@/lib/utils";
+// --- Akhir Impor ---
 
 interface EducationStepProps {
   data: CVBuilderData;
@@ -135,20 +145,51 @@ export function EducationStep({
                   {t("startDateLabel", lang)}{" "}
                   <span className="text-red-500">*</span>
                 </Label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <Input
-                    id={`startDate-${education.id}`}
-                    type="month"
-                    value={education.startDate}
-                    onChange={(e) =>
-                      onUpdateEducation(education.id, {
-                        startDate: e.target.value,
-                      })
-                    }
-                    className="pl-10 border-2 border-gray-300 focus:border-[var(--red-normal)] transition-colors cursor-pointer"
-                  />
-                </div>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      id={`startDate-${education.id}`}
+                      variant={"outline"}
+                      className={cn(
+                        "w-full justify-start text-left font-normal pl-10 border-2 border-gray-300 focus:border-[var(--red-normal)] transition-colors",
+                        !education.startDate && "text-muted-foreground"
+                      )}
+                    >
+                      <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      {education.startDate ? (
+                        format(
+                          parse(education.startDate, "yyyy-MM", new Date()),
+                          "MMMM yyyy"
+                        )
+                      ) : (
+                        <span>
+                          {lang === "id"
+                            ? "Pilih bulan & tahun"
+                            : "Pick month & year"}
+                        </span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <CalendarComponent
+                      mode="single"
+                      selected={
+                        education.startDate
+                          ? parse(education.startDate, "yyyy-MM", new Date())
+                          : undefined
+                      }
+                      onSelect={(date) =>
+                        onUpdateEducation(education.id, {
+                          startDate: date ? format(date, "yyyy-MM") : "",
+                        })
+                      }
+                      captionLayout="dropdown"
+                      fromYear={1980}
+                      toYear={new Date().getFullYear()}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
 
               <div className="space-y-2">
@@ -159,21 +200,52 @@ export function EducationStep({
                   {t("endDateLabel", lang)}
                   <span className="text-red-500">*</span>
                 </Label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <Input
-                    id={`endDate-${education.id}`}
-                    type="month"
-                    value={education.endDate}
-                    onChange={(e) =>
-                      onUpdateEducation(education.id, {
-                        endDate: e.target.value,
-                      })
-                    }
-                    disabled={education.current}
-                    className="pl-10 border-2 border-gray-300 focus:border-[var(--red-normal)] transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
-                  />
-                </div>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      id={`endDate-${education.id}`}
+                      variant={"outline"}
+                      disabled={education.current}
+                      className={cn(
+                        "w-full justify-start text-left font-normal pl-10 border-2 border-gray-300 focus:border-[var(--red-normal)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
+                        !education.endDate && "text-muted-foreground"
+                      )}
+                    >
+                      <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      {education.endDate ? (
+                        format(
+                          parse(education.endDate, "yyyy-MM", new Date()),
+                          "MMMM yyyy"
+                        )
+                      ) : (
+                        <span>
+                          {lang === "id"
+                            ? "Pilih bulan & tahun"
+                            : "Pick month & year"}
+                        </span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <CalendarComponent
+                      mode="single"
+                      selected={
+                        education.endDate
+                          ? parse(education.endDate, "yyyy-MM", new Date())
+                          : undefined
+                      }
+                      onSelect={(date) =>
+                        onUpdateEducation(education.id, {
+                          endDate: date ? format(date, "yyyy-MM") : "",
+                        })
+                      }
+                      captionLayout="dropdown"
+                      fromYear={1980}
+                      toYear={new Date().getFullYear() + 5}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
 
