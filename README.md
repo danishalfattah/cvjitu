@@ -30,7 +30,7 @@ Untuk menjalankan proyek ini secara lokal, ikuti langkah-langkah berikut:
 1.  **Clone repositori:**
 
     ```bash
-    git clone [https://github.com/danishalfattah/cvjitu.git](https://github.com/danishalfattah/cvjitu.git)
+    git clone https://github.com/danishalfattah/cvjitu.git
     cd cvjitu
     ```
 
