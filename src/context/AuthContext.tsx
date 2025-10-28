@@ -113,15 +113,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         });
 
         // Verifikasi email sebelum set user profile
-        if (
-          fbUser.emailVerified ||
-          fbUser.providerData[0]?.providerId !== "password"
-        ) {
-          const userProfile = await getUserProfile(fbUser);
-          setUser(userProfile);
-        } else {
-          setUser(null); // Jangan set user jika email belum diverifikasi
-        }
+        const userProfile = await getUserProfile(fbUser);
+        setUser(userProfile);
       } else {
         // --- PERBAIKAN DI SINI: Panggil API untuk menghapus session cookie ---
         await fetch("/api/auth/session", { method: "DELETE" });
@@ -143,12 +136,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
         email,
         password
       );
-      if (!userCredential.user.emailVerified) {
-        await signOut(auth); // Langsung logout jika email belum diverifikasi
-        throw new Error(
-          "Silakan verifikasi email Anda terlebih dahulu. Cek kotak masuk Anda."
-        );
-      }
     } finally {
       // Dihapus: setIsLoading(false) akan ditangani oleh onAuthStateChanged
     }
@@ -165,7 +152,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const fbUser = userCredential.user;
 
       await updateProfile(fbUser, { displayName: data.fullName });
-      await sendEmailVerification(fbUser);
 
       const newUserProfile: User = {
         id: fbUser.uid,
@@ -180,6 +166,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         scoringCreditsTotal: 10,
       };
       await setDoc(doc(db, "users", fbUser.uid), newUserProfile);
+      await signOut(auth);
     } finally {
       setIsLoading(false);
     }
