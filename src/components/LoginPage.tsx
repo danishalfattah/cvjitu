@@ -15,6 +15,7 @@ interface LoginPageProps {
   onNavigateToRegister: () => void;
   onBack: () => void;
   isLoading?: boolean;
+  onNavigateToForgotPassword: () => void;
 }
 
 export function LoginPage({
@@ -23,6 +24,7 @@ export function LoginPage({
   onNavigateToRegister,
   onBack,
   isLoading = false,
+  onNavigateToForgotPassword,
 }: LoginPageProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -219,6 +221,10 @@ export function LoginPage({
                   <Button
                     variant="link"
                     className="text-[var(--red-normal)] hover:text-[var(--red-normal-hover)] p-0 h-auto"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      onNavigateToForgotPassword();
+                    }}
                   >
                     Lupa password?
                   </Button>
@@ -236,6 +242,7 @@ export function LoginPage({
               <div className="text-center text-sm text-gray-600">
                 Belum punya akun?{" "}
                 <Button
+                  type="button"
                   variant="link"
                   className="text-[var(--red-normal)] hover:text-[var(--red-normal-hover)] p-0 h-auto font-medium"
                   onClick={onNavigateToRegister}

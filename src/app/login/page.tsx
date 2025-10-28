@@ -67,6 +67,7 @@ export default function Login() {
         onNavigateToRegister={() => router.push("/register")}
         onBack={() => router.push("/")}
         isLoading={isLoading}
+        onNavigateToForgotPassword={() => router.push("/forgot-password")}
       />
       {/* Pastikan komponen Toaster ada di layout atau di sini */}
       <Toaster position="bottom-right" richColors />
