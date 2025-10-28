@@ -18,7 +18,7 @@ export default function Register() {
     try {
       await register(data);
       toast.success("Akun berhasil dibuat! Selamat datang di CVJitu.");
-      router.replace("/dashboard");
+      router.replace("/login");
     } catch (error) {
       toast.error(
         error instanceof Error
