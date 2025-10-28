@@ -35,6 +35,7 @@ export function GradeStep({
 }: GradeStepProps) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [grade, setGrade] = useState<CVGrade | null>(null);
+  const [progress, setProgress] = useState(0); // 1. State baru untuk progress
 
   useEffect(() => {
     if (initialGrade) {
@@ -42,10 +43,40 @@ export function GradeStep({
     }
   }, [initialGrade]);
 
+  useEffect(() => {
+    let timer: NodeJS.Timeout | undefined;
+    if (isAnalyzing) {
+      setProgress(10); // Mulai dari 10% agar tidak terasa lambat di awal
+      timer = setInterval(() => {
+        setProgress((prev) => {
+          // Berhenti di 90% untuk menunggu hasil fetch yang sebenarnya
+          if (prev >= 95) {
+            return 95;
+          }
+          // Tambahkan nilai acak kecil untuk membuatnya terlihat lebih natural
+          return prev + Math.random() * 2;
+        });
+      }, 50); // Update setiap 400ms
+    } else {
+      // Jika analisis selesai (sukses atau gagal), set progress ke 100% sebentar lalu reset
+      if (progress > 0) {
+        setProgress(100);
+        setTimeout(() => setProgress(0), 500);
+      }
+    }
+
+    // 3. Cleanup function untuk membersihkan interval
+    return () => {
+      if (timer) {
+        clearInterval(timer);
+      }
+    };
+  }, [isAnalyzing]);
+
   const analyzeCV = async () => {
     setIsAnalyzing(true);
     onAnalysisChange(true);
-    setGrade(null); // Reset tampilan sebelum analisis baru
+    setGrade(null);
 
     try {
       const response = await fetch("/api/score-builder", {
@@ -156,7 +187,7 @@ export function GradeStep({
             {t("gradeAnalyzingTitle", lang)}
           </h3>
           <p className="text-gray-600 mb-6">{t("gradeAnalyzingDesc", lang)}</p>
-          <Progress value={66} className="w-64 mx-auto" />
+          <Progress value={progress} className="w-64 mx-auto" />
         </div>
       </div>
     );
