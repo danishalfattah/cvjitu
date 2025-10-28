@@ -17,7 +17,7 @@ import {
   GoogleAuthProvider,
   signOut,
   updateProfile,
-  sendEmailVerification,
+  sendPasswordResetEmail,
 } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
@@ -45,12 +45,13 @@ interface RegisterData {
 interface AuthContextType {
   user: User | null;
   firebaseUser: FirebaseUser | null;
-  isLoading: boolean; // isLoading akan jadi kunci utama
+  isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
+  sendPasswordReset: (email: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -185,6 +186,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
     await signOut(auth);
   };
 
+  const sendPasswordReset = async (email: string): Promise<void> => {
+    try {
+      await sendPasswordResetEmail(auth, email);
+    } catch (error) {
+      console.error("Password reset error:", error);
+      throw error;
+    }
+  };
+
   const value: AuthContextType = {
     user,
     firebaseUser,
@@ -193,7 +203,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     register,
     loginWithGoogle,
     logout,
-    isAuthenticated: !isLoading && !!user, // isAuthenticated hanya true jika loading selesai DAN ada user
+    isAuthenticated: !isLoading && !!user,
+    sendPasswordReset,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
