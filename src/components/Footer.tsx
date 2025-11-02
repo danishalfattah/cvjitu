@@ -15,9 +15,7 @@ export function Footer() {
               alt="logo"
             />
             <span className="text-gray-600">—</span>
-            <span className="text-gray-600">
-              Memberdayakan Pekerjaan Layak (SDG 8)
-            </span>
+            <span className="text-gray-600">Memberdayakan Pekerjaan Layak</span>
           </div>
 
           <div className="flex items-center space-x-6">
