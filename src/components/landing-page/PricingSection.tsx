@@ -1,7 +1,13 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { Check } from "lucide-react";
+import { SubscriptionModal } from "../modals/SubscriptionModal";
+import { useAuth } from "../../context/AuthContext";
 
 const pricingPlans = [
   {
@@ -56,9 +62,40 @@ const pricingPlans = [
 ];
 
 export function PricingSection() {
+  const router = useRouter();
+  const { user } = useAuth();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState("");
+
+  const handleSelectPlan = (planName: string) => {
+    // Jika Basic (gratis), langsung redirect ke register
+    if (planName === "Basic") {
+      router.push("/register");
+      return;
+    }
+
+    // Jika user belum login, tampilkan modal
+    if (!user) {
+      setSelectedPlan(planName);
+      setIsModalOpen(true);
+      return;
+    }
+
+    // Jika sudah login, redirect ke checkout
+    const planSlug = planName.toLowerCase().replace(/\s/g, "");
+    router.push(`/checkout?plan=${planSlug}`);
+  };
+
   return (
-    <section id="pricing" className="py-20 px-6 bg-[var(--surface)]">
-      <div className="max-w-7xl mx-auto">
+    <>
+      <SubscriptionModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        selectedPlan={selectedPlan}
+      />
+
+      <section id="pricing" className="py-20 px-6 bg-[var(--surface)]">
+        <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-3xl lg:text-4xl font-poppins font-bold text-[var(--neutral-ink)] mb-4">
             Pilih Paket yang Tepat
@@ -126,6 +163,7 @@ export function PricingSection() {
                 </ul>
 
                 <Button
+                  onClick={() => handleSelectPlan(plan.name)}
                   className={`w-full py-3 ${
                     plan.ctaVariant === "default"
                       ? "bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white"
@@ -147,5 +185,6 @@ export function PricingSection() {
         </div>
       </div>
     </section>
+    </>
   );
 }
