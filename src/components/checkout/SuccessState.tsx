@@ -98,10 +98,10 @@ export function SuccessState({
           </div>
 
           {/* Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex flex-col md:flex-row  gap-3 md:gap-4">
             <Button
               onClick={() => router.push("/dashboard")}
-              className="flex-1 bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white"
+              className="flex-1 bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white py-4 px-3 md:py-6 md:px-6"
               size="lg"
             >
               Ke Dashboard
@@ -110,7 +110,7 @@ export function SuccessState({
             <Button
               onClick={() => router.push("/")}
               variant="outline"
-              className="flex-1 border-2 border-gray-300"
+              className="flex-1 border-2 border-gray-300 py-4 px-3 md:py-6 md:px-6"
               size="lg"
             >
               <Home className="w-4 h-4 mr-2" />
