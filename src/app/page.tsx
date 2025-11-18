@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
 import { NavBar, type User as NavBarUser } from "@/components/NavBar";
 import { HeroSection } from "@/components/landing-page/HeroSection";
 import { FeaturesSection } from "@/components/landing-page/FeaturesSection";
@@ -119,11 +120,51 @@ export default function Page() {
           simplifiedView={true}
         />
 
-        <FeaturesSection />
-        <HowItWorksSection />
-        <WhyUsSection />
-        <PricingSection />
-        <FAQSection />
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+        >
+          <FeaturesSection />
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6, ease: "easeOut", delay: 0.1 }}
+        >
+          <HowItWorksSection />
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6, ease: "easeOut", delay: 0.1 }}
+        >
+          <WhyUsSection />
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6, ease: "easeOut", delay: 0.1 }}
+        >
+          <PricingSection />
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6, ease: "easeOut", delay: 0.1 }}
+        >
+          <FAQSection />
+        </motion.div>
+
         <Footer />
       </div>
     </div>
