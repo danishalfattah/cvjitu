@@ -2,7 +2,6 @@
 
 # dependencies
 /node_modules
-/.claude
 
 # next.js
 /.next/
@@ -29,3 +28,7 @@ next-env.d.ts
 
 # .gitignore
 src/serviceAccountKey.json
+
+# claude
+CLAUDE.md
+/.claude

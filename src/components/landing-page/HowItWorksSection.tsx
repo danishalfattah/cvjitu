@@ -29,7 +29,7 @@ export function HowItWorksSection() {
           <h2 className="text-3xl lg:text-4xl font-poppins font-bold text-[var(--neutral-ink)] mb-4">
             Cara Kerja CVJitu
           </h2>
-          <p className="text-lg text-gray-400">
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             4 langkah sederhana untuk CV sempurna
           </p>
         </div>
@@ -47,11 +47,11 @@ export function HowItWorksSection() {
                 </div>
                 
                 {/* Step content card */}
-                <div className="ml-8 flex-1 bg-white rounded-2xl border border-[var(--border-color)] p-6 shadow-sm hover:shadow-md transition-shadow">
+                <div className="ml-8 flex-1 bg-white rounded-2xl border border-[var(--border-color)] p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-smooth">
                   <h3 className="font-poppins font-semibold text-xl text-[var(--neutral-ink)] mb-2">
                     {step.title}
                   </h3>
-                  <p className="text-gray-500 leading-relaxed">
+                  <p className="text-gray-600 leading-relaxed">
                     {step.description}
                   </p>
                 </div>

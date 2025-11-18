@@ -20,7 +20,7 @@ const faqs = [
       "Tentu! CVJitu mendukung pembuatan multiple CV dengan kategori berbeda. Anda bisa menyesuaikan setiap CV untuk posisi spesifik dengan keyword matching yang optimal.",
   },
   {
-    question: "Bagaimana Kebijakan privasi dan keamanan data di CVJiitu?",
+    question: "Bagaimana Kebijakan privasi dan keamanan data di CVJitu?",
     answer:
       "Data Anda diamankan dengan enkripsi end-to-end. Kami tidak membagikan informasi pribadi kepada pihak ketiga dan mematuhi standar GDPR. Anda memiliki kontrol penuh atas data CV Anda.",
   },
@@ -39,7 +39,7 @@ export function FAQSection() {
           <h2 className="text-3xl lg:text-4xl font-poppins font-bold text-[var(--neutral-ink)] mb-4">
             Pertanyaan yang Sering Diajukan
           </h2>
-          <p className="text-lg text-gray-600">
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             Pertanyaan yang sering diajukan tentang CVJitu
           </p>
         </div>

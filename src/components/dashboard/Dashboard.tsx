@@ -401,18 +401,18 @@ export function Dashboard({ onCreateCVAction, lang }: DashboardProps) {
     return (
       <div className="p-4 sm:p-6 min-h-screen bg-gray-50">
         <div className="max-w-4xl mx-auto">
-          <div className="mb-6 flex justify-between items-center">
-            <h2 className="text-xl font-poppins font-semibold text-[var(--neutral-ink)]">
-              Pratinjau CV Draf: {draftPreviewData.name}
-            </h2>
+          <div className="mb-6 flex items-center gap-4">
             <Button
               variant="outline"
               onClick={handleBackToDashboard}
               className="border-[var(--border-color)]"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Kembali ke Dashboard
+              Kembali
             </Button>
+            <h2 className="text-xl font-poppins font-semibold text-[var(--neutral-ink)]">
+              Pratinjau CV Draf: {draftPreviewData.name}
+            </h2>
           </div>
           <CVPreview
             data={draftPreviewData as CVBuilderData}

@@ -91,11 +91,38 @@ export function NavBar({
     );
   };
 
+  // Navigation items for staggered animation
+  const navItems = [
+    { href: "#features", label: "Fitur" },
+    { href: "#how-it-works", label: "Cara Kerja" },
+    { href: "#why-us", label: "Keunggulan" },
+    { href: "#pricing", label: "Harga" },
+    { href: "#faq", label: "FAQ" },
+  ];
+
   return (
     <>
-      <nav className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-md border-b border-[var(--border-color)] px-6 py-4 z-50">
+      <motion.nav
+        className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-md border-b border-[var(--border-color)] px-6 py-4 z-50"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{
+          duration: 0.6,
+          ease: [0.34, 1.56, 0.64, 1],
+          delay: 0.1,
+        }}
+      >
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="">
+          {/* Logo with bounce animation */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{
+              duration: 0.5,
+              ease: [0.34, 1.56, 0.64, 1],
+              delay: 0.2,
+            }}
+          >
             <Link href="/">
               <Image
                 src="/logo.svg"
@@ -106,47 +133,61 @@ export function NavBar({
                 className=" "
               />
             </Link>
-          </div>
+          </motion.div>
 
+          {/* Desktop Navigation with staggered animation */}
           <div className="hidden lg:flex items-center space-x-8">
-            <a
-              href="#features"
-              className="text-[var(--neutral-ink)] hover:text-[var(--red-normal)] transition-colors font-medium"
-            >
-              Fitur
-            </a>
-            <a
-              href="#how-it-works"
-              className="text-[var(--neutral-ink)] hover:text-[var(--red-normal)] transition-colors font-medium"
-            >
-              Cara Kerja
-            </a>
-            <a
-              href="#why-us"
-              className="text-[var(--neutral-ink)] hover:text-[var(--red-normal)] transition-colors font-medium"
-            >
-              Keunggulan
-            </a>
-            <a
-              href="#pricing"
-              className="text-[var(--neutral-ink)] hover:text-[var(--red-normal)] transition-colors font-medium"
-            >
-              Harga
-            </a>
-            <a
-              href="#faq"
-              className="text-[var(--neutral-ink)] hover:text-[var(--red-normal)] transition-colors font-medium"
-            >
-              FAQ
-            </a>
+            {navItems.map((item, index) => (
+              <motion.a
+                key={item.href}
+                href={item.href}
+                className="text-[var(--neutral-ink)] hover:text-[var(--red-normal)] transition-colors font-medium relative group"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  duration: 0.4,
+                  ease: "easeOut",
+                  delay: 0.3 + index * 0.1,
+                }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                {item.label}
+                {/* Hover underline effect */}
+                <motion.span
+                  className="absolute -bottom-1 left-0 w-full h-0.5 bg-[var(--red-normal)] origin-left"
+                  initial={{ scaleX: 0 }}
+                  whileHover={{ scaleX: 1 }}
+                  transition={{ duration: 0.3 }}
+                />
+              </motion.a>
+            ))}
           </div>
 
-          {/* --- PERBAIKAN: Panggil fungsi render --- */}
-          {renderAuthButtons()}
+          {/* Auth buttons with fade-in animation */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{
+              duration: 0.5,
+              ease: [0.34, 1.56, 0.64, 1],
+              delay: 0.8,
+            }}
+          >
+            {renderAuthButtons()}
+          </motion.div>
 
-          {/* ... (sisa kode untuk mobile menu tetap sama) ... */}
-          {/* Mobile Menu Button */}
-          <div className="lg:hidden">
+          {/* Mobile Menu Button with animation */}
+          <motion.div
+            className="lg:hidden"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{
+              duration: 0.5,
+              ease: [0.34, 1.56, 0.64, 1],
+              delay: 0.8,
+            }}
+          >
             <motion.button
               onClick={toggleMobileMenu}
               className="relative w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors"
@@ -189,9 +230,9 @@ export function NavBar({
                 />
               </div>
             </motion.button>
-          </div>
+          </motion.div>
         </div>
-      </nav>
+      </motion.nav>
 
       {/* Mobile Menu Dropdown */}
       <AnimatePresence>
@@ -214,58 +255,46 @@ export function NavBar({
               animate={{ y: 0, opacity: 1, pointerEvents: "auto" }}
               exit={{ y: "-100%", opacity: 0, pointerEvents: "none" }}
               transition={{
-                duration: 0.4,
-                ease: [0.23, 1, 0.32, 1],
+                duration: 0.5,
+                ease: [0.34, 1.56, 0.64, 1],
               }}
             >
               <div className="max-w-7xl mx-auto px-6 py-6">
-                {/* Navigation Links */}
+                {/* Navigation Links with staggered animation */}
                 <div className="space-y-1 mb-6">
-                  <a
-                    href="#features"
-                    onClick={closeMobileMenu}
-                    className="block py-3 px-4 text-[var(--neutral-ink)] hover:text-[var(--red-normal)] hover:bg-[var(--red-light)] rounded-lg transition-all font-medium"
-                  >
-                    Fitur
-                  </a>
-                  <a
-                    href="#how-it-works"
-                    onClick={closeMobileMenu}
-                    className="block py-3 px-4 text-[var(--neutral-ink)] hover:text-[var(--red-normal)] hover:bg-[var(--red-light)] rounded-lg transition-all font-medium"
-                  >
-                    Cara Kerja
-                  </a>
-                  <a
-                    href="#why-us"
-                    onClick={closeMobileMenu}
-                    className="block py-3 px-4 text-[var(--neutral-ink)] hover:text-[var(--red-normal)] hover:bg-[var(--red-light)] rounded-lg transition-all font-medium"
-                  >
-                    Keunggulan
-                  </a>
-                  <a
-                    href="#pricing"
-                    onClick={closeMobileMenu}
-                    className="block py-3 px-4 text-[var(--neutral-ink)] hover:text-[var(--red-normal)] hover:bg-[var(--red-light)] rounded-lg transition-all font-medium"
-                  >
-                    Harga
-                  </a>
-                  <a
-                    href="#faq"
-                    onClick={closeMobileMenu}
-                    className="block py-3 px-4 text-[var(--neutral-ink)] hover:text-[var(--red-normal)] hover:bg-[var(--red-light)] rounded-lg transition-all font-medium"
-                  >
-                    FAQ
-                  </a>
+                  {navItems.map((item, index) => (
+                    <motion.a
+                      key={item.href}
+                      href={item.href}
+                      onClick={closeMobileMenu}
+                      className="block py-3 px-4 text-[var(--neutral-ink)] hover:text-[var(--red-normal)] hover:bg-[var(--red-light)] rounded-lg transition-all font-medium"
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      transition={{
+                        duration: 0.3,
+                        ease: "easeOut",
+                        delay: index * 0.08,
+                      }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      {item.label}
+                    </motion.a>
+                  ))}
                 </div>
                 {/* Divider */}
                 <div className="h-px bg-gradient-to-r from-transparent via-[var(--border-color)] to-transparent mb-6"></div>
 
                 {/* Auth/Dashboard Section */}
                 <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ delay: 0.35 }}
+                  initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                  transition={{
+                    duration: 0.4,
+                    ease: [0.34, 1.56, 0.64, 1],
+                    delay: 0.4,
+                  }}
                 >
                   {user ? (
                     <motion.button
