@@ -1,10 +1,10 @@
 // components/checkout/OrderSummary.tsx
 "use client";
 
-import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { Check, Tag } from "lucide-react";
+import { Check, Tag, Loader2 } from "lucide-react";
 import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
 
 interface PlanDetails {
   name: string;
@@ -14,57 +14,55 @@ interface PlanDetails {
 
 interface OrderSummaryProps {
   plan: PlanDetails;
+  selectedPayment: string | null;
+  isProcessing: boolean;
+  onPayment: () => void;
 }
 
 const planDetails: Record<string, PlanDetails> = {
   basic: {
     name: "Basic",
-    price: 19000,
+    price: 0,
     features: [
-      "5 CV Builder per bulan",
-      "10 CV Scoring per bulan",
-      "Template CV Standard",
-      "Email Support",
+      "Buat CV hingga 5 CV per akun",
+      "Scoring CV hingga 10x / bulan",
+      "Ekspor 2 CV Pertama Tanpa Watermark",
+      "Saran perbaikan umum",
+      "Analisis kata kunci terbatas",
     ],
   },
   freshgraduate: {
     name: "Fresh Graduate",
-    price: 39000,
+    price: 89400,
     features: [
-      "15 CV Builder per bulan",
-      "30 CV Scoring per bulan",
-      "Template CV Premium",
-      "AI Summary Generator",
-      "Priority Email Support",
+      "Buat CV hingga 10 CV per akun",
+      "Scoring CV hingga 30x / bulan",
+      "Ekspor PDF Tanpa Watermark",
+      "Saran perbaikan detail",
+      "Buat CV Multi-bahasa (ID/EN)",
     ],
   },
   jobseeker: {
     name: "Job Seeker",
-    price: 59000,
+    price: 234000,
     features: [
-      "Unlimited CV Builder",
-      "Unlimited CV Scoring",
-      "All Premium Templates",
-      "AI Summary & Work Experience Generator",
-      "24/7 Priority Support",
-      "CV Consultation (1x/bulan)",
+      "Buat CV tanpa batas",
+      "Scoring CV tanpa batas",
+      "Ekspor PDF Tanpa Watermark",
+      "Saran perbaikan Sangat detail",
+      "Multi-bahasa (ID/EN)",
     ],
   },
 };
 
-export function OrderSummary({ plan: planProp }: OrderSummaryProps) {
+export function OrderSummary({ plan: planProp, selectedPayment, isProcessing, onPayment }: OrderSummaryProps) {
   const plan = planProp;
   const subtotal = plan.price;
   const ppn = Math.round(subtotal * 0.11);
   const total = subtotal + ppn;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.5, ease: "easeOut", delay: 0.2 }}
-      className="lg:sticky lg:top-24"
-    >
+    <div className="lg:sticky lg:top-24">
       <Card className="shadow-lg">
         <CardHeader className="space-y-3">
           <div className="flex items-center justify-between">
@@ -81,7 +79,9 @@ export function OrderSummary({ plan: planProp }: OrderSummaryProps) {
             <p className="text-3xl font-bold text-[var(--neutral-ink)]">
               Rp {subtotal.toLocaleString("id-ID")}
             </p>
-            <p className="text-gray-600">/bulan</p>
+            <p className="text-gray-600">
+              {plan.name === "Basic" ? "Gratis" : "ditagih setiap 6 bulan"}
+            </p>
           </div>
 
           {/* Features List */}
@@ -90,18 +90,12 @@ export function OrderSummary({ plan: planProp }: OrderSummaryProps) {
               Yang Anda Dapatkan:
             </p>
             {plan.features.map((feature, index) => (
-              <motion.div
-                key={index}
-                className="flex items-start gap-3"
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3, delay: 0.3 + index * 0.1 }}
-              >
+              <div key={index} className="flex items-start gap-3">
                 <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                   <Check className="w-3 h-3 text-green-600" />
                 </div>
                 <p className="text-sm text-gray-700">{feature}</p>
-              </motion.div>
+              </div>
             ))}
           </div>
 
@@ -137,13 +131,29 @@ export function OrderSummary({ plan: planProp }: OrderSummaryProps) {
           {/* Info */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
             <p className="text-xs text-blue-800">
-              💡 <strong>Info:</strong> Paket akan otomatis diperbarui setiap
-              bulan. Anda dapat membatalkan kapan saja.
+              💡 <strong>Info:</strong> Paket akan otomatis diperbarui setiap 6 bulan. Anda dapat membatalkan kapan saja.
             </p>
           </div>
+
+          {/* Payment Button */}
+          <Button
+            onClick={onPayment}
+            disabled={!selectedPayment || isProcessing}
+            className="w-full bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white h-12"
+            size="lg"
+          >
+            {isProcessing ? (
+              <>
+                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                Memproses Pembayaran...
+              </>
+            ) : (
+              `Bayar Sekarang Rp ${total.toLocaleString("id-ID")}`
+            )}
+          </Button>
         </CardContent>
       </Card>
-    </motion.div>
+    </div>
   );
 }
 

@@ -1,7 +1,6 @@
 // components/checkout/PaymentSelector.tsx
 "use client";
 
-import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { CreditCard, Building2, Wallet } from "lucide-react";
 import { cn } from "../../lib/utils";
@@ -44,18 +43,14 @@ export function PaymentSelector({
   onSelect,
 }: PaymentSelectorProps) {
   return (
-    <motion.div
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.5, ease: "easeOut", delay: 0.1 }}
-    >
+    <div>
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Metode Pembayaran</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {paymentMethods.map((method, index) => (
-            <motion.button
+          {paymentMethods.map((method) => (
+            <button
               key={method.id}
               onClick={() => onSelect(method.id)}
               className={cn(
@@ -65,11 +60,6 @@ export function PaymentSelector({
                   ? "border-[var(--red-normal)] bg-[var(--red-light)]"
                   : "border-gray-200 bg-white"
               )}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3, delay: 0.2 + index * 0.1 }}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
             >
               <div className="flex items-center gap-4">
                 <div
@@ -89,11 +79,7 @@ export function PaymentSelector({
                   <p className="text-sm text-gray-600">{method.description}</p>
                 </div>
                 {selectedMethod === method.id && (
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    className="w-6 h-6 bg-[var(--red-normal)] rounded-full flex items-center justify-center"
-                  >
+                  <div className="w-6 h-6 bg-[var(--red-normal)] rounded-full flex items-center justify-center">
                     <svg
                       className="w-4 h-4 text-white"
                       fill="none"
@@ -107,13 +93,13 @@ export function PaymentSelector({
                         d="M5 13l4 4L19 7"
                       />
                     </svg>
-                  </motion.div>
+                  </div>
                 )}
               </div>
-            </motion.button>
+            </button>
           ))}
         </CardContent>
       </Card>
-    </motion.div>
+    </div>
   );
 }

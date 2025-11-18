@@ -1,7 +1,6 @@
 // components/checkout/UserInfoCard.tsx
 "use client";
 
-import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { User, Mail } from "lucide-react";
 
@@ -12,11 +11,7 @@ interface UserInfoCardProps {
 
 export function UserInfoCard({ userName, userEmail }: UserInfoCardProps) {
   return (
-    <motion.div
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
-    >
+    <div>
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Informasi Akun</CardTitle>
@@ -47,6 +42,6 @@ export function UserInfoCard({ userName, userEmail }: UserInfoCardProps) {
           </div>
         </CardContent>
       </Card>
-    </motion.div>
+    </div>
   );
 }

@@ -3,7 +3,6 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { motion } from "framer-motion";
 import { Button } from "../../components/ui/button";
 import { UserInfoCard } from "../../components/checkout/UserInfoCard";
 import { PaymentSelector } from "../../components/checkout/PaymentSelector";
@@ -78,12 +77,7 @@ function CheckoutContent() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[var(--surface)] via-white to-[var(--red-light)]">
       {/* Header */}
-      <motion.header
-        className="bg-white/95 backdrop-blur-md border-b border-gray-200 sticky top-0 z-40"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
+      <header className="bg-white/95 backdrop-blur-md border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <Link href="/">
@@ -104,28 +98,24 @@ function CheckoutContent() {
             </Link>
           </div>
         </div>
-      </motion.header>
+      </header>
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6 py-12">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
+        <div>
           <h1 className="text-3xl md:text-4xl font-bold text-[var(--neutral-ink)] mb-2">
             Konfirmasi Pembelian
           </h1>
           <p className="text-gray-600 mb-8">
             Lengkapi pembayaran untuk mengaktifkan paket berlangganan Anda
           </p>
-        </motion.div>
+        </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Left Column - User Info & Payment */}
           <div className="lg:col-span-2 space-y-6">
             <UserInfoCard
-              userName={user.displayName || user.email || "User"}
+              userName={user.fullName || user.email || "User"}
               userEmail={user.email || ""}
             />
 
@@ -137,59 +127,14 @@ function CheckoutContent() {
 
           {/* Right Column - Order Summary */}
           <div className="lg:col-span-1">
-            <OrderSummary plan={plan} />
+            <OrderSummary
+              plan={plan}
+              selectedPayment={selectedPayment}
+              isProcessing={isProcessing}
+              onPayment={handlePayment}
+            />
           </div>
         </div>
-
-        {/* Payment Button */}
-        <motion.div
-          className="mt-8 lg:hidden"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-        >
-          <Button
-            onClick={handlePayment}
-            disabled={!selectedPayment || isProcessing}
-            className="w-full bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white h-14 text-lg"
-            size="lg"
-          >
-            {isProcessing ? (
-              <>
-                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                Memproses Pembayaran...
-              </>
-            ) : (
-              `Bayar Sekarang Rp ${total.toLocaleString("id-ID")}`
-            )}
-          </Button>
-        </motion.div>
-
-        {/* Desktop Payment Button */}
-        <motion.div
-          className="hidden lg:block mt-8"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-        >
-          <div className="max-w-2xl">
-            <Button
-              onClick={handlePayment}
-              disabled={!selectedPayment || isProcessing}
-              className="w-full bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white h-14 text-lg"
-              size="lg"
-            >
-              {isProcessing ? (
-                <>
-                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  Memproses Pembayaran...
-                </>
-              ) : (
-                `Bayar Sekarang Rp ${total.toLocaleString("id-ID")}`
-              )}
-            </Button>
-          </div>
-        </motion.div>
       </div>
     </div>
   );
