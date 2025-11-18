@@ -107,7 +107,7 @@ export default function Page() {
         onLogout={handleLogout}
         onDashboard={handleGoToDashboard}
       />
-      <div className="pt-17 ">
+      <div className="pt-20">
         <HeroSection
           onFileUpload={handleCVUpload}
           isProcessing={isProcessingCV}

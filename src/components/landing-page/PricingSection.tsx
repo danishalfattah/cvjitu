@@ -106,11 +106,11 @@ export function PricingSection() {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {pricingPlans.map((plan, index) => (
             <Card
               key={index}
-              className={`relative bg-white border-2 transition-all duration-300 hover:shadow-lg ${
+              className={`relative bg-white border-2 transition-smooth hover:shadow-lg hover:-translate-y-1 ${
                 plan.popular
                   ? "border-[var(--red-normal)] shadow-lg scale-105"
                   : "border-[var(--border-color)] hover:border-[var(--red-light)]"
@@ -167,7 +167,7 @@ export function PricingSection() {
                   className={`w-full py-3 ${
                     plan.ctaVariant === "default"
                       ? "bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white"
-                      : "border-[var(--red-normal)]  text-[var(--red-normal)] hover:bg-[var(--red-light)]"
+                      : "border-[var(--red-normal)] text-[var(--red-normal)] hover:bg-[var(--red-light)]"
                   }`}
                   variant={plan.ctaVariant}
                 >

@@ -83,7 +83,7 @@ export function FeaturesSection() {
         >
           {features.map((feature, index) => (
             <motion.div key={index} variants={cardVariants}>
-              <Card className="border border-[var(--border-color)] hover:shadow-xl hover:-translate-y-2 transition-all duration-300 h-full">
+              <Card className="border border-[var(--border-color)] hover:shadow-lg hover:-translate-y-1 transition-smooth h-full">
                 <CardHeader className="text-center">
                   <motion.div
                     className="w-16 h-16 bg-[var(--red-light)] rounded-2xl flex items-center justify-center mx-auto mb-4"
