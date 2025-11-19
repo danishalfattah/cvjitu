@@ -155,20 +155,28 @@ export async function PUT(
   }
 }
 
-// **PERBAIKAN DIMULAI DI SINI (DELETE Handler)**
+// DELETE Handler - Supports both builder CVs (cvs collection) and uploaded CVs (scored_cvs collection)
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   const userId = await getUserId();
-  const id = params.id; 
+  const id = params.id;
 
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
-    const docRef = adminDb.collection("cvs").doc(id);
+    // Extract type from query params to determine the correct collection
+    const { searchParams } = new URL(request.url);
+    const type = searchParams.get('type');
+
+    // Determine collection based on type
+    const collectionName = type === 'uploaded' ? 'scored_cvs' : 'cvs';
+
+    // Delete from the correct collection
+    const docRef = adminDb.collection(collectionName).doc(id);
     const doc = await docRef.get();
 
     if (!doc.exists) {
