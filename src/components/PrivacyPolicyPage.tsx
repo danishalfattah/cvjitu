@@ -1,29 +1,20 @@
-import { Button } from "./ui/button";
-import { ArrowLeft, Shield } from "lucide-react";
+import { BackButton } from "./BackButton";
+import { Shield } from "lucide-react";
 
-interface PrivacyPolicyPageProps {
-  onBack: () => void;
-}
-
-export function PrivacyPolicyPage({ onBack }: PrivacyPolicyPageProps) {
+export function PrivacyPolicyPage() {
   return (
     <div className="min-h-screen bg-[var(--surface)] py-8 px-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center space-x-4 mb-8">
-          <Button 
-            variant="ghost" 
-            onClick={onBack}
-            className="text-gray-500 hover:text-[var(--red-normal)]"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Kembali
-          </Button>
+          <BackButton />
           <div className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-[var(--red-normal)] rounded-lg flex items-center justify-center">
               <span className="text-white font-semibold text-sm">CV</span>
             </div>
-            <span className="font-poppins font-semibold text-xl text-[var(--neutral-ink)]">CVJitu</span>
+            <span className="font-poppins font-semibold text-xl text-[var(--neutral-ink)]">
+              CVJitu
+            </span>
           </div>
         </div>
 
@@ -35,13 +26,14 @@ export function PrivacyPolicyPage({ onBack }: PrivacyPolicyPageProps) {
               Kebijakan Privasi
             </h1>
           </div>
-          
+
           <div className="prose max-w-none space-y-6">
             <div className="text-sm text-gray-500 mb-6">
-              Terakhir diperbarui: {new Date().toLocaleDateString('id-ID', { 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
+              Terakhir diperbarui:{" "}
+              {new Date().toLocaleDateString("id-ID", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
               })}
             </div>
 
@@ -50,9 +42,10 @@ export function PrivacyPolicyPage({ onBack }: PrivacyPolicyPageProps) {
                 1. Pengantar
               </h2>
               <p className="text-gray-600 leading-relaxed">
-                CVJitu berkomitmen untuk melindungi privasi dan keamanan data pribadi Anda. 
-                Kebijakan privasi ini menjelaskan bagaimana kami mengumpulkan, menggunakan, 
-                menyimpan, dan melindungi informasi Anda saat menggunakan layanan kami.
+                CVJitu berkomitmen untuk melindungi privasi dan keamanan data
+                pribadi Anda. Kebijakan privasi ini menjelaskan bagaimana kami
+                mengumpulkan, menggunakan, menyimpan, dan melindungi informasi
+                Anda saat menggunakan layanan kami.
               </p>
             </section>
 
@@ -60,7 +53,7 @@ export function PrivacyPolicyPage({ onBack }: PrivacyPolicyPageProps) {
               <h2 className="text-xl font-poppins font-semibold text-[var(--neutral-ink)] mb-3">
                 2. Informasi yang Kami Kumpulkan
               </h2>
-              
+
               <h3 className="text-lg font-medium text-[var(--neutral-ink)] mb-2 mt-4">
                 Informasi Pribadi
               </h3>
@@ -103,12 +96,13 @@ export function PrivacyPolicyPage({ onBack }: PrivacyPolicyPageProps) {
               <h2 className="text-xl font-poppins font-semibold text-[var(--neutral-ink)] mb-3">
                 4. Penyimpanan dan Keamanan Data
               </h2>
-              
+
               <h3 className="text-lg font-medium text-[var(--neutral-ink)] mb-2 mt-4">
                 Keamanan Data
               </h3>
               <p className="text-gray-600 leading-relaxed mb-3">
-                Kami menerapkan langkah-langkah keamanan yang kuat untuk melindungi data Anda:
+                Kami menerapkan langkah-langkah keamanan yang kuat untuk
+                melindungi data Anda:
               </p>
               <ul className="list-disc list-inside text-gray-600 space-y-2 ml-4">
                 <li>Enkripsi data end-to-end untuk semua transmisi</li>
@@ -121,9 +115,10 @@ export function PrivacyPolicyPage({ onBack }: PrivacyPolicyPageProps) {
                 Retensi Data
               </h3>
               <p className="text-gray-600 leading-relaxed">
-                Kami menyimpan data pribadi Anda selama akun aktif atau seperlunya untuk 
-                menyediakan layanan. Data akan dihapus sesuai permintaan atau setelah 
-                periode retensi yang ditentukan oleh hukum yang berlaku.
+                Kami menyimpan data pribadi Anda selama akun aktif atau
+                seperlunya untuk menyediakan layanan. Data akan dihapus sesuai
+                permintaan atau setelah periode retensi yang ditentukan oleh
+                hukum yang berlaku.
               </p>
             </section>
 
@@ -132,14 +127,20 @@ export function PrivacyPolicyPage({ onBack }: PrivacyPolicyPageProps) {
                 5. Berbagi Informasi
               </h2>
               <p className="text-gray-600 leading-relaxed mb-3">
-                Kami tidak menjual atau menyewakan data pribadi Anda kepada pihak ketiga. 
-                Kami hanya membagikan informasi dalam situasi terbatas:
+                Kami tidak menjual atau menyewakan data pribadi Anda kepada
+                pihak ketiga. Kami hanya membagikan informasi dalam situasi
+                terbatas:
               </p>
               <ul className="list-disc list-inside text-gray-600 space-y-2 ml-4">
                 <li>Dengan persetujuan eksplisit dari Anda</li>
-                <li>Kepada penyedia layanan terpercaya yang membantu operasional kami</li>
+                <li>
+                  Kepada penyedia layanan terpercaya yang membantu operasional
+                  kami
+                </li>
                 <li>Untuk mematuhi kewajiban hukum atau perintah pengadilan</li>
-                <li>Dalam kasus merger, akuisisi, atau penjualan aset perusahaan</li>
+                <li>
+                  Dalam kasus merger, akuisisi, atau penjualan aset perusahaan
+                </li>
               </ul>
             </section>
 
@@ -155,7 +156,9 @@ export function PrivacyPolicyPage({ onBack }: PrivacyPolicyPageProps) {
                 <li>Memperbarui atau mengoreksi informasi yang tidak akurat</li>
                 <li>Menghapus akun dan data pribadi Anda</li>
                 <li>Membatasi atau menolak pemrosesan data tertentu</li>
-                <li>Memindahkan data Anda ke layanan lain (portabilitas data)</li>
+                <li>
+                  Memindahkan data Anda ke layanan lain (portabilitas data)
+                </li>
                 <li>Mengajukan keluhan kepada otoritas perlindungan data</li>
               </ul>
             </section>
@@ -174,7 +177,8 @@ export function PrivacyPolicyPage({ onBack }: PrivacyPolicyPageProps) {
                 <li>Memastikan keamanan dan mencegah penipuan</li>
               </ul>
               <p className="text-gray-600 leading-relaxed mt-3">
-                Anda dapat mengatur preferensi cookies melalui pengaturan browser Anda.
+                Anda dapat mengatur preferensi cookies melalui pengaturan
+                browser Anda.
               </p>
             </section>
 
@@ -183,9 +187,10 @@ export function PrivacyPolicyPage({ onBack }: PrivacyPolicyPageProps) {
                 8. Transfer Data Internasional
               </h2>
               <p className="text-gray-600 leading-relaxed">
-                Data Anda mungkin diproses dan disimpan di server yang berlokasi di negara lain. 
-                Kami memastikan bahwa transfer data internasional dilakukan dengan perlindungan 
-                yang memadai sesuai dengan standar privasi internasional.
+                Data Anda mungkin diproses dan disimpan di server yang berlokasi
+                di negara lain. Kami memastikan bahwa transfer data
+                internasional dilakukan dengan perlindungan yang memadai sesuai
+                dengan standar privasi internasional.
               </p>
             </section>
 
@@ -194,9 +199,10 @@ export function PrivacyPolicyPage({ onBack }: PrivacyPolicyPageProps) {
                 9. Perubahan Kebijakan
               </h2>
               <p className="text-gray-600 leading-relaxed">
-                Kami dapat memperbarui kebijakan privasi ini dari waktu ke waktu. Perubahan 
-                material akan diberitahukan melalui email atau pemberitahuan di platform. 
-                Tanggal "Terakhir diperbarui" di bagian atas menunjukkan revisi terbaru.
+                Kami dapat memperbarui kebijakan privasi ini dari waktu ke
+                waktu. Perubahan material akan diberitahukan melalui email atau
+                pemberitahuan di platform. Tanggal "Terakhir diperbarui" di
+                bagian atas menunjukkan revisi terbaru.
               </p>
             </section>
 
@@ -205,14 +211,17 @@ export function PrivacyPolicyPage({ onBack }: PrivacyPolicyPageProps) {
                 10. Hubungi Kami
               </h2>
               <p className="text-gray-600 leading-relaxed mb-3">
-                Jika Anda memiliki pertanyaan tentang kebijakan privasi ini atau ingin 
-                menggunakan hak-hak data Anda, silakan hubungi kami:
+                Jika Anda memiliki pertanyaan tentang kebijakan privasi ini atau
+                ingin menggunakan hak-hak data Anda, silakan hubungi kami:
               </p>
               <div className="p-4 bg-[var(--surface)] rounded-lg">
                 <p className="text-gray-600">
-                  <strong>Data Protection Officer</strong><br />
-                  <strong>Email:</strong> privacy@cvjitu.com<br />
-                  <strong>Alamat:</strong> Jakarta, Indonesia<br />
+                  <strong>Data Protection Officer</strong>
+                  <br />
+                  <strong>Email:</strong> privacy@cvjitu.com
+                  <br />
+                  <strong>Alamat:</strong> Jakarta, Indonesia
+                  <br />
                   <strong>Website:</strong> www.cvjitu.com
                 </p>
               </div>
@@ -224,9 +233,10 @@ export function PrivacyPolicyPage({ onBack }: PrivacyPolicyPageProps) {
                   Komitmen Kami untuk Privasi Anda
                 </h3>
                 <p className="text-blue-800 text-sm">
-                  CVJitu berkomitmen penuh untuk melindungi privasi dan keamanan data Anda. 
-                  Kami mengikuti praktik terbaik industri dan mematuhi regulasi perlindungan 
-                  data yang berlaku untuk memastikan informasi Anda tetap aman dan terlindungi.
+                  CVJitu berkomitmen penuh untuk melindungi privasi dan keamanan
+                  data Anda. Kami mengikuti praktik terbaik industri dan
+                  mematuhi regulasi perlindungan data yang berlaku untuk
+                  memastikan informasi Anda tetap aman dan terlindungi.
                 </p>
               </div>
             </section>

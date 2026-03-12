@@ -2,13 +2,14 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "../ui/button";
 import { FileUploadZone } from "../FileUploadZone";
 import Image from "next/image";
 import { Sparkles, Upload, TrendingUp } from "lucide-react";
-import { type CVScoringData } from "../../app/page";
+import { type CVScoringData } from "@/lib/types";
+import { LiveCounter } from "./LiveCounter";
 
 interface HeroSectionProps {
   onFileUpload: (file: File) => void;
@@ -34,15 +35,6 @@ export function HeroSection({
   simplifiedView = false,
 }: HeroSectionProps) {
   const [isHighlighting, setIsHighlighting] = useState(false);
-  const [liveCount, setLiveCount] = useState(1234);
-
-  // Simulate live user count changing
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setLiveCount((prev) => prev + Math.floor(Math.random() * 3) - 1);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
 
   const handleTriggerHighlight = () => {
     setIsHighlighting(true);
@@ -74,13 +66,7 @@ export function HeroSection({
                 delay: 0.2,
               }}
             >
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-gentle-pulse" />
-              <span className="text-sm font-medium text-gray-700">
-                <strong className="text-[var(--red-normal)]">
-                  {liveCount.toLocaleString()}
-                </strong>{" "}
-                orang sedang membuat CV sekarang
-              </span>
+              <LiveCounter />
             </motion.div>
 
             {/* Main Heading */}

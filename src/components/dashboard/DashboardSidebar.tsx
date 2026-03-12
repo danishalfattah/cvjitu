@@ -1,3 +1,5 @@
+"use client";
+
 import { LayoutDashboard, BarChart3, LogOut, X, Star } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Button } from "../ui/button";
@@ -7,10 +9,9 @@ import { Label } from "../ui/label";
 import Image from "next/image";
 import { User } from "@/context/AuthContext";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 interface DashboardSidebarProps {
-  activeTab: string;
-  onTabChange: (tab: string) => void;
   onLogout?: () => void;
   user?: User | null;
   isMobile?: boolean;
@@ -18,23 +19,25 @@ interface DashboardSidebarProps {
 }
 
 export function DashboardSidebar({
-  activeTab,
-  onTabChange,
   onLogout,
   user,
   isMobile = false,
   onClose,
 }: DashboardSidebarProps) {
+  const pathname = usePathname();
+
   const menuItems = [
     {
-      id: "dashboard",
+      href: "/dashboard",
       label: "Dashboard",
       icon: LayoutDashboard,
+      isActive: pathname === "/dashboard",
     },
     {
-      id: "scoring",
+      href: "/dashboard/scoring",
       label: "Scoring CV",
       icon: BarChart3,
+      isActive: pathname === "/dashboard/scoring",
     },
   ];
 
@@ -76,18 +79,19 @@ export function DashboardSidebar({
         <nav className="p-4 flex-grow overflow-y-auto">
           <ul className="space-y-2">
             {menuItems.map((item) => (
-              <li key={item.id}>
-                <button
-                  onClick={() => onTabChange(item.id)}
+              <li key={item.href}>
+                <Link
+                  href={item.href}
+                  onClick={isMobile ? onClose : undefined}
                   className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 ${
-                    activeTab === item.id
+                    item.isActive
                       ? "bg-[var(--red-light)] text-[var(--red-normal)] font-medium transform scale-[1.02]"
                       : "text-gray-600 hover:bg-gray-50 hover:text-[var(--neutral-ink)] hover:transform hover:scale-[1.01]"
                   }`}
                 >
                   <item.icon className="w-5 h-5 flex-shrink-0" />
                   <span className="truncate">{item.label}</span>
-                </button>
+                </Link>
               </li>
             ))}
           </ul>

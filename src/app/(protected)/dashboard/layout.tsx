@@ -5,17 +5,11 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { toast } from "sonner";
-import { Language } from "@/lib/translations";
 import { Loader2 } from "lucide-react";
 
-export default function DashboardPage() {
+export default function Layout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { user, isAuthenticated, logout, isLoading } = useAuth();
-  const [lang, setLang] = useState<Language>("id");
-
-  useEffect(() => {
-    document.title = "Dashboard - CVJitu";
-  }, []);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -39,9 +33,8 @@ export default function DashboardPage() {
         toast.success("Berhasil keluar.");
         router.replace("/");
       }}
-      onCreateCV={(lang) => router.push(`/cv-builder?lang=${lang}`)}
-      lang={lang}
-      onLangChange={setLang}
-    />
+    >
+      {children}
+    </DashboardLayout>
   );
 }

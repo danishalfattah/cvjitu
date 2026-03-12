@@ -18,30 +18,9 @@ async function getUserId() {
 // --- PERBAIKAN 1: TAMBAHKAN HANDLER GET ---
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } } 
+  { params }: { params: Promise<{ id: string }> } 
 ) {
-  let cvId: string | undefined;
-
-  try {
-    const url = new URL(request.url);
-    const pathSegments = url.pathname.split('/');
-    cvId = pathSegments[pathSegments.length - 1];
-
-    if (!cvId) {
-      console.error("[GET /api/cv/[id]] CV ID not found in URL path:", url.pathname);
-      return NextResponse.json({ error: "CV ID not found in URL path" }, { status: 400 });
-    }
-    console.log(`[GET /api/cv/[id]] Extracted cvId from URL: ${cvId}`); // Logging untuk debug
-  } catch (urlError) {
-     console.error("[GET /api/cv/[id]] Error parsing URL or extracting ID:", urlError);
-     // Fallback ke params jika URL parsing gagal (meskipun ini yang error sebelumnya)
-     if (params && params.id) {
-       cvId = params.id;
-       console.log(`[GET /api/cv/[id]] Falling back to params.id: ${cvId}`);
-     } else {
-       return NextResponse.json({ error: "Could not determine CV ID" }, { status: 400 });
-     }
-  }
+  const { id: cvId } = await params;
 
 
   // Ambil session cookie dan verifikasi pengguna (jika ada)
@@ -110,10 +89,10 @@ export async function GET(
 // **PERBAIKAN DIMULAI DI SINI (PUT Handler)**
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const userId = await getUserId();
-  const id = params.id; // Tidak perlu 'await'
+  const { id } = await params;
 
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -158,10 +137,10 @@ export async function PUT(
 // DELETE Handler - Supports both builder CVs (cvs collection) and uploaded CVs (scored_cvs collection)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const userId = await getUserId();
-  const id = params.id;
+  const { id } = await params;
 
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

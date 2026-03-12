@@ -14,7 +14,7 @@ import {
   ArrowLeft,
   Save,
 } from "lucide-react";
-import { type CVScoringData } from "../../app/page";
+import { type CVScoringData } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 import { Language, t } from "@/lib/translations"; // Import Language dan t
@@ -118,7 +118,7 @@ export function CVScoringResult({
         <div
           className={cn(
             "grid gap-8 items-start",
-            showPreview && cvBuilderData ? "lg:grid-cols-2" : "grid-cols-1"
+            showPreview && cvBuilderData ? "lg:grid-cols-2" : "grid-cols-1",
           )}
         >
           {showPreview && cvBuilderData && (

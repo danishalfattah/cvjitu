@@ -25,7 +25,7 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
 } from "../ui/dropdown-menu";
-import { type CVScoringData } from "../../app/page";
+import { type CVScoringData } from "@/lib/types";
 import { CVGrade, Education, WorkExperience } from "../cvbuilder/types";
 import { downloadCV } from "@/lib/utils";
 

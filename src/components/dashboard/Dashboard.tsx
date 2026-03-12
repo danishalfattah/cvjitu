@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useDeferredValue } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -20,7 +20,7 @@ import { EmptyState } from "../EmptyState";
 import { DeleteConfirmModal } from "../DeleteConfirmModal";
 import { CVScoringResult } from "./CVScoringResult";
 import { CVPreview } from "../cvbuilder/preview/CVPreview";
-import { type CVScoringData } from "@/app/page";
+import { type CVScoringData } from "@/lib/types";
 import { CVBuilderData } from "../cvbuilder/types";
 import {
   AlertDialog,
@@ -98,6 +98,7 @@ function CVCardSkeleton() {
 export function Dashboard({ onCreateCVAction, lang }: DashboardProps) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
+  const deferredSearch = useDeferredValue(searchQuery);
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
   const [cvs, setCvs] = useState<CVData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -115,7 +116,7 @@ export function Dashboard({ onCreateCVAction, lang }: DashboardProps) {
   const itemsPerPage = 8;
   const [isLangModalOpen, setIsLangModalOpen] = useState(false);
   const [scoringResult, setScoringResult] = useState<CVScoringData | null>(
-    null
+    null,
   );
   const [selectedCvForPreview, setSelectedCvForPreview] =
     useState<CVData | null>(null);
@@ -141,7 +142,7 @@ export function Dashboard({ onCreateCVAction, lang }: DashboardProps) {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, filters]);
+  }, [deferredSearch, filters]);
 
   const availableYears = useMemo(() => {
     if (!cvs || cvs.length === 0) return [];
@@ -154,12 +155,12 @@ export function Dashboard({ onCreateCVAction, lang }: DashboardProps) {
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     const completedCvs = cvs.filter((cv) => cv.status !== "Draft");
     const cvsThisMonth = completedCvs.filter(
-      (cv) => new Date(cv.createdAt) > thirtyDaysAgo
+      (cv) => new Date(cv.createdAt) > thirtyDaysAgo,
     );
     const total = cvs.length;
     const avgScore = Math.round(
       completedCvs.reduce((sum, cv) => sum + (cv.score || 0), 0) /
-        (completedCvs.length || 1)
+        (completedCvs.length || 1),
     );
     const completed = completedCvs.length;
     const drafted = total - completed;
@@ -178,7 +179,7 @@ export function Dashboard({ onCreateCVAction, lang }: DashboardProps) {
     let filtered = cvs.filter((cv) => {
       const matchesSearch = (cv.name || "")
         .toLowerCase()
-        .includes(searchQuery.toLowerCase());
+        .includes(deferredSearch.toLowerCase());
       const matchesStatus =
         filters.status === "Semua Status" ||
         (filters.status === "Selesai" && cv.status === "Completed") ||
@@ -198,7 +199,7 @@ export function Dashboard({ onCreateCVAction, lang }: DashboardProps) {
       return filters.sortBy === "newest" ? dateB - dateA : dateA - dateB;
     });
     return filtered;
-  }, [cvs, searchQuery, filters]);
+  }, [cvs, deferredSearch, filters]);
 
   const handleCVAction = async (action: string, cv: CVData) => {
     switch (action) {
@@ -232,7 +233,7 @@ export function Dashboard({ onCreateCVAction, lang }: DashboardProps) {
           await downloadCV(
             cv.id,
             cv.name,
-            cv.lang === "unknown" ? "id" : cv.lang
+            cv.lang === "unknown" ? "id" : cv.lang,
           );
         } catch (error) {
           console.error("Gagal mengunduh CV:", error);
@@ -253,7 +254,7 @@ export function Dashboard({ onCreateCVAction, lang }: DashboardProps) {
   const handleShareCV = (cv: CVData) => {
     if (cv.visibility === "private") {
       toast.warning(
-        "Ubah privasi CV menjadi 'Publik' untuk dapat membagikan link."
+        "Ubah privasi CV menjadi 'Publik' untuk dapat membagikan link.",
       );
       return;
     }
@@ -265,11 +266,11 @@ export function Dashboard({ onCreateCVAction, lang }: DashboardProps) {
 
   const handleVisibilityChange = async (
     cvId: string,
-    visibility: "public" | "private"
+    visibility: "public" | "private",
   ) => {
     const originalCvs = [...cvs];
     const updatedCvs = cvs.map((cv) =>
-      cv.id === cvId ? { ...cv, visibility } : cv
+      cv.id === cvId ? { ...cv, visibility } : cv,
     );
     setCvs(updatedCvs);
     try {
@@ -292,7 +293,7 @@ export function Dashboard({ onCreateCVAction, lang }: DashboardProps) {
           `/api/cv/${deleteModal.cv.id}?type=builder`,
           {
             method: "DELETE",
-          }
+          },
         );
         if (!response.ok) throw new Error("Gagal menghapus CV");
         setCvs((prev) => prev.filter((cv) => cv.id !== deleteModal.cv!.id));
@@ -332,7 +333,7 @@ export function Dashboard({ onCreateCVAction, lang }: DashboardProps) {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedCVs = filteredAndSortedCVs.slice(
     startIndex,
-    startIndex + itemsPerPage
+    startIndex + itemsPerPage,
   );
 
   if (isLoading) {
