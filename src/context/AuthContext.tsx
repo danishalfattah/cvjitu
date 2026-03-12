@@ -106,22 +106,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setFirebaseUser(fbUser);
       if (fbUser) {
         const idToken = await fbUser.getIdToken();
-        // --- PERBAIKAN DI SINI: Panggil API untuk membuat session cookie ---
-        await fetch("/api/auth/session", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ idToken }),
-        });
-
-        // Verifikasi email sebelum set user profile
-        const userProfile = await getUserProfile(fbUser);
+        // Parallelize session creation and user profile fetch
+        const [, userProfile] = await Promise.all([
+          fetch("/api/auth/session", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ idToken }),
+          }),
+          getUserProfile(fbUser),
+        ]);
         setUser(userProfile);
       } else {
-        // --- PERBAIKAN DI SINI: Panggil API untuk menghapus session cookie ---
         await fetch("/api/auth/session", { method: "DELETE" });
         setUser(null);
       }
-      // --- PERBAIKAN DI SINI: Set isLoading ke false SETELAH pengecekan selesai ---
       setIsLoading(false);
     });
 
@@ -135,7 +133,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const userCredential = await signInWithEmailAndPassword(
         auth,
         email,
-        password
+        password,
       );
     } finally {
       // Dihapus: setIsLoading(false) akan ditangani oleh onAuthStateChanged
@@ -148,7 +146,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         data.email,
-        data.password
+        data.password,
       );
       const fbUser = userCredential.user;
 
@@ -178,7 +176,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
-    } finally {
+    } catch (error) {
+      setIsLoading(false);
+      throw error;
     }
   };
 

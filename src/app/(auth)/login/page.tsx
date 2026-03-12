@@ -1,0 +1,62 @@
+"use client";
+
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { LoginPage } from "@/components/LoginPage";
+import { useEffect } from "react";
+
+export default function Login() {
+  const router = useRouter();
+  const { login, loginWithGoogle, isLoading, isAuthenticated } = useAuth();
+
+  // Prefetch dashboard page so it's ready when redirect happens
+  useEffect(() => {
+    router.prefetch("/dashboard");
+  }, [router]);
+
+  // Auto-redirect when authenticated
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      router.replace("/dashboard");
+    }
+  }, [isAuthenticated, isLoading, router]);
+
+  useEffect(() => {
+    document.title = "Masuk - CVJitu";
+  }, []);
+
+  const handleLogin = async (email: string, password: string) => {
+    try {
+      await login(email, password);
+      toast.success("Berhasil masuk! Selamat datang.");
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Gagal masuk. Silakan coba lagi.",
+      );
+    }
+  };
+
+  const handleGoogle = async () => {
+    try {
+      await loginWithGoogle();
+      // Toast moved after redirect — shown when already navigating
+      toast.success("Berhasil masuk dengan Google!");
+    } catch {
+      toast.error("Gagal masuk dengan Google. Silakan coba lagi.");
+    }
+  };
+
+  return (
+    <LoginPage
+      onLogin={handleLogin}
+      onGoogleLogin={handleGoogle}
+      onNavigateToRegister={() => router.push("/register")}
+      onBack={() => router.push("/")}
+      isLoading={isLoading}
+      onNavigateToForgotPassword={() => router.push("/forgot-password")}
+    />
+  );
+}

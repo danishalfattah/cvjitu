@@ -144,8 +144,8 @@
   }
 }
 
-typography: keep original mapping – Poppins for headings,
-  Inter for body @layer base {
+/* Typography: keep original mapping – Poppins for headings, Inter for body */
+@layer base {
   :where(:not(:has([class*=" text-"]), :not(:has([class^="text-"])))) {
     h1,
     h2,
@@ -360,12 +360,14 @@ body[data-radix-scroll-area-viewport] {
 
 /* Soft glow effects using existing red color */
 .glow-red-soft {
-  box-shadow: 0 0 30px rgba(162, 25, 68, 0.15),
+  box-shadow:
+    0 0 30px rgba(162, 25, 68, 0.15),
     0 0 60px rgba(162, 25, 68, 0.1);
 }
 
 .glow-red-medium {
-  box-shadow: 0 0 40px rgba(162, 25, 68, 0.25),
+  box-shadow:
+    0 0 40px rgba(162, 25, 68, 0.25),
     0 0 80px rgba(162, 25, 68, 0.15);
 }
 

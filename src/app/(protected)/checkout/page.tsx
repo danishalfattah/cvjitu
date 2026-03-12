@@ -3,12 +3,12 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Button } from "../../components/ui/button";
-import { UserInfoCard } from "../../components/checkout/UserInfoCard";
-import { PaymentSelector } from "../../components/checkout/PaymentSelector";
-import { OrderSummary, planDetails } from "../../components/checkout/OrderSummary";
-import { SuccessState } from "../../components/checkout/SuccessState";
-import { useAuth } from "../../context/AuthContext";
+import { Button } from "@/components/ui/button";
+import { UserInfoCard } from "@/components/checkout/UserInfoCard";
+import { PaymentSelector } from "@/components/checkout/PaymentSelector";
+import { OrderSummary, planDetails } from "@/components/checkout/OrderSummary";
+import { SuccessState } from "@/components/checkout/SuccessState";
+import { useAuth } from "@/context/AuthContext";
 import { Loader2, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";

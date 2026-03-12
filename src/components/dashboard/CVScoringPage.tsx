@@ -13,8 +13,10 @@ import { CVScoringResult } from "./CVScoringResult";
 import { DeleteConfirmModal } from "../DeleteConfirmModal";
 import { Search, Grid, List, Loader2 } from "lucide-react";
 import { CVData } from "./CVCard";
-import { type CVScoringData } from "../../app/page";
+import { type CVScoringData } from "@/lib/types";
 import { Language, t } from "@/lib/translations";
+import { Skeleton } from "../ui/skeleton";
+import { Card, CardContent } from "../ui/card";
 
 interface CVScoringPageProps {
   lang: Language; // Tambahkan prop lang
@@ -33,10 +35,10 @@ export function CVScoringPage({ lang }: CVScoringPageProps) {
   });
   const [isProcessing, setIsProcessing] = useState(false);
   const [scoringResult, setScoringResult] = useState<CVScoringData | null>(
-    null
+    null,
   );
   const [newlyScoredCv, setNewlyScoredCv] = useState<Partial<CVData> | null>(
-    null
+    null,
   );
   const [deleteModal, setDeleteModal] = useState<{
     isOpen: boolean;
@@ -76,7 +78,7 @@ export function CVScoringPage({ lang }: CVScoringPageProps) {
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(
-          errorData.error || "Gagal mendapatkan analisis dari server."
+          errorData.error || "Gagal mendapatkan analisis dari server.",
         );
       }
 
@@ -220,8 +222,50 @@ export function CVScoringPage({ lang }: CVScoringPageProps) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <Loader2 className="w-8 h-8 animate-spin text-[var(--red-normal)]" />
+      <div className="p-4 sm:p-6 min-h-screen">
+        {/* Header */}
+        <div className="mb-6 sm:mb-8">
+          <Skeleton className="h-4 w-40 mb-2" />
+          <Skeleton className="h-8 w-56 mb-1" />
+          <Skeleton className="h-4 w-80" />
+        </div>
+        {/* Upload zone */}
+        <Skeleton className="h-32 w-full rounded-xl mb-8" />
+        {/* Repository title */}
+        <Skeleton className="h-6 w-52 mb-4" />
+        {/* Filters */}
+        <Skeleton className="h-10 w-full rounded-lg mb-6" />
+        {/* Search */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mb-6">
+          <Skeleton className="h-9 w-full sm:w-md" />
+        </div>
+        {/* Card grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-6">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Card
+              key={i}
+              className="border border-[var(--border-color)] flex flex-col"
+            >
+              <CardContent className="flex flex-col flex-grow space-y-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 min-w-0 space-y-3">
+                    <Skeleton className="h-5 w-4/5" />
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Skeleton className="h-5 w-16 rounded-full" />
+                      <Skeleton className="h-5 w-12 rounded-full" />
+                    </div>
+                  </div>
+                  <Skeleton className="h-8 w-8 rounded-full" />
+                </div>
+                <div className="space-y-2 flex-grow">
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-4 w-3/4" />
+                </div>
+                <Skeleton className="h-10 w-full rounded-md" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     );
   }

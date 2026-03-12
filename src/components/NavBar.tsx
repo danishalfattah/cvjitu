@@ -6,8 +6,7 @@ import { Button } from "./ui/button";
 import { LayoutDashboard } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import { useAuth } from "../context/AuthContext"; // --- Impor useAuth ---
-import { Skeleton } from "./ui/skeleton"; // --- Impor Skeleton ---
+import { Skeleton } from "./ui/skeleton";
 import Link from "next/link";
 
 // ... (interface User dan NavBarProps tetap sama) ...
@@ -21,6 +20,7 @@ export interface User {
 
 interface NavBarProps {
   user?: User | null;
+  isLoading?: boolean;
   onLogin?: () => void;
   onRegister?: () => void;
   onLogout?: () => void;
@@ -29,13 +29,13 @@ interface NavBarProps {
 
 export function NavBar({
   user,
+  isLoading = false,
   onLogin,
   onRegister,
   onLogout,
   onDashboard,
 }: NavBarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { isLoading } = useAuth(); // --- PERBAIKAN: Ambil isLoading dari context ---
 
   const toggleMobileMenu = (e: React.MouseEvent) => {
     e.stopPropagation();

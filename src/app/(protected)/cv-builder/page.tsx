@@ -5,10 +5,10 @@ import { toast } from "sonner";
 import { CVBuilderPage } from "@/components/dashboard/CVBuilderPage";
 import { type CVBuilderData, type CVGrade } from "@/components/cvbuilder/types"; // Import CVGrade
 import { type Language } from "@/lib/translations";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { Loader2 } from "lucide-react";
 
-export default function Page() {
+function CVBuilderContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const lang = (searchParams.get("lang") as Language) || "id";
@@ -32,7 +32,7 @@ export default function Page() {
           const response = await fetch(`/api/cv/${cvId}`);
           if (!response.ok)
             throw new Error(
-              "CV tidak ditemukan atau Anda tidak memiliki akses."
+              "CV tidak ditemukan atau Anda tidak memiliki akses.",
             );
           const data = await response.json();
           setInitialBuilderData({
@@ -75,7 +75,7 @@ export default function Page() {
 
   const executeSave = async (
     data: CVBuilderData,
-    status: "Completed" | "Draft"
+    status: "Completed" | "Draft",
   ) => {
     setIsSaving(true);
     try {
@@ -105,7 +105,7 @@ export default function Page() {
           ? cvId
             ? "CV berhasil diperbarui!"
             : "CV Anda berhasil disimpan!"
-          : "CV Anda disimpan sebagai draf."
+          : "CV Anda disimpan sebagai draf.",
       );
       router.push("/dashboard");
       router.refresh();
@@ -142,5 +142,19 @@ export default function Page() {
       initialAnalysisData={initialAnalysis}
       onAnalysisComplete={setAnalysisResult}
     />
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-screen">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      }
+    >
+      <CVBuilderContent />
+    </Suspense>
   );
 }

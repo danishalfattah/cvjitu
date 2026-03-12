@@ -1,47 +1,50 @@
-// src/components/dashboard/DashboardLayout.tsx (UPDATED)
+// src/components/dashboard/DashboardLayout.tsx
 
-import { useState, useEffect } from "react";
+"use client";
+
+import { useState, useEffect, type ReactNode } from "react";
 import { DashboardSidebar } from "./DashboardSidebar";
-import { Dashboard } from "./Dashboard";
-import { CVScoringPage } from "./CVScoringPage";
 import { Button } from "../ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { User } from "@/context/AuthContext";
-import { Language } from "@/lib/translations"; // Import Language
 import Link from "next/link";
 
 interface DashboardLayoutProps {
   onLogout?: () => void;
   user?: User | null;
-  onCreateCV?: (lang: "id" | "en") => void;
-  lang: Language;
-  onLangChange: (lang: Language) => void;
+  children: ReactNode;
 }
 
 export function DashboardLayout({
   onLogout,
   user,
-  onCreateCV,
-  lang,
-  onLangChange,
+  children,
 }: DashboardLayoutProps) {
-  const [activeTab, setActiveTab] = useState("dashboard");
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout>;
     const checkScreenSize = () => {
-      setIsMobile(window.innerWidth < 1024);
-      if (window.innerWidth >= 1024) {
-        setIsMobileSidebarOpen(false);
-      }
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        setIsMobile(window.innerWidth < 1024);
+        if (window.innerWidth >= 1024) {
+          setIsMobileSidebarOpen(false);
+        }
+      }, 150);
     };
 
-    checkScreenSize();
+    // Run immediately on mount without debounce
+    setIsMobile(window.innerWidth < 1024);
+
     window.addEventListener("resize", checkScreenSize);
-    return () => window.removeEventListener("resize", checkScreenSize);
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener("resize", checkScreenSize);
+    };
   }, []);
 
   useEffect(() => {
@@ -60,33 +63,13 @@ export function DashboardLayout({
   }, [isMobile, isMobileSidebarOpen]);
 
   const renderContent = () => {
-    switch (activeTab) {
-      case "dashboard":
-        return <Dashboard onCreateCVAction={onCreateCV} lang={lang} />;
-      case "scoring":
-        return <CVScoringPage lang={lang} />;
-      default:
-        return <Dashboard onCreateCVAction={onCreateCV} lang={lang} />;
-    }
-  };
-
-  const handleTabChange = (tab: string) => {
-    setActiveTab(tab);
-    if (isMobile) {
-      setIsMobileSidebarOpen(false);
-    }
+    return children;
   };
 
   return (
     <div className="flex min-h-screen bg-[var(--surface)]">
       <div className="hidden lg:block">
-        <DashboardSidebar
-          activeTab={activeTab}
-          onTabChange={handleTabChange}
-          onLogout={onLogout}
-          user={user}
-          isMobile={false}
-        />
+        <DashboardSidebar onLogout={onLogout} user={user} isMobile={false} />
       </div>
 
       <AnimatePresence>
@@ -109,8 +92,6 @@ export function DashboardLayout({
               transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
             >
               <DashboardSidebar
-                activeTab={activeTab}
-                onTabChange={handleTabChange}
                 onLogout={onLogout}
                 user={user}
                 isMobile={true}
