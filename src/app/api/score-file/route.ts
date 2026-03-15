@@ -14,7 +14,6 @@ async function getUserId() {
   }
 }
 
-
 const API_KEY = process.env.GEMINI_API_KEY;
 
 if (!API_KEY) {
@@ -50,34 +49,65 @@ export async function POST(request: Request) {
     }
 
     // Hanya izinkan tipe file tertentu untuk keamanan
-    const allowedMimeTypes = ["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
+    const allowedMimeTypes = [
+      "application/pdf",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ];
     if (!allowedMimeTypes.includes(file.type)) {
-        return NextResponse.json({ error: "Tipe file tidak didukung. Harap unggah PDF atau DOCX." }, { status: 400 });
+      return NextResponse.json(
+        { error: "Tipe file tidak didukung. Harap unggah PDF atau DOCX." },
+        { status: 400 },
+      );
     }
 
     const filePart = await fileToGenerativePart(file);
+    const cookieStore = await cookies();
+    const today = new Date().toISOString().slice(0, 10);
+    const guestDate = cookieStore.get("guest_scoring_date")?.value;
+    const guestUsedRaw = cookieStore.get("guest_scoring_used")?.value;
+    const guestUsed = Number.parseInt(guestUsedRaw || "0", 10);
+    const guestUsedToday = guestDate === today ? guestUsed : 0;
+    const GUEST_SCORING_LIMIT_PER_DAY = 1;
 
     const userId = await getUserId();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    const userDocRef = adminDb.collection("users").doc(userId);
-    const userDoc = await userDocRef.get();
-    if (!userDoc.exists) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-    const userData = userDoc.data() as any;
+    let userDocRef: any = null;
+    let userData: any | null = null;
 
-    if (userData.scoringCreditsUsed >= userData.scoringCreditsTotal) {
-      return NextResponse.json({ 
-          error: "Limit Reached",
-          message: "Batas scoring CV Anda telah habis. Silakan upgrade paket berlangganan Anda."
-      }, { status: 403 });
+    if (userId) {
+      userDocRef = adminDb.collection("users").doc(userId);
+      const userDoc = await userDocRef.get();
+      if (!userDoc.exists) {
+        return NextResponse.json({ error: "User not found" }, { status: 404 });
+      }
+      userData = userDoc.data() as any;
+
+      if (userData.scoringCreditsUsed >= userData.scoringCreditsTotal) {
+        return NextResponse.json(
+          {
+            error: "Limit Reached",
+            message: "Batas scoring CV Anda telah habis. Silakan upgrade paket berlangganan Anda.",
+          },
+          { status: 403 },
+        );
+      }
+    } else if (guestUsedToday >= GUEST_SCORING_LIMIT_PER_DAY) {
+      return NextResponse.json(
+        {
+          error: "Guest Limit Reached",
+          message: "Akun tamu hanya bisa scoring 1x per hari. Login gratis untuk akses lebih banyak.",
+        },
+        { status: 403 },
+      );
     }
 
-    const feedbackDetailLevelId = userData.plan === "Basic" ? "saran perbaikan umum" : userData.plan === "Fresh Graduate" ? "saran perbaikan detail" : "saran perbaikan sangat detail";
+    const feedbackDetailLevelId = !userData
+      ? "saran perbaikan umum"
+      : userData.plan === "Basic"
+        ? "saran perbaikan umum"
+        : userData.plan === "Fresh Graduate"
+          ? "saran perbaikan detail"
+          : "saran perbaikan sangat detail";
 
-    // Prompt cerdas sesuai alur yang kamu minta
     const prompt = `
       Anda adalah seorang ahli rekrutmen profesional. Tugas Anda adalah melakukan dua hal pada file yang diberikan:
       1. Identifikasi apakah file tersebut adalah sebuah Curriculum Vitae (CV) atau bukan.
@@ -114,13 +144,32 @@ export async function POST(request: Request) {
     const responseText = result.response.text();
     const analysisResult = JSON.parse(responseText.trim());
 
-    if (analysisResult.isCv) {
+    if (analysisResult.isCv && userDocRef && userData) {
       await userDocRef.update({
-          scoringCreditsUsed: (userData.scoringCreditsUsed || 0) + 1
+        scoringCreditsUsed: (userData.scoringCreditsUsed || 0) + 1,
       });
     }
 
-    return NextResponse.json(analysisResult, { status: 200 });
+    const response = NextResponse.json(analysisResult, { status: 200 });
+
+    if (analysisResult.isCv && !userId) {
+      response.cookies.set("guest_scoring_date", today, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "lax",
+        maxAge: 60 * 60 * 24,
+        path: "/",
+      });
+      response.cookies.set("guest_scoring_used", String(guestUsedToday + 1), {
+        httpOnly: true,
+        secure: true,
+        sameSite: "lax",
+        maxAge: 60 * 60 * 24,
+        path: "/",
+      });
+    }
+
+    return response;
   } catch (error) {
     console.error("Error calling Gemini API:", error);
     return NextResponse.json(
