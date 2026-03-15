@@ -32,6 +32,10 @@ export const metadata: Metadata = {
   },
 };
 
+import { ThemeProvider } from "@/components/theme-provider";
+import { AuthProvider } from "@/context/AuthContext";
+import { Toaster } from "@/components/ui/sonner";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -40,7 +44,17 @@ export default function RootLayout({
   return (
     <html className={`${poppins.variable} ${inter.variable} scroll-smooth`}>
       <body>
-        {children}
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem={false}
+          forcedTheme="light"
+        >
+          <AuthProvider>
+            {children}
+            <Toaster position="bottom-right" richColors />
+          </AuthProvider>
+        </ThemeProvider>
         <Analytics />
       </body>
     </html>

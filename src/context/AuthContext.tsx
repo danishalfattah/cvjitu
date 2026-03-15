@@ -150,40 +150,45 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
-      setFirebaseUser(fbUser);
-      if (fbUser) {
-        const idToken = await fbUser.getIdToken();
-        // Parallelize session creation and user profile fetch
-        const [, userProfile] = await Promise.all([
-          fetch("/api/auth/session", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ idToken }),
-          }),
-          getUserProfile(fbUser),
-        ]);
-        setUser(userProfile);
-      } else {
-        await fetch("/api/auth/session", { method: "DELETE" });
-        setUser(null);
+      try {
+        setFirebaseUser(fbUser);
+        if (fbUser) {
+          const idToken = await fbUser.getIdToken();
+          // Parallelize session creation and user profile fetch
+          const [, userProfile] = await Promise.all([
+            fetch("/api/auth/session", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ idToken }),
+            }).catch((err) => console.error("Session creation error:", err)),
+            getUserProfile(fbUser),
+          ]);
+          setUser(userProfile);
+        } else {
+          try {
+            await fetch("/api/auth/session", { method: "DELETE" });
+          } catch (err) {
+            console.error("Session deletion error:", err);
+          }
+          setUser(null);
+        }
+      } catch (error) {
+        console.error("Auth state change error:", error);
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     });
 
     return () => unsubscribe();
   }, []);
 
-  // Sisa fungsi (login, register, dll) tetap sama
   const login = async (email: string, password: string): Promise<void> => {
     setIsLoading(true);
     try {
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        email,
-        password,
-      );
-    } finally {
-      // Dihapus: setIsLoading(false) akan ditangani oleh onAuthStateChanged
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (error) {
+      setIsLoading(false); // Manually stop loading on error since onAuthStateChanged might not trigger
+      throw error;
     }
   };
 
@@ -214,6 +219,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       };
       await setDoc(doc(db, "users", fbUser.uid), newUserProfile);
       await signOut(auth);
+    } catch (error) {
+      throw error;
     } finally {
       setIsLoading(false);
     }
