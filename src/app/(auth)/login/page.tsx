@@ -4,9 +4,9 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { LoginPage } from "@/components/LoginPage";
-import { useEffect } from "react";
+import { useEffect, Suspense } from "react";
 
-export default function Login() {
+function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login, loginWithGoogle, isLoading, isAuthenticated } = useAuth();
@@ -22,9 +22,9 @@ export default function Login() {
       const redirect = searchParams.get("redirect");
       const plan = searchParams.get("plan");
       if (redirect && plan) {
-         router.replace(`/${redirect}?plan=${plan}`);
+        router.replace(`/${redirect}?plan=${plan}`);
       } else {
-         router.replace("/dashboard");
+        router.replace("/dashboard");
       }
     }
   }, [isAuthenticated, isLoading, router, searchParams]);
@@ -75,5 +75,19 @@ export default function Login() {
       isLoading={isLoading}
       onNavigateToForgotPassword={() => router.push("/forgot-password")}
     />
+  );
+}
+
+export default function Login() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[var(--surface)] flex items-center justify-center">
+          <div className="w-8 h-8 border-4 border-[var(--red-light)] border-t-[var(--red-normal)] rounded-full animate-spin" />
+        </div>
+      }
+    >
+      <LoginContent />
+    </Suspense>
   );
 }
