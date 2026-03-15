@@ -12,7 +12,7 @@ function LoginContent() {
   const { login, loginWithGoogle, isLoading, isAuthenticated } = useAuth();
   const [isEmailSubmitting, setIsEmailSubmitting] = useState(false);
   const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
-  const isUiLoading = isEmailSubmitting || isGoogleSubmitting;
+  const isUiLoading = isEmailSubmitting || isGoogleSubmitting || isLoading;
 
   // Prefetch dashboard page so it's ready when redirect happens
   useEffect(() => {
@@ -42,21 +42,13 @@ function LoginContent() {
     try {
       await login(email, password);
       toast.success("Berhasil masuk! Selamat datang.");
-
-      const redirect = searchParams.get("redirect");
-      const plan = searchParams.get("plan");
-      if (redirect && plan) {
-        router.replace(`/${redirect}?plan=${plan}`);
-      } else {
-        router.replace("/dashboard");
-      }
+      // Redirect ditangani oleh useEffect saat isAuthenticated = true
     } catch (error) {
       toast.error(
         error instanceof Error
           ? error.message
           : "Gagal masuk. Silakan coba lagi.",
       );
-    } finally {
       setIsEmailSubmitting(false);
     }
   };
@@ -66,16 +58,8 @@ function LoginContent() {
     setIsGoogleSubmitting(true);
     try {
       await loginWithGoogle();
-      // Toast moved after redirect — shown when already navigating
       toast.success("Berhasil masuk dengan Google!");
-
-      const redirect = searchParams.get("redirect");
-      const plan = searchParams.get("plan");
-      if (redirect && plan) {
-        router.replace(`/${redirect}?plan=${plan}`);
-      } else {
-        router.replace("/dashboard");
-      }
+      // Redirect ditangani oleh useEffect saat isAuthenticated = true
     } catch (error) {
       const errorCode =
         error && typeof error === "object" && "code" in error
@@ -90,7 +74,6 @@ function LoginContent() {
       } else {
         toast.error("Gagal masuk dengan Google. Silakan coba lagi.");
       }
-    } finally {
       setIsGoogleSubmitting(false);
     }
   };

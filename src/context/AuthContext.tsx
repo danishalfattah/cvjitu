@@ -203,6 +203,25 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
       } catch (error) {
         console.error("Auth state change error:", error);
+        // Pastikan user tetap ter-set agar isAuthenticated = true sekalipun ada error
+        if (fbUser) {
+          setUser({
+            id: fbUser.uid,
+            email: fbUser.email || "",
+            fullName: fbUser.displayName || "User",
+            avatar: fbUser.photoURL || undefined,
+            provider: fbUser.providerData[0]?.providerId.includes("google")
+              ? "google"
+              : "email",
+            createdAt: new Date().toISOString(),
+            plan: "Basic",
+            cvCreditsUsed: 0,
+            cvCreditsTotal: 5,
+            scoringCreditsUsed: 0,
+            scoringCreditsTotal: 10,
+            exportCount: 0,
+          });
+        }
       } finally {
         setIsLoading(false);
       }
