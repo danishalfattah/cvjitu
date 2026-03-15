@@ -74,6 +74,17 @@ export function PricingSection({
   const [selectedPlan, setSelectedPlan] = useState("");
 
   const handleSelectPlan = (planName: string) => {
+    // New logic for landing page
+    if (!isDashboard) {
+      if (isAuthenticated) {
+        router.push("/dashboard");
+      } else {
+        router.push("/login");
+      }
+      return;
+    }
+
+    // Existing logic for dashboard/checkout flow
     // Jika Basic (gratis), langsung redirect ke register
     if (planName === "Basic") {
       router.push("/register");
@@ -100,9 +111,13 @@ export function PricingSection({
         selectedPlan={selectedPlan}
       />
 
-      <section 
-        id="pricing" 
-        className={isDashboard ? "pb-12 h-full flex items-center justify-center my-auto min-h-[60vh]" : "py-20 px-6 bg-[var(--surface)]"}
+      <section
+        id="pricing"
+        className={
+          isDashboard
+            ? "pb-12 h-full flex items-center justify-center my-auto min-h-[60vh]"
+            : "py-20 px-6 bg-[var(--surface)]"
+        }
       >
         <div className="max-w-7xl mx-auto w-full">
           {!isDashboard && (
@@ -181,8 +196,11 @@ export function PricingSection({
                         : "border-[var(--red-normal)] text-[var(--red-normal)] hover:bg-[var(--red-light)]"
                     }`}
                     variant={plan.ctaVariant}
+                    disabled={isDashboard && plan.name === "Job Seeker"}
                   >
-                    {plan.cta}
+                    {isDashboard && plan.name === "Job Seeker"
+                      ? "Pilih Paket Ini"
+                      : plan.cta}
                   </Button>
                 </CardContent>
               </Card>
