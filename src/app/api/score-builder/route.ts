@@ -1,6 +1,19 @@
 import { NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { CVBuilderData } from "@/components/cvbuilder/types";
+import { cookies } from "next/headers";
+import { adminAuth, adminDb } from "@/lib/firebase-admin";
+
+async function getUserId() {
+  const sessionCookie = (await cookies()).get("session")?.value;
+  if (!sessionCookie) return null;
+  try {
+    const decodedToken = await adminAuth.verifySessionCookie(sessionCookie, true);
+    return decodedToken.uid;
+  } catch (error) {
+    return null;
+  }
+}
 
 const API_KEY = process.env.GEMINI_API_KEY;
 
@@ -61,8 +74,30 @@ function formatCvDataToText(data: CVBuilderData): string {
 
 export async function POST(request: Request) {
   try {
+    const userId = await getUserId();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userDocRef = adminDb.collection("users").doc(userId);
+    const userDoc = await userDocRef.get();
+    if (!userDoc.exists) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+    const userData = userDoc.data() as any;
+
+    if (userData.scoringCreditsUsed >= userData.scoringCreditsTotal) {
+      return NextResponse.json({ 
+          error: "Limit Reached",
+          message: "Batas scoring CV Anda telah habis. Silakan upgrade paket berlangganan Anda."
+      }, { status: 403 });
+    }
+
     const { lang, ...cvData }: CVBuilderData & { lang: "id" | "en" } =  await request.json();
     const cvText = formatCvDataToText(cvData);
+
+    const feedbackDetailLevelId = userData.plan === "Basic" ? "saran perbaikan umum" : userData.plan === "Fresh Graduate" ? "saran perbaikan detail" : "saran perbaikan sangat detail";
+    const feedbackDetailLevelEn = userData.plan === "Basic" ? "general improvement suggestions" : userData.plan === "Fresh Graduate" ? "detailed improvement suggestions" : "highly detailed improvement suggestions";
+
 
     const indonesianPrompt = `
       Anda adalah seorang ahli rekrutmen profesional berbahasa Indonesia. Tugas Anda adalah menganalisis konten CV berikut yang diberikan dalam format teks. Teks CV ini mungkin tidak lengkap atau bahkan kosong.
@@ -82,12 +117,12 @@ export async function POST(request: Request) {
           "keywordMatch": <skor kecocokan kata kunci 1-100>,
           "readabilityScore": <skor keterbacaan 1-100>,
           "sections": [
-            { "name": "Konten & Substansi", "score": <skor bagian>, "feedback": "<Umpan balik detail mengenai kekuatan dan kelemahan konten CV. Jika ada bagian penting yang kosong, sebutkan di sini.>", "status": "<'excellent' atau 'good' atau 'average' atau 'needs_improvement'>" },
-            { "name": "Relevansi Kata Kunci", "score": <skor bagian>, "feedback": "<Umpan balik mengenai penggunaan kata kunci yang relevan dengan posisi '${cvData.jobTitle || "yang dituju"}'.>", "status": "<'excellent' atau 'good' atau 'average' atau 'needs_improvement'>" },
-            { "name": "Struktur & Keterbacaan", "score": <skor bagian>, "feedback": "<Umpan balik mengenai format, layout, dan kemudahan membaca CV.>", "status": "<'excellent' atau 'good' atau 'average' atau 'needs_improvement'>" },
-            { "name": "Kelengkapan Informasi", "score": <skor bagian>, "feedback": "<Umpan balik mengenai kelengkapan informasi penting. Jika ada informasi kontak, pengalaman, atau pendidikan yang hilang, jelaskan pentingnya di sini.>", "status": "<'excellent' atau 'good' atau 'average' atau 'needs_improvement'>" }
+            { "name": "Konten & Substansi", "score": <skor bagian>, "feedback": "<Umpan balik ${feedbackDetailLevelId} mengenai kekuatan dan kelemahan konten CV. Jika ada bagian penting yang kosong, sebutkan di sini.>", "status": "<'excellent' atau 'good' atau 'average' atau 'needs_improvement'>" },
+            { "name": "Relevansi Kata Kunci", "score": <skor bagian>, "feedback": "<Umpan balik ${feedbackDetailLevelId} mengenai penggunaan kata kunci yang relevan dengan posisi '${cvData.jobTitle || "yang dituju"}'.>", "status": "<'excellent' atau 'good' atau 'average' atau 'needs_improvement'>" },
+            { "name": "Struktur & Keterbacaan", "score": <skor bagian>, "feedback": "<Umpan balik ${feedbackDetailLevelId} mengenai format, layout, dan kemudahan membaca CV.>", "status": "<'excellent' atau 'good' atau 'average' atau 'needs_improvement'>" },
+            { "name": "Kelengkapan Informasi", "score": <skor bagian>, "feedback": "<Umpan balik ${feedbackDetailLevelId} mengenai kelengkapan informasi penting. Jika ada informasi kontak, pengalaman, atau pendidikan yang hilang, jelaskan pentingnya di sini.>", "status": "<'excellent' atau 'good' atau 'average' atau 'needs_improvement'>" }
           ],
-          "suggestions": ["<Saran perbaikan konkret 1 dalam Bahasa Indonesia>", "<Saran perbaikan konkret 2>", "<Saran perbaikan konkret 3>"]
+          "suggestions": ["<Saran perbaikan konkret 1 dalam Bahasa Indonesia (${feedbackDetailLevelId})>", "<Saran perbaikan konkret 2>", "<Saran perbaikan konkret 3>"]
         }
     `;
 
@@ -109,12 +144,12 @@ export async function POST(request: Request) {
           "keywordMatch": <keyword match score 1-100>,
           "readabilityScore": <readability score 1-100>,
           "sections": [
-            { "name": "Content & Substance", "score": <section score>, "feedback": "<Detailed feedback in English about the strengths and weaknesses of the CV content. If important sections are missing, mention it here.>", "status": "<'excellent' or 'good' or 'average' or 'needs_improvement'>" },
-            { "name": "Keyword Relevance", "score": <section score>, "feedback": "<Feedback in English on the use of relevant keywords for the '${cvData.jobTitle || "targeted"} ' position.>", "status": "<'excellent' or 'good' or 'average' or 'needs_improvement'>" },
-            { "name": "Structure & Readability", "score": <section score>, "feedback": "<Feedback in English on the format, layout, and ease of reading the CV.>", "status": "<'excellent' or 'good' or 'average' atau 'needs_improvement'>" },
-            { "name": "Completeness of Information", "score": <section score>, "feedback": "<Feedback in English on the completeness of essential information. If contact info, experience, or education is missing, explain its importance here.>", "status": "<'excellent' or 'good' or 'average' or 'needs_improvement'>" }
+            { "name": "Content & Substance", "score": <section score>, "feedback": "<${feedbackDetailLevelEn} about the strengths and weaknesses of the CV content. If important sections are missing, mention it here.>", "status": "<'excellent' or 'good' or 'average' or 'needs_improvement'>" },
+            { "name": "Keyword Relevance", "score": <section score>, "feedback": "<${feedbackDetailLevelEn} on the use of relevant keywords for the '${cvData.jobTitle || "targeted"} ' position.>", "status": "<'excellent' or 'good' or 'average' or 'needs_improvement'>" },
+            { "name": "Structure & Readability", "score": <section score>, "feedback": "<${feedbackDetailLevelEn} on the format, layout, and ease of reading the CV.>", "status": "<'excellent' or 'good' or 'average' atau 'needs_improvement'>" },
+            { "name": "Completeness of Information", "score": <section score>, "feedback": "<${feedbackDetailLevelEn} on the completeness of essential information. If contact info, experience, or education is missing, explain its importance here.>", "status": "<'excellent' or 'good' or 'average' or 'needs_improvement'>" }
           ],
-          "suggestions": ["<Concrete improvement suggestion 1 in English>", "<Concrete improvement suggestion 2>", "<Concrete improvement suggestion 3>"]
+          "suggestions": ["<Concrete improvement suggestion 1 in English (${feedbackDetailLevelEn})>", "<Concrete improvement suggestion 2>", "<Concrete improvement suggestion 3>"]
         }
     `;
 
@@ -123,6 +158,10 @@ export async function POST(request: Request) {
     const result = await model.generateContent([prompt, cvText]);
     const responseText = result.response.text();
     const analysisResult = JSON.parse(responseText.trim());
+
+    await userDocRef.update({
+        scoringCreditsUsed: (userData.scoringCreditsUsed || 0) + 1
+    });
 
     return NextResponse.json(analysisResult, { status: 200 });
   } catch (error) {

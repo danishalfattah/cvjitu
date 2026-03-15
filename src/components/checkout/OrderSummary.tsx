@@ -1,10 +1,12 @@
 // components/checkout/OrderSummary.tsx
 "use client";
 
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Check, Tag, Loader2 } from "lucide-react";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
+import { toast } from "sonner";
 
 interface PlanDetails {
   name: string;
@@ -60,6 +62,20 @@ export function OrderSummary({ plan: planProp, selectedPayment, isProcessing, on
   const subtotal = plan.price;
   const ppn = Math.round(subtotal * 0.11);
   const total = subtotal + ppn;
+
+  const [isShaking, setIsShaking] = useState(false);
+
+  const handlePaymentClick = () => {
+    if (!selectedPayment) {
+      toast.error("Pilih metode pembayaran", {
+        description: "Silakan pilih salah satu metode pembayaran yang tersedia di sebelah kiri.",
+      });
+      setIsShaking(true);
+      setTimeout(() => setIsShaking(false), 500);
+      return;
+    }
+    onPayment();
+  };
 
   return (
     <div className="lg:sticky lg:top-24">
@@ -135,22 +151,35 @@ export function OrderSummary({ plan: planProp, selectedPayment, isProcessing, on
             </p>
           </div>
 
-          {/* Payment Button */}
-          <Button
-            onClick={onPayment}
-            disabled={!selectedPayment || isProcessing}
-            className="w-full bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white h-12"
-            size="lg"
-          >
-            {isProcessing ? (
-              <>
-                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                Memproses Pembayaran...
-              </>
-            ) : (
-              `Bayar Sekarang Rp ${total.toLocaleString("id-ID")}`
-            )}
-          </Button>
+          {/* Payment Button & Trust Badges */}
+          <div className="space-y-3">
+            <Button
+              onClick={handlePaymentClick}
+              disabled={isProcessing}
+              className={`w-full h-12 transition-all ${
+                isShaking ? "animate-[shake_0.5s_ease-in-out]" : ""
+              } ${
+                !selectedPayment 
+                  ? "bg-gray-100 hover:bg-gray-200 text-gray-500 border border-gray-300"
+                  : "bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white"
+              }`}
+              size="lg"
+            >
+              {isProcessing ? (
+                <>
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  Memproses Pembayaran...
+                </>
+              ) : (
+                `Bayar Sekarang Rp ${total.toLocaleString("id-ID")}`
+              )}
+            </Button>
+            
+            <div className="flex items-center justify-center space-x-2 text-xs text-gray-500">
+              <Tag className="w-3 h-3" />
+              <span>Pembayaran diproses secara aman.</span>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>

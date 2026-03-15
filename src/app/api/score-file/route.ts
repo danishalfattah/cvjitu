@@ -1,5 +1,19 @@
 import { NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { cookies } from "next/headers";
+import { adminAuth, adminDb } from "@/lib/firebase-admin";
+
+async function getUserId() {
+  const sessionCookie = (await cookies()).get("session")?.value;
+  if (!sessionCookie) return null;
+  try {
+    const decodedToken = await adminAuth.verifySessionCookie(sessionCookie, true);
+    return decodedToken.uid;
+  } catch (error) {
+    return null;
+  }
+}
+
 
 const API_KEY = process.env.GEMINI_API_KEY;
 
@@ -43,6 +57,26 @@ export async function POST(request: Request) {
 
     const filePart = await fileToGenerativePart(file);
 
+    const userId = await getUserId();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userDocRef = adminDb.collection("users").doc(userId);
+    const userDoc = await userDocRef.get();
+    if (!userDoc.exists) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+    const userData = userDoc.data() as any;
+
+    if (userData.scoringCreditsUsed >= userData.scoringCreditsTotal) {
+      return NextResponse.json({ 
+          error: "Limit Reached",
+          message: "Batas scoring CV Anda telah habis. Silakan upgrade paket berlangganan Anda."
+      }, { status: 403 });
+    }
+
+    const feedbackDetailLevelId = userData.plan === "Basic" ? "saran perbaikan umum" : userData.plan === "Fresh Graduate" ? "saran perbaikan detail" : "saran perbaikan sangat detail";
+
     // Prompt cerdas sesuai alur yang kamu minta
     const prompt = `
       Anda adalah seorang ahli rekrutmen profesional. Tugas Anda adalah melakukan dua hal pada file yang diberikan:
@@ -59,9 +93,9 @@ export async function POST(request: Request) {
           "keywordMatch": <skor kata kunci 1-100>,
           "readabilityScore": <skor keterbacaan 1-100>,
           "sections": [
-            { "name": "<Nama Bagian>", "score": <skor bagian>, "feedback": "<Umpan balik>", "status": "<'excellent' atau 'good' atau 'average' atau 'needs_improvement'>" }
+            { "name": "<Nama Bagian>", "score": <skor bagian>, "feedback": "<Umpan balik ${feedbackDetailLevelId}>", "status": "<'excellent' atau 'good' atau 'average' atau 'needs_improvement'>" }
           ],
-          "suggestions": ["<Saran perbaikan 1>", "<Saran perbaikan 2>"]
+          "suggestions": ["<Saran perbaikan 1 (${feedbackDetailLevelId})>", "<Saran perbaikan 2>"]
         }
 
       - JIKA INI BUKAN CV, berikan output persis seperti ini:
@@ -79,6 +113,12 @@ export async function POST(request: Request) {
     const result = await model.generateContent([prompt, filePart]);
     const responseText = result.response.text();
     const analysisResult = JSON.parse(responseText.trim());
+
+    if (analysisResult.isCv) {
+      await userDocRef.update({
+          scoringCreditsUsed: (userData.scoringCreditsUsed || 0) + 1
+      });
+    }
 
     return NextResponse.json(analysisResult, { status: 200 });
   } catch (error) {

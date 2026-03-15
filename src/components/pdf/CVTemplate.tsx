@@ -158,9 +158,10 @@ const styles = StyleSheet.create({
 interface CVTemplateProps {
   cvData: CVBuilderData;
   lang: "id" | "en";
+  hasWatermark?: boolean;
 }
 
-export const CVTemplate: React.FC<CVTemplateProps> = ({ cvData, lang }) => {
+export const CVTemplate: React.FC<CVTemplateProps> = ({ cvData, lang, hasWatermark = false }) => {
   const fullName = `${cvData.firstName || ""} ${cvData.lastName || ""}`.trim();
 
   return (
@@ -302,6 +303,12 @@ export const CVTemplate: React.FC<CVTemplateProps> = ({ cvData, lang }) => {
             <Text style={styles.sectionTitle}>{t("skills", lang)}</Text>
             <View style={styles.separatorLine} />
             <Text style={styles.skillsText}>{cvData.skills.join(", ")}</Text>
+          </View>
+        )}
+
+        {hasWatermark && (
+          <View style={{ position: "absolute", top: "40%", left: 0, right: 0, textAlign: "center", transform: "rotate(-45deg)", opacity: 0.15, zIndex: -1 }}>
+            <Text style={{ fontSize: 72, color: "#9ca3af", fontFamily: "Times-Bold" }}>Dibuat dengan CVJitu</Text>
           </View>
         )}
       </Page>

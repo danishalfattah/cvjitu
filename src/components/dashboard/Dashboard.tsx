@@ -46,6 +46,7 @@ import {
 import { toast } from "sonner";
 import { downloadCV } from "@/lib/utils";
 import { Language } from "@/lib/translations";
+import { useAuth } from "@/context/AuthContext";
 import { Card, CardContent } from "../ui/card";
 import { Skeleton } from "../ui/skeleton";
 
@@ -97,6 +98,7 @@ function CVCardSkeleton() {
 
 export function Dashboard({ onCreateCVAction, lang }: DashboardProps) {
   const router = useRouter();
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const deferredSearch = useDeferredValue(searchQuery);
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
@@ -323,6 +325,18 @@ export function Dashboard({ onCreateCVAction, lang }: DashboardProps) {
   };
 
   const handleLanguageSelect = (lang: "id" | "en") => {
+    if (lang === "en" && user?.plan === "Basic") {
+      setIsLangModalOpen(false);
+      toast("Upgrade ke Premium 🚀", {
+        description: "Fitur CV Bahasa Inggris khusus untuk paket Premium. Tingkatkan peluang karir Anda sekarang!",
+        action: {
+          label: "Lihat Paket",
+          onClick: () => router.push("/#pricing"),
+        },
+      });
+      return;
+    }
+
     setIsLangModalOpen(false);
     onCreateCVAction
       ? onCreateCVAction(lang)
@@ -491,7 +505,7 @@ export function Dashboard({ onCreateCVAction, lang }: DashboardProps) {
               placeholder="Cari CV Anda..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 sm:pl-10 text-sm sm:text-base"
+              className="pl-9 sm:pl-10 text-sm sm:text-base rounded-xl bg-gray-50/50 border-gray-200 focus:bg-white focus:ring-2 focus:ring-[var(--red-light)] focus:border-[var(--red-normal)] focus:shadow-md transition-all duration-300"
             />
           </div>
         </div>
@@ -576,7 +590,7 @@ export function Dashboard({ onCreateCVAction, lang }: DashboardProps) {
                     <PaginationPrevious
                       href="#"
                       onClick={(e) => {
-                        e.preventDefault();
+                         e.preventDefault();
                         setCurrentPage(Math.max(1, currentPage - 1));
                       }}
                       className={
@@ -645,9 +659,14 @@ export function Dashboard({ onCreateCVAction, lang }: DashboardProps) {
             </Button>
             <Button
               onClick={() => handleLanguageSelect("en")}
-              className="w-full sm:w-auto bg-[var(--red-normal)] hover:bg-[var(--red-normal-hover)] text-white"
+              className={`w-full sm:w-auto text-[var(--red-normal)] bg-white border border-[var(--red-normal)] hover:bg-[var(--red-light)] relative`}
             >
               English
+              {user?.plan === "Basic" && (
+                <span className="ml-2 flex items-center justify-center">
+                  <span className="text-xs">🔒</span>
+                </span>
+              )}
             </Button>
           </div>
         </AlertDialogContent>

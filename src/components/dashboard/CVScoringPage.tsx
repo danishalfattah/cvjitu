@@ -76,10 +76,23 @@ export function CVScoringPage({ lang }: CVScoringPageProps) {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(
-          errorData.error || "Gagal mendapatkan analisis dari server.",
-        );
+        let errorMessage = "Gagal mendapatkan analisis dari server.";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch (e) {}
+
+        if (response.status === 403) {
+          toast.error("Limit Tercapai", {
+            description: errorMessage,
+            action: {
+              label: "Upgrade",
+              onClick: () => (window.location.href = "/#pricing"),
+            },
+          });
+          throw new Error("Limit tercapai");
+        }
+        throw new Error(errorMessage);
       }
 
       const results = await response.json();

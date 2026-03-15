@@ -62,16 +62,29 @@ const pricingPlans = [
 
 interface PricingSectionProps {
   isAuthenticated?: boolean;
+  isDashboard?: boolean;
 }
 
 export function PricingSection({
   isAuthenticated = false,
+  isDashboard = false,
 }: PricingSectionProps) {
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState("");
 
   const handleSelectPlan = (planName: string) => {
+    // New logic for landing page
+    if (!isDashboard) {
+      if (isAuthenticated) {
+        router.push("/dashboard");
+      } else {
+        router.push("/login");
+      }
+      return;
+    }
+
+    // Existing logic for dashboard/checkout flow
     // Jika Basic (gratis), langsung redirect ke register
     if (planName === "Basic") {
       router.push("/register");
@@ -87,7 +100,7 @@ export function PricingSection({
 
     // Jika sudah login, redirect ke checkout
     const planSlug = planName.toLowerCase().replace(/\s/g, "");
-    router.push(`/checkout?plan=${planSlug}`);
+    router.push(`/dashboard/subscription/payment?plan=${planSlug}`);
   };
 
   return (
@@ -98,17 +111,26 @@ export function PricingSection({
         selectedPlan={selectedPlan}
       />
 
-      <section id="pricing" className="py-20 px-6 bg-[var(--surface)]">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-4xl font-poppins font-bold text-[var(--neutral-ink)] mb-4">
-              Pilih Paket yang Tepat
-            </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Mulai gratis atau pilih paket yang sesuai dengan kebutuhan karir
-              Anda
-            </p>
-          </div>
+      <section
+        id="pricing"
+        className={
+          isDashboard
+            ? "pb-12 h-full flex items-center justify-center my-auto min-h-[60vh]"
+            : "py-20 px-6 bg-[var(--surface)]"
+        }
+      >
+        <div className="max-w-7xl mx-auto w-full">
+          {!isDashboard && (
+            <div className="text-center mb-16">
+              <h2 className="text-3xl lg:text-4xl font-poppins font-bold text-[var(--neutral-ink)] mb-4">
+                Pilih Paket yang Tepat
+              </h2>
+              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                Mulai gratis atau pilih paket yang sesuai dengan kebutuhan karir
+                Anda
+              </p>
+            </div>
+          )}
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {pricingPlans.map((plan, index) => (
@@ -174,8 +196,11 @@ export function PricingSection({
                         : "border-[var(--red-normal)] text-[var(--red-normal)] hover:bg-[var(--red-light)]"
                     }`}
                     variant={plan.ctaVariant}
+                    disabled={isDashboard && plan.name === "Job Seeker"}
                   >
-                    {plan.cta}
+                    {isDashboard && plan.name === "Job Seeker"
+                      ? "Pilih Paket Ini"
+                      : plan.cta}
                   </Button>
                 </CardContent>
               </Card>
