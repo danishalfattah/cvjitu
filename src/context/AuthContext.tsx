@@ -34,6 +34,8 @@ export interface User {
   cvCreditsTotal: number;
   scoringCreditsUsed: number;
   scoringCreditsTotal: number;
+  exportCount: number;
+  premiumSince?: string;
 }
 
 interface RegisterData {
@@ -52,6 +54,7 @@ interface AuthContextType {
   logout: () => void;
   isAuthenticated: boolean;
   sendPasswordReset: (email: string) => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -73,7 +76,50 @@ const getUserProfile = async (firebaseUser: FirebaseUser): Promise<User> => {
   const userDoc = await getDoc(userDocRef);
 
   if (userDoc.exists()) {
-    return userDoc.data() as User;
+    const data = userDoc.data() as any;
+    const plan = data.plan || "Basic";
+    
+    // Automatically correct totals based on the current plan 
+    // to prevent mismatches from legacy database states
+    let correctCvTotal = 5;
+    let correctScoringTotal = 10;
+    
+    if (plan === "Fresh Graduate") {
+       correctCvTotal = 10;
+       correctScoringTotal = 30;
+    } else if (plan === "Job Seeker") {
+       correctCvTotal = 999999;
+       correctScoringTotal = 999999;
+    }
+
+    const userData: User = {
+      ...data,
+      id: data.id || firebaseUser.uid,
+      email: data.email || firebaseUser.email || "",
+      fullName: data.fullName || firebaseUser.displayName || "User",
+      createdAt: data.createdAt || new Date().toISOString(),
+      plan: plan,
+      cvCreditsUsed: data.cvCreditsUsed || 0,
+      cvCreditsTotal: correctCvTotal,
+      scoringCreditsUsed: data.scoringCreditsUsed || 0,
+      scoringCreditsTotal: correctScoringTotal,
+      exportCount: data.exportCount || 0,
+      premiumSince: data.premiumSince || undefined,
+    };
+
+    // Auto-heal the document in Firestore if legacy fields are missing or mismatched
+    if (
+      data.plan === undefined ||
+      data.cvCreditsTotal !== correctCvTotal ||
+      data.scoringCreditsTotal !== correctScoringTotal ||
+      data.exportCount === undefined ||
+      data.cvCreditsUsed === undefined ||
+      data.scoringCreditsUsed === undefined
+    ) {
+      await setDoc(userDocRef, userData, { merge: true });
+    }
+
+    return userData;
   } else {
     // Logika untuk membuat profil baru jika tidak ada
     const newUser: User = {
@@ -90,6 +136,7 @@ const getUserProfile = async (firebaseUser: FirebaseUser): Promise<User> => {
       cvCreditsTotal: 5,
       scoringCreditsUsed: 0,
       scoringCreditsTotal: 10,
+      exportCount: 0,
     };
     await setDoc(userDocRef, newUser);
     return newUser;
@@ -163,6 +210,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         cvCreditsTotal: 5,
         scoringCreditsUsed: 0,
         scoringCreditsTotal: 10,
+        exportCount: 0,
       };
       await setDoc(doc(db, "users", fbUser.uid), newUserProfile);
       await signOut(auth);
@@ -195,6 +243,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
+  const refreshUser = async () => {
+    if (firebaseUser) {
+      const updatedProfile = await getUserProfile(firebaseUser);
+      setUser(updatedProfile);
+    }
+  };
+
   const value: AuthContextType = {
     user,
     firebaseUser,
@@ -205,6 +260,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     logout,
     isAuthenticated: !isLoading && !!user,
     sendPasswordReset,
+    refreshUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

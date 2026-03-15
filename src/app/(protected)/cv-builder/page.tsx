@@ -5,12 +5,14 @@ import { toast } from "sonner";
 import { CVBuilderPage } from "@/components/dashboard/CVBuilderPage";
 import { type CVBuilderData, type CVGrade } from "@/components/cvbuilder/types"; // Import CVGrade
 import { type Language } from "@/lib/translations";
+import { useAuth } from "@/context/AuthContext";
 import { useEffect, useState, Suspense } from "react";
 import { Loader2 } from "lucide-react";
 
-function CVBuilderContent() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  function CVBuilderContent() {
+    const router = useRouter();
+    const { refreshUser } = useAuth();
+    const searchParams = useSearchParams();
   const lang = (searchParams.get("lang") as Language) || "id";
   const cvId = searchParams.get("id");
 
@@ -98,7 +100,25 @@ function CVBuilderContent() {
         body: JSON.stringify(dataToSave),
       });
 
-      if (!response.ok) throw new Error("Gagal menyimpan CV");
+      if (!response.ok) {
+        let errorMessage = "Gagal menyimpan CV";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch (e) {}
+
+        if (response.status === 403) {
+          toast.error("Limit Tercapai", {
+            description: errorMessage,
+            action: {
+              label: "Upgrade",
+              onClick: () => (window.location.href = "/#pricing"),
+            },
+          });
+          throw new Error("Limit tercapai");
+        }
+        throw new Error(errorMessage);
+      }
 
       toast.success(
         status === "Completed" || cvStatus === "Completed"
@@ -109,6 +129,7 @@ function CVBuilderContent() {
       );
       router.push("/dashboard");
       router.refresh();
+      refreshUser();
     } catch (error) {
       console.error(error);
       toast.error("Gagal menyimpan CV. Silakan coba lagi.");

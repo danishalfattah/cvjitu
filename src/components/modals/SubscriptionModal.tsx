@@ -20,11 +20,11 @@ export function SubscriptionModal({
   const router = useRouter();
 
   const handleLogin = () => {
-    router.push(`/login?redirect=checkout&plan=${selectedPlan.toLowerCase().replace(/\s/g, "")}`);
+    router.push(`/login?redirect=dashboard/subscription/payment&plan=${selectedPlan.toLowerCase().replace(/\s/g, "")}`);
   };
 
   const handleRegister = () => {
-    router.push("/register");
+    router.push(`/register?redirect=dashboard/subscription/payment&plan=${selectedPlan.toLowerCase().replace(/\s/g, "")}`);
   };
 
   return (

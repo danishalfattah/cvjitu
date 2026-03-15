@@ -16,6 +16,7 @@ import { CVBuilderData, CVGrade } from "../types";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Language, t } from "@/lib/translations"; // Import t dan Language
+import { useAuth } from "@/context/AuthContext";
 
 // 1. Perbarui interface props untuk menerima onAnalysisChange
 interface GradeStepProps {
@@ -33,9 +34,19 @@ export function GradeStep({
   onAnalysisComplete,
   lang,
 }: GradeStepProps) {
+  const { refreshUser } = useAuth();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [grade, setGrade] = useState<CVGrade | null>(null);
   const [progress, setProgress] = useState(0); // 1. State baru untuk progress
+  const [loadingTextIndex, setLoadingTextIndex] = useState(0);
+
+  const loadingTexts = [
+    t("gradeAnalyzingDesc", lang) || "Menggali potensi dokumen Anda...",
+    "Menganalisis struktur CV Anda...",
+    "Mencocokkan kata kunci dengan standar ATS...",
+    "Menilai tingkat keterbacaan...",
+    "Merangkum saran perbaikan...",
+  ];
 
   useEffect(() => {
     if (initialGrade) {
@@ -44,10 +55,14 @@ export function GradeStep({
   }, [initialGrade]);
 
   useEffect(() => {
-    let timer: NodeJS.Timeout | undefined;
+    let progressTimer: NodeJS.Timeout | undefined;
+    let textTimer: NodeJS.Timeout | undefined;
+
     if (isAnalyzing) {
       setProgress(10); // Mulai dari 10% agar tidak terasa lambat di awal
-      timer = setInterval(() => {
+      setLoadingTextIndex(0);
+
+      progressTimer = setInterval(() => {
         setProgress((prev) => {
           // Berhenti di 90% untuk menunggu hasil fetch yang sebenarnya
           if (prev >= 95) {
@@ -56,7 +71,11 @@ export function GradeStep({
           // Tambahkan nilai acak kecil untuk membuatnya terlihat lebih natural
           return prev + Math.random() * 2;
         });
-      }, 50); // Update setiap 400ms
+      }, 50); // Update setiap 50ms
+
+      textTimer = setInterval(() => {
+        setLoadingTextIndex((prev) => (prev + 1) % loadingTexts.length);
+      }, 2500); // Ganti teks setiap 2.5 detik
     } else {
       // Jika analisis selesai (sukses atau gagal), set progress ke 100% sebentar lalu reset
       if (progress > 0) {
@@ -67,9 +86,8 @@ export function GradeStep({
 
     // 3. Cleanup function untuk membersihkan interval
     return () => {
-      if (timer) {
-        clearInterval(timer);
-      }
+      if (progressTimer) clearInterval(progressTimer);
+      if (textTimer) clearInterval(textTimer);
     };
   }, [isAnalyzing]);
 
@@ -86,13 +104,29 @@ export function GradeStep({
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || t("toastAnalysisFailed", lang));
+        let errorMessage = t("toastAnalysisFailed", lang);
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch (e) {}
+
+        if (response.status === 403) {
+          toast.error("Limit Tercapai", {
+            description: errorMessage,
+            action: {
+              label: "Upgrade",
+              onClick: () => (window.location.href = "/#pricing"),
+            },
+          });
+          throw new Error("Limit tercapai");
+        }
+        throw new Error(errorMessage);
       }
 
       const result: CVGrade = await response.json();
       setGrade(result);
       onAnalysisComplete(result); // **PERBAIKAN 2: Kirim hasil ke parent**
+      refreshUser(); // Refresh credits in sidebar
       toast.success(t("toastAnalysisSuccess", lang));
     } catch (error: any) {
       console.error("Analysis Error:", error);
@@ -186,7 +220,9 @@ export function GradeStep({
           <h3 className="text-xl font-semibold text-[var(--neutral-ink)] mb-2">
             {t("gradeAnalyzingTitle", lang)}
           </h3>
-          <p className="text-gray-600 mb-6">{t("gradeAnalyzingDesc", lang)}</p>
+          <p className="text-gray-600 mb-6 min-h-[1.5rem] transition-opacity duration-300">
+            {loadingTexts[loadingTextIndex]}
+          </p>
           <Progress value={progress} className="w-64 mx-auto" />
         </div>
       </div>

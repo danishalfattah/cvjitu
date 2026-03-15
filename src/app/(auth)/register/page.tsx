@@ -1,13 +1,14 @@
 "use client";
 
 import { useAuth } from "@/context/AuthContext";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { RegisterPage } from "@/components/RegisterPage";
 import { useEffect } from "react";
 
 export default function Register() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { register, loginWithGoogle, isLoading } = useAuth();
 
   useEffect(() => {
@@ -18,7 +19,15 @@ export default function Register() {
     try {
       await register(data);
       toast.success("Akun berhasil dibuat! Selamat datang di CVJitu.");
-      router.replace("/login");
+      
+      const redirect = searchParams.get("redirect");
+      const plan = searchParams.get("plan");
+      
+      if (redirect && plan) {
+        router.replace(`/login?redirect=${redirect}&plan=${plan}`);
+      } else {
+        router.replace("/login");
+      }
     } catch (error) {
       toast.error(
         error instanceof Error
@@ -38,11 +47,21 @@ export default function Register() {
     }
   };
 
+  const handleNavigateToLogin = () => {
+    const redirect = searchParams.get("redirect");
+    const plan = searchParams.get("plan");
+    if (redirect && plan) {
+      router.push(`/login?redirect=${redirect}&plan=${plan}`);
+    } else {
+      router.push("/login");
+    }
+  };
+
   return (
     <RegisterPage
       onRegister={handleRegister}
       onGoogleRegister={handleGoogle}
-      onNavigateToLogin={() => router.push("/login")}
+      onNavigateToLogin={handleNavigateToLogin}
       onBack={() => router.push("/")}
       isLoading={isLoading}
       onNavigateToTerms={() => router.push("/terms")}

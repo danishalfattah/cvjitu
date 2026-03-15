@@ -43,7 +43,7 @@ export function CVFilters({
   ].filter(Boolean).length;
 
   return (
-    <div className="bg-white rounded-lg border border-[var(--border-color)] p-3 sm:p-4 mb-4 sm:mb-6">
+    <div className="bg-white rounded-xl border border-[var(--border-color)] p-3 sm:p-4 mb-4 sm:mb-6 shadow-sm">
       {/* --- UI TIDAK BERUBAH, HANYA LOGIKA DAN PENAMBAHAN KOMPONEN --- */}
       <div className="hidden sm:flex sm:flex-wrap gap-3 items-center">
         {/* Filter Urutkan (Baru) */}
@@ -51,10 +51,10 @@ export function CVFilters({
           value={filters.sortBy}
           onValueChange={(value) => updateFilter("sortBy", value)}
         >
-          <SelectTrigger className="w-32">
+          <SelectTrigger className="w-36 rounded-xl bg-gray-50/50 border-gray-200 hover:bg-gray-100/50 transition-colors">
             <SelectValue placeholder="Urutkan" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="rounded-xl">
             <SelectItem value="newest">Terbaru</SelectItem>
             <SelectItem value="oldest">Terlama</SelectItem>
           </SelectContent>
@@ -65,12 +65,12 @@ export function CVFilters({
             value={filters.status}
             onValueChange={(value) => updateFilter("status", value)}
           >
-            <SelectTrigger className="w-32">
+            <SelectTrigger className="w-36 rounded-xl bg-gray-50/50 border-gray-200 hover:bg-gray-100/50 transition-colors">
               <SelectValue>
                 {filters.status === "Semua Status" ? "Status" : filters.status}
               </SelectValue>
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="rounded-xl">
               <SelectItem value="Semua Status">Semua Status</SelectItem>
               <SelectItem value="Draf">Draf</SelectItem>
               <SelectItem value="Selesai">Selesai</SelectItem>
@@ -83,12 +83,12 @@ export function CVFilters({
           value={filters.year}
           onValueChange={(value) => updateFilter("year", value)}
         >
-          <SelectTrigger className="w-32">
+          <SelectTrigger className="w-36 rounded-xl bg-gray-50/50 border-gray-200 hover:bg-gray-100/50 transition-colors">
             <SelectValue>
               {filters.year === "Semua Tahun" ? "Tahun" : filters.year}
             </SelectValue>
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="rounded-xl">
             <SelectItem value="Semua Tahun">Semua Tahun</SelectItem>
             {years.map((year) => (
               <SelectItem key={year} value={year}>
@@ -98,9 +98,9 @@ export function CVFilters({
           </SelectContent>
         </Select>
 
-        <div className="flex items-center space-x-2 min-w-64">
-          <span className="text-sm text-gray-600 ">Skor:</span>
-          <div className="flex-1 ">
+        <div className="flex items-center space-x-3 min-w-[280px]">
+          <span className="text-sm font-semibold text-gray-700 whitespace-nowrap">Skor:</span>
+          <div className="flex-1 px-1">
             <Slider
               value={filters.scoreRange}
               onValueChange={(value) => updateFilter("scoreRange", value)}
@@ -109,9 +109,9 @@ export function CVFilters({
               step={1}
               className="w-full"
             />
-            <div className="flex justify-between text-xs text-gray-500 mt-1">
-              <span>{filters.scoreRange[0]}</span>
-              <span>{filters.scoreRange[1]}</span>
+            <div className="flex justify-between items-center mt-1.5 px-0.5">
+              <span className="text-[10px] font-bold text-gray-400 bg-gray-100 px-1.5 pt-0.5 rounded uppercase">Min: {filters.scoreRange[0]}</span>
+              <span className="text-[10px] font-bold text-gray-400 bg-gray-100 px-1.5 pt-0.5 rounded uppercase">Max: {filters.scoreRange[1]}</span>
             </div>
           </div>
         </div>

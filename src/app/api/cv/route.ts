@@ -51,6 +51,14 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    const userDocRef = adminDb.collection("users").doc(userId);
+    const userDoc = await userDocRef.get();
+    
+    if (!userDoc.exists) {
+      return NextResponse.json({ error: 'User not found in database' }, { status: 404 });
+    }
+    const userData = userDoc.data() as any;
+
     const userRecord = await adminAuth.getUser(userId);
     const ownerName = userRecord.displayName || userRecord.email || "Pengguna Anonim";
     const cvData = await request.json();
@@ -92,7 +100,21 @@ export async function POST(request: NextRequest) {
         visibility: 'private', // Menambahkan nilai default 'private' untuk visibilitas
       };
       
+      // PERBAIKAN: Enforce limit CV creation
+      if (userData.cvCreditsUsed >= userData.cvCreditsTotal) {
+        return NextResponse.json({ 
+            error: 'Limit Reached',
+            message: 'Batas pembuatan CV Anda telah habis. Silakan upgrade paket berlangganan Anda.'
+        }, { status: 403 });
+      }
+
       const docRef = await adminDb.collection('cvs').add(newCvData);
+
+      // Increment credit
+      await userDocRef.update({
+        cvCreditsUsed: (userData.cvCreditsUsed || 0) + 1
+      });
+
       return NextResponse.json({ id: docRef.id, ...newCvData }, { status: 201 });
     }
   } catch (error) {
