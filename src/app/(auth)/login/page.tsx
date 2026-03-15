@@ -4,12 +4,15 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { LoginPage } from "@/components/LoginPage";
-import { useEffect, Suspense } from "react";
+import { useEffect, Suspense, useState } from "react";
 
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login, loginWithGoogle, isLoading, isAuthenticated } = useAuth();
+  const [isEmailSubmitting, setIsEmailSubmitting] = useState(false);
+  const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
+  const isUiLoading = isEmailSubmitting || isGoogleSubmitting;
 
   // Prefetch dashboard page so it's ready when redirect happens
   useEffect(() => {
@@ -34,6 +37,8 @@ function LoginContent() {
   }, []);
 
   const handleLogin = async (email: string, password: string) => {
+    if (isUiLoading) return;
+    setIsEmailSubmitting(true);
     try {
       await login(email, password);
       toast.success("Berhasil masuk! Selamat datang.");
@@ -51,10 +56,14 @@ function LoginContent() {
           ? error.message
           : "Gagal masuk. Silakan coba lagi.",
       );
+    } finally {
+      setIsEmailSubmitting(false);
     }
   };
 
   const handleGoogle = async () => {
+    if (isUiLoading) return;
+    setIsGoogleSubmitting(true);
     try {
       await loginWithGoogle();
       // Toast moved after redirect — shown when already navigating
@@ -67,8 +76,22 @@ function LoginContent() {
       } else {
         router.replace("/dashboard");
       }
-    } catch {
-      toast.error("Gagal masuk dengan Google. Silakan coba lagi.");
+    } catch (error) {
+      const errorCode =
+        error && typeof error === "object" && "code" in error
+          ? String((error as { code?: string }).code)
+          : "";
+
+      if (
+        errorCode === "auth/popup-closed-by-user" ||
+        errorCode === "auth/cancelled-popup-request"
+      ) {
+        toast.message("Login Google dibatalkan.");
+      } else {
+        toast.error("Gagal masuk dengan Google. Silakan coba lagi.");
+      }
+    } finally {
+      setIsGoogleSubmitting(false);
     }
   };
 
@@ -88,7 +111,7 @@ function LoginContent() {
       onGoogleLogin={handleGoogle}
       onNavigateToRegister={handleNavigateToRegister}
       onBack={() => router.push("/")}
-      isLoading={isLoading}
+      isLoading={isUiLoading}
       onNavigateToForgotPassword={() => router.push("/forgot-password")}
     />
   );
