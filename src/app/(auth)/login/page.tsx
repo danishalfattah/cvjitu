@@ -37,6 +37,14 @@ function LoginContent() {
     try {
       await login(email, password);
       toast.success("Berhasil masuk! Selamat datang.");
+
+      const redirect = searchParams.get("redirect");
+      const plan = searchParams.get("plan");
+      if (redirect && plan) {
+        router.replace(`/${redirect}?plan=${plan}`);
+      } else {
+        router.replace("/dashboard");
+      }
     } catch (error) {
       toast.error(
         error instanceof Error
@@ -51,6 +59,14 @@ function LoginContent() {
       await loginWithGoogle();
       // Toast moved after redirect — shown when already navigating
       toast.success("Berhasil masuk dengan Google!");
+
+      const redirect = searchParams.get("redirect");
+      const plan = searchParams.get("plan");
+      if (redirect && plan) {
+        router.replace(`/${redirect}?plan=${plan}`);
+      } else {
+        router.replace("/dashboard");
+      }
     } catch {
       toast.error("Gagal masuk dengan Google. Silakan coba lagi.");
     }

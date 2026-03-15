@@ -73,59 +73,90 @@ interface AuthProviderProps {
 
 const getUserProfile = async (firebaseUser: FirebaseUser): Promise<User> => {
   const userDocRef = doc(db, "users", firebaseUser.uid);
-  const userDoc = await getDoc(userDocRef);
+  try {
+    const userDoc = await getDoc(userDocRef);
 
-  if (userDoc.exists()) {
-    const data = userDoc.data() as any;
-    const plan = data.plan || "Basic";
-    
-    // Automatically correct totals based on the current plan 
-    // to prevent mismatches from legacy database states
-    let correctCvTotal = 5;
-    let correctScoringTotal = 10;
-    
-    if (plan === "Fresh Graduate") {
-       correctCvTotal = 10;
-       correctScoringTotal = 30;
-    } else if (plan === "Job Seeker") {
-       correctCvTotal = 999999;
-       correctScoringTotal = 999999;
+    if (userDoc.exists()) {
+      const data = userDoc.data() as any;
+      const plan = data.plan || "Basic";
+
+      // Automatically correct totals based on the current plan
+      // to prevent mismatches from legacy database states
+      let correctCvTotal = 5;
+      let correctScoringTotal = 10;
+
+      if (plan === "Fresh Graduate") {
+        correctCvTotal = 10;
+        correctScoringTotal = 30;
+      } else if (plan === "Job Seeker") {
+        correctCvTotal = 999999;
+        correctScoringTotal = 999999;
+      }
+
+      const userData: User = {
+        ...data,
+        id: data.id || firebaseUser.uid,
+        email: data.email || firebaseUser.email || "",
+        fullName: data.fullName || firebaseUser.displayName || "User",
+        createdAt: data.createdAt || new Date().toISOString(),
+        plan: plan,
+        cvCreditsUsed: data.cvCreditsUsed || 0,
+        cvCreditsTotal: correctCvTotal,
+        scoringCreditsUsed: data.scoringCreditsUsed || 0,
+        scoringCreditsTotal: correctScoringTotal,
+        exportCount: data.exportCount || 0,
+        premiumSince: data.premiumSince || undefined,
+      };
+
+      // Auto-heal the document in Firestore if legacy fields are missing or mismatched
+      try {
+        if (
+          data.plan === undefined ||
+          data.cvCreditsTotal !== correctCvTotal ||
+          data.scoringCreditsTotal !== correctScoringTotal ||
+          data.exportCount === undefined ||
+          data.cvCreditsUsed === undefined ||
+          data.scoringCreditsUsed === undefined
+        ) {
+          await setDoc(userDocRef, userData, { merge: true });
+        }
+      } catch (e) {
+        console.error("Auto-heal document error:", e);
+      }
+
+      return userData;
+    } else {
+      // Logika untuk membuat profil baru jika tidak ada
+      const newUser: User = {
+        id: firebaseUser.uid,
+        email: firebaseUser.email || "",
+        fullName: firebaseUser.displayName || "New User",
+        avatar: firebaseUser.photoURL || undefined,
+        provider: firebaseUser.providerData[0]?.providerId.includes("google")
+          ? "google"
+          : "email",
+        createdAt: new Date().toISOString(),
+        plan: "Basic",
+        cvCreditsUsed: 0,
+        cvCreditsTotal: 5,
+        scoringCreditsUsed: 0,
+        scoringCreditsTotal: 10,
+        exportCount: 0,
+      };
+      try {
+        await setDoc(userDocRef, newUser);
+      } catch (e) {
+        console.error("Create new user doc error:", e);
+      }
+      return newUser;
     }
-
-    const userData: User = {
-      ...data,
-      id: data.id || firebaseUser.uid,
-      email: data.email || firebaseUser.email || "",
-      fullName: data.fullName || firebaseUser.displayName || "User",
-      createdAt: data.createdAt || new Date().toISOString(),
-      plan: plan,
-      cvCreditsUsed: data.cvCreditsUsed || 0,
-      cvCreditsTotal: correctCvTotal,
-      scoringCreditsUsed: data.scoringCreditsUsed || 0,
-      scoringCreditsTotal: correctScoringTotal,
-      exportCount: data.exportCount || 0,
-      premiumSince: data.premiumSince || undefined,
-    };
-
-    // Auto-heal the document in Firestore if legacy fields are missing or mismatched
-    if (
-      data.plan === undefined ||
-      data.cvCreditsTotal !== correctCvTotal ||
-      data.scoringCreditsTotal !== correctScoringTotal ||
-      data.exportCount === undefined ||
-      data.cvCreditsUsed === undefined ||
-      data.scoringCreditsUsed === undefined
-    ) {
-      await setDoc(userDocRef, userData, { merge: true });
-    }
-
-    return userData;
-  } else {
-    // Logika untuk membuat profil baru jika tidak ada
-    const newUser: User = {
+  } catch (error) {
+    console.error("Firestore error in getUserProfile:", error);
+    // Graceful Fallback jika Firestore diblokir/gagal
+    return {
       id: firebaseUser.uid,
       email: firebaseUser.email || "",
-      fullName: firebaseUser.displayName || "New User",
+      fullName: firebaseUser.displayName || "User",
       avatar: firebaseUser.photoURL || undefined,
       provider: firebaseUser.providerData[0]?.providerId.includes("google")
         ? "google"
@@ -138,8 +169,6 @@ const getUserProfile = async (firebaseUser: FirebaseUser): Promise<User> => {
       scoringCreditsTotal: 10,
       exportCount: 0,
     };
-    await setDoc(userDocRef, newUser);
-    return newUser;
   }
 };
 
@@ -185,7 +214,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const login = async (email: string, password: string): Promise<void> => {
     setIsLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const cred = await signInWithEmailAndPassword(auth, email, password);
+      // Jika user sudah login dan onAuthStateChanged tidak terpanggil
+      if (user && cred.user.uid === user.id) {
+        setIsLoading(false);
+      }
     } catch (error) {
       setIsLoading(false); // Manually stop loading on error since onAuthStateChanged might not trigger
       throw error;
@@ -230,7 +263,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setIsLoading(true);
     try {
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
+      const cred = await signInWithPopup(auth, provider);
+      // Jika user sudah login dan onAuthStateChanged tidak terpanggil
+      if (user && cred.user.uid === user.id) {
+        setIsLoading(false);
+      }
     } catch (error) {
       setIsLoading(false);
       throw error;
