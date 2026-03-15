@@ -67,7 +67,7 @@ export async function POST(request: Request) {
     const guestUsedRaw = cookieStore.get("guest_scoring_used")?.value;
     const guestUsed = Number.parseInt(guestUsedRaw || "0", 10);
     const guestUsedToday = guestDate === today ? guestUsed : 0;
-    const GUEST_SCORING_LIMIT_PER_DAY = 1;
+    const GUEST_SCORING_LIMIT_PER_DAY = 20;
 
     const userId = await getUserId();
     let userDocRef: any = null;
