@@ -4,7 +4,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { CVBuilderPage } from "@/components/dashboard/CVBuilderPage";
 import { type CVBuilderData, type CVGrade } from "@/components/cvbuilder/types"; // Import CVGrade
-import { type Language } from "@/lib/translations";
+import { type Language, t } from "@/lib/translations";
 import { useAuth } from "@/context/AuthContext";
 import { useEffect, useState, Suspense } from "react";
 import { Loader2 } from "lucide-react";
@@ -101,21 +101,21 @@ import { Loader2 } from "lucide-react";
       });
 
       if (!response.ok) {
-        let errorMessage = "Gagal menyimpan CV";
+        let errorMessage = t("saveFailedDefault", lang);
         try {
           const errorData = await response.json();
           errorMessage = errorData.error || errorMessage;
         } catch (e) {}
 
         if (response.status === 403) {
-          toast.error("Limit Tercapai", {
+          toast.error(t("limitReachedTitle", lang), {
             description: errorMessage,
             action: {
               label: "Upgrade",
               onClick: () => (window.location.href = "/#pricing"),
             },
           });
-          throw new Error("Limit tercapai");
+          throw new Error(t("limitReachedError", lang));
         }
         throw new Error(errorMessage);
       }
@@ -123,16 +123,16 @@ import { Loader2 } from "lucide-react";
       toast.success(
         status === "Completed" || cvStatus === "Completed"
           ? cvId
-            ? "CV berhasil diperbarui!"
-            : "CV Anda berhasil disimpan!"
-          : "CV Anda disimpan sebagai draf.",
+            ? t("cvUpdatedSuccess", lang)
+            : t("cvSavedSuccess", lang)
+          : t("cvDraftSaved", lang),
       );
       router.push("/dashboard");
       router.refresh();
       refreshUser();
     } catch (error) {
       console.error(error);
-      toast.error("Gagal menyimpan CV. Silakan coba lagi.");
+      toast.error(t("saveFailedRetry", lang));
     } finally {
       setIsSaving(false);
     }

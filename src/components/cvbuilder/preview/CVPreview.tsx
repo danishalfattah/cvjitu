@@ -100,7 +100,7 @@ export function CVPreview({ data, lang, autoHeight = false }: CVPreviewProps) {
             {data.summary && data.summary !== "" && (
               <div className="space-y-1">
                 <h4 className="text-sm font-semibold">
-                  {t("previewSummary", lang)}
+                  {t("summaryTitle", lang)}
                 </h4>
                 <Separator className="mb-1" />
                 <p className="text-xs text-muted-foreground leading-relaxed">
@@ -173,7 +173,7 @@ export function CVPreview({ data, lang, autoHeight = false }: CVPreviewProps) {
             {data.educations.length > 0 && (
               <div className="space-y-2">
                 <h4 className="text-sm font-semibold">
-                  {t("previewEducation", lang)}
+                  {t("educationTitle", lang)}
                 </h4>
                 <Separator className="mb-1" />
                 {data.educations.map((education, idx) => {
@@ -220,7 +220,7 @@ export function CVPreview({ data, lang, autoHeight = false }: CVPreviewProps) {
             {data.skills && data.skills.length > 0 && (
               <div className="space-y-1">
                 <h4 className="text-sm font-semibold">
-                  {t("previewSkills", lang)}
+                  {t("skillsTitle", lang)}
                 </h4>
                 <Separator className="mb-1" />
                 <p className="text-xs text-muted-foreground leading-relaxed">

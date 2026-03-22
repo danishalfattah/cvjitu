@@ -140,10 +140,7 @@ export const translations: { [key: string]: TranslationEntry } = {
   // CVPreview
   previewName: { id: "Nama Anda", en: "Your Name" },
   previewJobTitle: { id: "Posisi", en: "Job Title" },
-  previewSummary: { id: "Ringkasan", en: "Summary" },
   previewExperience: { id: "Pengalaman", en: "Experience" },
-  previewEducation: { id: "Pendidikan", en: "Education" },
-  previewSkills: { id: "Keahlian", en: "Skills" },
   previewNow: { id: "Sekarang", en: "Present" },
   previewGpa: { id: "Nilai", en: "Grade" },
   previewTitlePlaceholder: { id: "Pratinjau CV", en: "CV Preview" },
@@ -210,11 +207,22 @@ export const translations: { [key: string]: TranslationEntry } = {
   now: { id: "Sekarang", en: "Present" },
   gpa: { id: "IPK", en: "GPA" },
 
+  // CVBuilder page - save flow
+  saveFailedDefault: { id: "Gagal menyimpan CV", en: "Failed to save CV" },
+  limitReachedTitle: { id: "Limit Tercapai", en: "Limit Reached" },
+  limitReachedError: { id: "Limit tercapai", en: "Limit reached" },
+  cvUpdatedSuccess: { id: "CV berhasil diperbarui!", en: "CV updated successfully!" },
+  cvSavedSuccess: { id: "CV Anda berhasil disimpan!", en: "Your CV has been saved!" },
+  cvDraftSaved: { id: "CV Anda disimpan sebagai draf.", en: "Your CV has been saved as a draft." },
+  saveFailedRetry: { id: "Gagal menyimpan CV. Silakan coba lagi.", en: "Failed to save CV. Please try again." },
 };
 
 export const t = (
   key: keyof typeof translations,
   lang: Language
 ): string => {
+  if (process.env.NODE_ENV === 'development' && !translations[key]) {
+    console.warn(`[i18n] Missing translation key: "${String(key)}"`);
+  }
   return translations[key]?.[lang] || translations[key]?.["id"] || String(key);
 };
