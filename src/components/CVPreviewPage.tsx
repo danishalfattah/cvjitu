@@ -113,6 +113,7 @@ export function CVPreviewPage() {
                       ? "id"
                       : cvData.lang
                   }
+                  autoHeight
                 />
               )}
             </div>

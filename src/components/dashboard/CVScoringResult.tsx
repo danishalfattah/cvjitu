@@ -123,7 +123,7 @@ export function CVScoringResult({
         >
           {showPreview && cvBuilderData && (
             <div className="lg:sticky lg:top-8 h-fit">
-              <CVPreview data={cvBuilderData} lang="en" />
+              <CVPreview data={cvBuilderData} lang="en" autoHeight />
             </div>
           )}
 

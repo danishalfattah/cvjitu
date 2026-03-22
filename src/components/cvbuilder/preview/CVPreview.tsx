@@ -7,6 +7,7 @@ import { t, type Language } from "@/lib/translations";
 interface CVPreviewProps {
   data: CVBuilderData;
   lang: Language;
+  autoHeight?: boolean;
 }
 
 const formatDate = (dateString: string) => {
@@ -22,18 +23,17 @@ const formatDate = (dateString: string) => {
   }
 };
 
-export function CVPreview({ data, lang }: CVPreviewProps) {
+export function CVPreview({ data, lang, autoHeight = false }: CVPreviewProps) {
   const fullName = `${data.firstName || ""} ${data.lastName || ""}`.trim();
 
   return (
     <Card className="border border-[var(--border-color)] h-fit overflow-hidden p-0">
       <CardContent className="p-0">
         <div
-          className="bg-white w-full overflow-y-auto font-serif"
+          className={`bg-white w-full font-serif ${autoHeight ? "" : "overflow-y-auto"}`}
           id="cv-print-container"
           style={{
-            aspectRatio: "210/297",
-            maxHeight: "min(80vh, 700px)",
+            ...(autoHeight ? {} : { aspectRatio: "210/297", maxHeight: "min(80vh, 700px)" }),
             padding: "3rem 2.5rem",
           }}
         >
